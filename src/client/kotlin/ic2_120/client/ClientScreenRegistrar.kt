@@ -44,8 +44,10 @@ object ClientScreenRegistrar {
             val resources = classLoader.getResources(packagePath)
             while (resources.hasMoreElements()) {
                 val url = resources.nextElement()
-                if (url.protocol == "file") {
-                    scanDirectory(url.path, packageName, modId)
+                when (url.protocol) {
+                    "file" -> scanDirectory(url.path, packageName, modId)
+                    "jar" -> scanJarFile(url, packageName, modId)
+                    else -> logger.warn("未支持的协议: {}", url.protocol)
                 }
             }
         } catch (e: Exception) {
@@ -65,6 +67,38 @@ object ClientScreenRegistrar {
                 }
             }
         }
+    }
+
+    private fun scanJarFile(url: java.net.URL, packageName: String, modId: String) {
+        // jar: URL 格式: jar:file:/path.jar!/package/path
+        // 需要提取文件路径并正确解码 URL 编码字符（如 %20 -> 空格）
+        val jarPathPart = url.path.substringBefore("!")
+        // 移除 "file:" 或 "file:///" 前缀（如果存在）
+        val cleanPath = when {
+            jarPathPart.startsWith("file:") -> jarPathPart.substring(5)
+            jarPathPart.startsWith("file:///") -> jarPathPart.substring(8)
+            else -> jarPathPart
+        }
+        // URL 解码路径中的特殊字符
+        val decodedPath = java.net.URLDecoder.decode(cleanPath, "UTF-8")
+        val jarFile = java.util.jar.JarFile(decodedPath)
+
+        val entries = jarFile.entries()
+        val packagePath = packageName.replace('.', '/') + "/"
+
+        while (entries.hasMoreElements()) {
+            val entry = entries.nextElement()
+            val entryName = entry.name
+
+            if (entryName.startsWith(packagePath) && entryName.endsWith(".class")) {
+                val className = entryName
+                    .removeSuffix(".class")
+                    .replace('/', '.')
+                processClass(className, modId)
+            }
+        }
+
+        jarFile.close()
     }
 
     private fun processClass(className: String, modId: String) {
@@ -93,7 +127,7 @@ object ClientScreenRegistrar {
             HandledScreens.register(screenType) { handler, playerInventory, title ->
                 ctor.call(handler, playerInventory, title) as HandledScreen<ScreenHandler>
             }
-            logger.info("已注册客户端 Screen: {} -> {}", clazz.simpleName, id)
+            logger.debug("已注册客户端 Screen: {} -> {}", clazz.simpleName, id)
         } catch (e: ClassNotFoundException) {
             logger.warn("无法加载类: {}", className)
         } catch (e: Exception) {

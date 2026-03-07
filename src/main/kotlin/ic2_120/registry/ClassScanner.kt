@@ -165,8 +165,18 @@ object ClassScanner {
         screenHandlerClasses: MutableList<ScreenHandlerClassInfo>,
         itemClasses: MutableList<ItemClassInfo>
     ) {
-        val jarPath = url.path.substringBefore("!")
-        val jarFile = java.util.jar.JarFile(jarPath.replace("file:", ""))
+        // jar: URL 格式: jar:file:/path.jar!/package/path
+        // 需要提取文件路径并正确解码 URL 编码字符（如 %20 -> 空格）
+        val jarPathPart = url.path.substringBefore("!")
+        // 移除 "file:" 或 "file:///" 前缀（如果存在）
+        val cleanPath = when {
+            jarPathPart.startsWith("file:") -> jarPathPart.substring(5)
+            jarPathPart.startsWith("file:///") -> jarPathPart.substring(8)
+            else -> jarPathPart
+        }
+        // URL 解码路径中的特殊字符
+        val decodedPath = java.net.URLDecoder.decode(cleanPath, "UTF-8")
+        val jarFile = java.util.jar.JarFile(decodedPath)
 
         val entries = jarFile.entries()
         val packagePath = packageName.replace('.', '/') + "/"
@@ -319,7 +329,7 @@ object ClassScanner {
                 }
                 Registry.register(Registries.SCREEN_HANDLER, id, type)
                 ScreenHandlerTypeStore.registerType(clazz, type)
-                logger.info("已注册 ScreenHandler 类型: {}", id)
+                logger.debug("已注册 ScreenHandler 类型: {}", id)
             } catch (e: Exception) {
                 logger.error("注册 ScreenHandler {} 失败: {}", clazz.simpleName, e.message, e)
             }
@@ -356,7 +366,7 @@ object ClassScanner {
                 val type = FabricBlockEntityTypeBuilder.create(factory, block).build() as BlockEntityType<BlockEntity>
                 Registry.register(Registries.BLOCK_ENTITY_TYPE, id, type)
                 BlockEntityTypeStore.registerType(clazz, type)
-                logger.info("已注册方块实体类型: {}", id)
+                logger.debug("已注册方块实体类型: {}", id)
 
                 // 若存在 @RegisterEnergy 字段，则向 Energy API 注册 SIDED 查找
                 val energyProperty = clazz.declaredMemberProperties.firstOrNull { it.hasAnnotation<RegisterEnergy>() }
@@ -368,7 +378,7 @@ object ClassScanner {
                         if (storage is SimpleSidedEnergyContainer) storage.getSideStorage(direction)
                         else storage as EnergyStorage
                     }, type)
-                    logger.info("已为方块实体 {} 注册 EnergyStorage（属性 {}）", clazz.simpleName, prop.name)
+                    logger.debug("已为方块实体 {} 注册 EnergyStorage（属性 {}）", clazz.simpleName, prop.name)
                 } else {
                     val energyField = clazz.java.declaredFields.firstOrNull { it.isAnnotationPresent(RegisterEnergy::class.java) }
                     if (energyField != null) {
@@ -378,7 +388,7 @@ object ClassScanner {
                             if (storage is SimpleSidedEnergyContainer) storage.getSideStorage(direction)
                             else storage as EnergyStorage
                         }, type)
-                        logger.info("已为方块实体 {} 注册 EnergyStorage（字段 {}）", clazz.simpleName, energyField.name)
+                        logger.debug("已为方块实体 {} 注册 EnergyStorage（字段 {}）", clazz.simpleName, energyField.name)
                     }
                 }
             } catch (e: Exception) {
@@ -402,13 +412,13 @@ object ClassScanner {
                 // 注册方块
                 Registry.register(Registries.BLOCK, id, instance)
                 blockClassToName[clazz] = name
-                logger.info("已注册方块: {}", id)
+                logger.debug("已注册方块: {}", id)
 
                 // 注册方块物品
                 if (annotation.registerItem) {
                     val blockItem = BlockItem(instance, FabricItemSettings())
                     Registry.register(Registries.ITEM, id, blockItem)
-                    logger.info("已注册方块物品: {}", id)
+                    logger.debug("已注册方块物品: {}", id)
 
                     // 记录物品应该添加到哪个物品栏（带 group 以便排序）
                     if (annotation.tab != CreativeTab.MINECRAFT_MISC) {
@@ -435,7 +445,7 @@ object ClassScanner {
 
                 // 注册物品
                 Registry.register(Registries.ITEM, id, instance)
-                logger.info("已注册物品: {}", id)
+                logger.debug("已注册物品: {}", id)
 
                 // 记录物品应该添加到哪个物品栏（带 group 以便排序）
                 if (annotation.tab != CreativeTab.MINECRAFT_MISC) {

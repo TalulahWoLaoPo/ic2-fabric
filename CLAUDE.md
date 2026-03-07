@@ -101,3 +101,20 @@ enum class CreativeTab(val id: String) {
 - **重构友好**：重命名枚举值时，IDE 自动更新所有引用
 - **避免拼写错误**：使用常量而非手写字符串
 - **无需维护注册表对象**：类定义与注册合一，不必单独维护 `ModBlocks`/`ModItems` 等对象
+
+## 构建规范
+
+**重要**：使用 Gradle 构建时，**不要使用 `--no-daemon` 参数**。让 Gradle Daemon 保持运行以加快构建速度。
+
+正确的构建命令：
+```bash
+./gradlew build
+./gradlew runClient
+```
+
+错误的构建命令（避免使用）：
+```bash
+./gradlew build --no-daemon  # ❌ 不要使用
+```
+
+**原因**：Gradle Daemon 是一个长期运行的后台进程，可以缓存项目状态和依赖信息，显著提升后续构建速度。使用 `--no-daemon` 会每次都启动新进程，导致构建变慢。
