@@ -29,7 +29,14 @@ class ElectricFurnaceScreen(
 
     override fun drawBackground(context: DrawContext, delta: Float, mouseX: Int, mouseY: Int) {
         GuiBackground.draw(context, x, y, backgroundWidth, backgroundHeight)
-        // GuiBackground.drawPlayerInventorySlotBorders(context, x, y, ElectricFurnaceScreenHandler.PLAYER_INV_Y, ElectricFurnaceScreenHandler.HOTBAR_Y, ElectricFurnaceScreenHandler.SLOT_SIZE, GuiBackground.BORDER_COLOR)
+        GuiBackground.drawPlayerInventorySlotBorders(
+            context,
+            x,
+            y,
+            ElectricFurnaceScreenHandler.PLAYER_INV_Y,
+            ElectricFurnaceScreenHandler.HOTBAR_Y,
+            ElectricFurnaceScreenHandler.SLOT_SIZE
+        )
         // 机器槽周围绘制边框（使用与 HandledScreen 相同的 x,y 及 slot 坐标，保证与物品绘制对齐）
         val borderColor = GuiBackground.BORDER_COLOR
         val slotSize = ElectricFurnaceScreenHandler.SLOT_SIZE
