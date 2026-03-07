@@ -1,5 +1,6 @@
 package ic2_120.content
 
+import ic2_120.content.syncs.SyncSchema
 import net.minecraft.util.math.Direction
 
 /**
@@ -24,7 +25,6 @@ class MfsuSync(
         const val NBT_ENERGY_STORED = "EnergyStored"
     }
 
-    var syncCounter by schema.int("SyncCounter")
     var energy by schema.int("Energy")
 
     override fun getSideMaxInsert(side: Direction?): Long {

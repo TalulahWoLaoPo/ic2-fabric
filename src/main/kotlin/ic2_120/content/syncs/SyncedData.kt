@@ -1,4 +1,4 @@
-package ic2_120.content
+package ic2_120.content.syncs
 
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.nbt.NbtCompound

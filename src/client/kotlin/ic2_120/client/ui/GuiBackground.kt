@@ -33,5 +33,54 @@ object GuiBackground {
     ) {
         context.fill(x, y, x + width, y + height, fillColor)
         context.drawBorder(x, y, width, height, borderColor)
+        drawPlayerInventorySlotBorders(context, x, y, width, height, borderColor)
+    }
+
+    private const val BORDER_OFFSET = 1
+    private const val PLAYER_INV_COLS = 9
+    private const val PLAYER_INV_MAIN_ROWS = 3
+    private const val PLAYER_INV_HOTBAR_ROWS = 1
+    private const val PLAYER_INV_START_X = 8
+
+    /**
+     * 绘制玩家背包所有槽位的边框（3 行主背包 + 1 行快捷栏）。
+     * [screenX]、[screenY] 为 GUI 面板左上角坐标；[playerInvY]、[hotbarY] 为背包区域与快捷栏的 Y 偏移；[slotSize] 为槽尺寸（通常 18）。
+     */
+    @JvmStatic
+    fun drawPlayerInventorySlotBorders(
+        context: DrawContext,
+        screenX: Int,
+        screenY: Int,
+        playerInvY: Int,
+        hotbarY: Int,
+        slotSize: Int,
+        borderColor: Int = BORDER_COLOR
+    ) {
+        val w = slotSize
+        // 主背包 3 行 x 9 列
+        for (row in 0 until PLAYER_INV_MAIN_ROWS) {
+            for (col in 0 until PLAYER_INV_COLS) {
+                val slotX = PLAYER_INV_START_X + col * slotSize
+                val slotY = playerInvY + row * slotSize
+                context.drawBorder(
+                    screenX + slotX - BORDER_OFFSET,
+                    screenY + slotY - BORDER_OFFSET,
+                    w,
+                    w,
+                    borderColor
+                )
+            }
+        }
+        // 快捷栏 1 行 x 9 列
+        for (col in 0 until PLAYER_INV_COLS) {
+            val slotX = PLAYER_INV_START_X + col * slotSize
+            context.drawBorder(
+                screenX + slotX - BORDER_OFFSET,
+                screenY + hotbarY - BORDER_OFFSET,
+                w,
+                w,
+                borderColor
+            )
+        }
     }
 }

@@ -1,5 +1,6 @@
 package ic2_120.content.block
 
+import ic2_120.content.blockentities.CableBlockEntity
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.registry.RegistryKey

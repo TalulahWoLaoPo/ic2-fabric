@@ -3,6 +3,7 @@ package ic2_120.client
 import ic2_120.client.compose.*
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
+import ic2_120.content.ElectricFurnaceSync
 import ic2_120.content.block.ElectricFurnaceBlock
 import ic2_120.content.screen.ElectricFurnaceScreenHandler
 import ic2_120.registry.annotation.ModScreen
@@ -10,7 +11,6 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.text.Text
-import net.minecraft.util.Identifier
 
 @ModScreen(block = ElectricFurnaceBlock::class)
 class ElectricFurnaceScreen(
@@ -21,96 +21,80 @@ class ElectricFurnaceScreen(
 
     private val ui = ComposeUI()
 
+    init {
+        backgroundWidth = PANEL_WIDTH
+        backgroundHeight = PANEL_HEIGHT
+    }
+
     override fun drawBackground(context: DrawContext, delta: Float, mouseX: Int, mouseY: Int) {
-        val x = (width - backgroundWidth) / 2
-        val y = (height - backgroundHeight) / 2
         GuiBackground.draw(context, x, y, backgroundWidth, backgroundHeight)
+        // 机器槽周围绘制边框（使用与 HandledScreen 相同的 x,y 及 slot 坐标，保证与物品绘制对齐）
+        val borderColor = GuiBackground.BORDER_COLOR
+        val slotSize = ElectricFurnaceScreenHandler.SLOT_SIZE
+        val borderOffset = 1
+        val borderW = slotSize
+        val inputSlot = handler.slots[0]
+        val outputSlot = handler.slots[1]
+        context.drawBorder(x + inputSlot.x - borderOffset, y + inputSlot.y - borderOffset, borderW, borderW, borderColor)
+        context.drawBorder(x + outputSlot.x - borderOffset, y + outputSlot.y - borderOffset, borderW, borderW, borderColor)
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         super.render(context, mouseX, mouseY, delta)
 
-        val left = (width - backgroundWidth) / 2
-        val top = (height - backgroundHeight) / 2
+        val left = x
+        val top = y
+        val energy = handler.sync.energy.toLong().coerceAtLeast(0)
+        val cap = ElectricFurnaceSync.ENERGY_CAPACITY
+        val energyFraction = if (cap > 0) (energy.toFloat() / cap).coerceIn(0f, 1f) else 0f
+        val progress = handler.sync.progress.coerceIn(0, ElectricFurnaceSync.PROGRESS_MAX)
+        val progressFraction = if (ElectricFurnaceSync.PROGRESS_MAX > 0) (progress.toFloat() / ElectricFurnaceSync.PROGRESS_MAX).coerceIn(0f, 1f) else 0f
+        val contentW = (backgroundWidth - 16).coerceAtLeast(0)
+        val barW = (contentW - 36).coerceAtLeast(0)
 
         ui.render(context, textRenderer, mouseX, mouseY) {
-            Column(x = left + 8, y = top - 16, spacing = 2) {
-                Text("IC2 电炉", color = 0xFFFFFF)
-                Text("同步计数: ${handler.sync.syncCounter}", color = 0xAAAAAA, shadow = false)
-                Text("能量: ${handler.sync.energy}", color = 0xAAAAAA, shadow = false)
-                Text("进度: ${handler.sync.progress}", color = 0xAAAAAA, shadow = false)
-            }
-
-            Row(x = left + 8, y = top + 8, spacing = 4) {
-                Column(
-                    spacing = 2,
-                    modifier = Modifier.EMPTY
-                        .background(0x80FF0000.toInt())
-                        .padding(4)
+            Column(x = left + 8, y = top + 8, spacing = 6) {
+                Text(title.string, color = 0xFFFFFF)
+                Flex(
+                    direction = FlexDirection.ROW,
+                    alignItems = AlignItems.CENTER,
+                    gap = 8,
+                    modifier = Modifier.EMPTY.width(contentW)
                 ) {
-                    Text("Input", color = 0xFFFFFF)
-                    Text("Slot 0", color = 0xCCCCCC)
+                    Text("能量", color = 0xAAAAAA)
+                    EnergyBar(
+                        energyFraction,
+                        barWidth = 0,
+                        barHeight = 9,
+                        modifier = Modifier.EMPTY.width(barW)
+                    )
                 }
-                Column(
-                    spacing = 2,
-                    modifier = Modifier.EMPTY
-                        .background(0x8000FF00.toInt())
-                        .padding(4)
-                ) {
-                    Text("Output", color = 0xFFFFFF)
-                    Text("Slot 1", color = 0xCCCCCC)
-                }
-            }
-
-            Flex(
-                x = left, y = top + backgroundHeight + 2,
-                direction = FlexDirection.ROW,
-                justifyContent = JustifyContent.SPACE_BETWEEN,
-                alignItems = AlignItems.CENTER,
-                gap = 4,
-                modifier = Modifier.EMPTY.width(backgroundWidth).height(20)
-            ) {
-                Button(
-                    "启动",
-                    modifier = Modifier.EMPTY.background(0xFF006600.toInt())
-                ) {
-                    println("[IC2] 启动按钮被点击")
-                }
-                Text("Electric Furnace", color = 0x999999)
-                Button(
-                    "停止",
-                    modifier = Modifier.EMPTY.background(0xFF660000.toInt())
-                ) {
-                    println("[IC2] 停止按钮被点击")
-                }
-            }
-
-            Column(x = left + backgroundWidth + 4, y = top, spacing = 2) {
-                Image(
-                    Identifier("minecraft", "textures/block/diamond_block.png"),
-                    width = 16, height = 16
+                Text(
+                    "$energy / $cap EU",
+                    color = 0xCCCCCC,
+                    shadow = false
                 )
-                Image(
-                    Identifier("minecraft", "textures/block/gold_block.png"),
-                    width = 16, height = 16
-                )
-            }
-
-            Text(
-                "绝对定位测试", x = left + backgroundWidth - 60, y = top - 10, absolute = true,
-                color = 0xFFFF00
-            )
-
-            // 能量条测试：Table 对齐 0 / 25 / 50 / 75 / 100
-            Column(x = left + 8, y = top + 60, spacing = 4) {
-                Text("能量条", color = 0xFFFFFF)
-                Table(columnWidths = listOf(28, 100), columnSpacing = 8, rowSpacing = 4) {
-                    row { Text("0%", color = 0xAAAAAA); EnergyBar(0f) }
-                    row { Text("25%", color = 0xAAAAAA); EnergyBar(0.25f) }
-                    row { Text("50%", color = 0xAAAAAA); EnergyBar(0.5f) }
-                    row { Text("75%", color = 0xAAAAAA); EnergyBar(0.75f) }
-                    row { Text("100%", color = 0xAAAAAA); EnergyBar(1f) }
-                }
+                // Flex(
+                //     direction = FlexDirection.ROW,
+                //     alignItems = AlignItems.CENTER,
+                //     gap = 8,
+                //     modifier = Modifier.EMPTY.width(contentW)
+                // ) {
+                //     // Text("进度", color = 0xAAAAAA)
+                //     // EnergyBar(
+                //     //     progressFraction,
+                //     //     barWidth = 0,
+                //     //     barHeight = 9,
+                //     //     emptyColor = 0xFF664400.toInt(),
+                //     //     fullColor = 0xFFEEAA00.toInt(),
+                //     //     modifier = Modifier.EMPTY.width(barW)
+                //     // )
+                // }
+                // Text(
+                //     "$progress / ${ElectricFurnaceSync.PROGRESS_MAX}",
+                //     color = 0xCCCCCC,
+                //     shadow = false
+                // )
             }
         }
 
@@ -119,4 +103,9 @@ class ElectricFurnaceScreen(
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean =
         ui.mouseClicked(mouseX, mouseY, button) || super.mouseClicked(mouseX, mouseY, button)
+
+    companion object {
+        private const val PANEL_WIDTH = 176
+        private const val PANEL_HEIGHT = 166
+    }
 }

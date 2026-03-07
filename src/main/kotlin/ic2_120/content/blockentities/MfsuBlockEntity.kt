@@ -1,9 +1,10 @@
-package ic2_120.content.block
+package ic2_120.content.blockentities
 
 import ic2_120.content.MfsuSync
-import ic2_120.content.SyncedData
 import ic2_120.content.ModBlockEntities
+import ic2_120.content.block.MfsuBlock
 import ic2_120.content.screen.MfsuScreenHandler
+import ic2_120.content.syncs.SyncedData
 import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.annotation.RegisterEnergy
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
@@ -71,7 +72,6 @@ class MfsuBlockEntity(
 
     fun tick(world: World, pos: BlockPos, state: BlockState) {
         if (world.isClient) return
-        sync.syncCounter++
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
     }
 }

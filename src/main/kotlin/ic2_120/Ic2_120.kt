@@ -1,8 +1,8 @@
 package ic2_120
 
-import ic2_120.content.block.CableBlockEntity
 import ic2_120.content.block.EnergyNetworkManager
 import ic2_120.content.block.MfsuBlock
+import ic2_120.content.blockentities.CableBlockEntity
 import ic2_120.registry.ClassScanner
 import ic2_120.registry.CreativeTab
 import net.fabricmc.api.ModInitializer
@@ -29,10 +29,11 @@ object Ic2_120 : ModInitializer {
         ClassScanner.scanAndRegister(
             MOD_ID,
             listOf(
-                "ic2_120.content.tab",    // 扫描物品栏类（必须先注册）
-                "ic2_120.content.block", // 扫描方块类
-                "ic2_120.content.screen",// 扫描 ScreenHandler 类
-                "ic2_120.content.item"   // 扫描物品类
+                "ic2_120.content.tab",         // 扫描物品栏类（必须先注册）
+                "ic2_120.content.block",     // 扫描方块类
+                "ic2_120.content.blockentities", // 扫描 BlockEntity 类
+                "ic2_120.content.screen",     // 扫描 ScreenHandler 类
+                "ic2_120.content.item"       // 扫描物品类
             )
         )
 

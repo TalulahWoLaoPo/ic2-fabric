@@ -1,9 +1,11 @@
 package ic2_120.content
 
+import ic2_120.content.syncs.SyncSchema
+
 /**
  * 电炉的同步属性与能量存储——继承 [TickLimitedEnergyStorage]，一个对象同时作为 Energy API 存储与 GUI 同步数据源。
- * 同步属性（syncCounter、energy、progress）用于 GUI；本对象即 [EnergyStorage][team.reborn.energy.api.EnergyStorage]，供 SIDED 与 NBT 使用。
- * 服务端 [SyncedData] 依赖 BlockEntity 上下文，写入属性时自动 [BlockEntity.markDirty]，无需再传回调。
+ * 同步属性（energy、progress）用于 GUI；本对象即 [EnergyStorage][team.reborn.energy.api.EnergyStorage]，供 SIDED 与 NBT 使用。
+ * 服务端 [SyncedData][ic2_120.content.syncs.SyncedData] 依赖 BlockEntity 上下文，写入属性时自动 [BlockEntity.markDirty]，无需再传回调。
  */
 class ElectricFurnaceSync(
     schema: SyncSchema,
@@ -15,9 +17,10 @@ class ElectricFurnaceSync(
         const val MAX_INSERT = 32L
         const val MAX_EXTRACT = 0L
         const val NBT_ENERGY_STORED = "EnergyStored"
+        /** 烧炼完成所需进度（与 MC 熔炉 200 tick 一致，用于 GUI 进度条） */
+        const val PROGRESS_MAX = 200
     }
 
-    var syncCounter by schema.int("SyncCounter")
     var energy by schema.int("Energy")
     var progress by schema.int("Progress")
 

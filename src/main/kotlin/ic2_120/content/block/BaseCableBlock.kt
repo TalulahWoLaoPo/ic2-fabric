@@ -1,5 +1,6 @@
 package ic2_120.content.block
 
+import ic2_120.content.blockentities.CableBlockEntity
 import net.minecraft.block.AbstractBlock
 import net.minecraft.block.Block
 import net.minecraft.block.BlockRenderType

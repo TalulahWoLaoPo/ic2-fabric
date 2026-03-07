@@ -1,7 +1,7 @@
 package ic2_120.content.screen
 
 import ic2_120.content.ElectricFurnaceSync
-import ic2_120.content.SyncedDataView
+import ic2_120.content.syncs.SyncedDataView
 import ic2_120.content.block.ElectricFurnaceBlock
 import ic2_120.registry.annotation.ModScreenHandler
 import net.minecraft.entity.player.PlayerEntity
@@ -34,18 +34,17 @@ class ElectricFurnaceScreenHandler(
     init {
         checkSize(blockInventory, 2)
         addProperties(propertyDelegate)
-        // 输入槽
-        addSlot(Slot(blockInventory, 0, 56, 17))
-        // 输出槽
-        addSlot(Slot(blockInventory, 1, 116, 35))
+        // 输入槽（左侧）、输出槽（右侧），同一行，留出上方给标题与能量条
+        addSlot(Slot(blockInventory, 0, INPUT_SLOT_X, BLOCK_SLOTS_Y))
+        addSlot(Slot(blockInventory, 1, OUTPUT_SLOT_X, BLOCK_SLOTS_Y))
         // 玩家背包
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 84 + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, PLAYER_INV_Y + row * 18))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, 8 + col * 18, 142))
+            addSlot(Slot(playerInventory, col, 8 + col * 18, HOTBAR_Y))
         }
     }
 
@@ -84,6 +83,19 @@ class ElectricFurnaceScreenHandler(
         }, true)
 
     companion object {
+        /** 输入槽 X（与 MC 熔炉一致） */
+        const val INPUT_SLOT_X = 56
+        /** 输出槽 X */
+        const val OUTPUT_SLOT_X = 116
+        /** 机器槽（输入/输出）Y，同一行，置于标题与能量条下方避免重叠 */
+        const val BLOCK_SLOTS_Y = 54
+        /** 玩家背包 3 行起始 Y */
+        const val PLAYER_INV_Y = 84
+        /** 快捷栏 Y */
+        const val HOTBAR_Y = 142
+        /** 槽尺寸（用于客户端绘制边框等） */
+        const val SLOT_SIZE = 18
+
         /** 客户端从 ExtendedScreenHandlerType 创建：从 buf 读取 pos，用临时 Inventory。 */
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): ElectricFurnaceScreenHandler {
             val pos = buf.readBlockPos()

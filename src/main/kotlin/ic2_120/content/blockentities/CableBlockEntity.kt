@@ -1,5 +1,8 @@
-package ic2_120.content.block
+package ic2_120.content.blockentities
 
+import ic2_120.content.block.BaseCableBlock
+import ic2_120.content.block.EnergyNetwork
+import ic2_120.content.block.EnergyNetworkManager
 import net.fabricmc.fabric.api.`object`.builder.v1.block.entity.FabricBlockEntityTypeBuilder
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.minecraft.block.Block

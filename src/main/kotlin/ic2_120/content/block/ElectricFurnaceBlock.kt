@@ -1,6 +1,7 @@
 package ic2_120.content.block
 
 import ic2_120.content.ModBlockEntities
+import ic2_120.content.blockentities.ElectricFurnaceBlockEntity
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.annotation.ModBlock
 import net.minecraft.block.AbstractBlock
