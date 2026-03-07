@@ -8,23 +8,23 @@ import net.fabricmc.fabric.api.item.v1.FabricItemSettings
 /**
  * 铜锭。
  */
-@ModItem(name = "copper_ingot", tab = CreativeTab.IC2_MATERIALS)
+@ModItem(name = "copper_ingot", tab = CreativeTab.IC2_MATERIALS, group = "ingots")
 class CopperIngot : Item(FabricItemSettings())
 
 /**
  * 锡锭。
  */
-@ModItem(name = "tin_ingot", tab = CreativeTab.IC2_MATERIALS)
+@ModItem(name = "tin_ingot", tab = CreativeTab.IC2_MATERIALS, group = "ingots")
 class TinIngot : Item(FabricItemSettings())
 
 /**
  * 青铜锭。
  */
-@ModItem(name = "bronze_ingot", tab = CreativeTab.IC2_MATERIALS)
+@ModItem(name = "bronze_ingot", tab = CreativeTab.IC2_MATERIALS, group = "ingots")
 class BronzeIngot : Item(FabricItemSettings())
 
 /**
  * 橡胶。
  */
-@ModItem(name = "rubber", tab = CreativeTab.IC2_MATERIALS)
+@ModItem(name = "rubber", tab = CreativeTab.IC2_MATERIALS, group = "materials")
 class RubberItem : Item(FabricItemSettings())

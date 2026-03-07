@@ -7,7 +7,7 @@ import net.minecraft.block.AbstractBlock
 /**
  * 锡质导线。低压传输，32 EU/t，损耗 0.025 EU/格。
  */
-@ModBlock(name = "tin_cable", registerItem = true, tab = CreativeTab.IC2_MATERIALS)
+@ModBlock(name = "tin_cable", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "cables")
 class TinCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : BaseCableBlock(settings) {
 
     override fun getTransferRate(): Long = 32L
@@ -17,7 +17,7 @@ class TinCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : Base
 /**
  * 铜质导线。中低压传输，128 EU/t，损耗 0.2 EU/格。
  */
-@ModBlock(name = "copper_cable", registerItem = true, tab = CreativeTab.IC2_MATERIALS)
+@ModBlock(name = "copper_cable", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "cables")
 class CopperCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : BaseCableBlock(settings) {
 
     override fun getTransferRate(): Long = 128L
@@ -27,7 +27,7 @@ class CopperCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : B
 /**
  * 金质导线。中压传输，512 EU/t，损耗 0.8 EU/格。
  */
-@ModBlock(name = "gold_cable", registerItem = true, tab = CreativeTab.IC2_MATERIALS)
+@ModBlock(name = "gold_cable", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "cables")
 class GoldCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : BaseCableBlock(settings) {
 
     override fun getTransferRate(): Long = 512L
@@ -40,7 +40,7 @@ class GoldCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : Bas
 /**
  * 高压导线（铁质）。2048 EU/t，损耗 0.8 EU/格。碰撞箱较默认导线更粗。
  */
-@ModBlock(name = "iron_cable", registerItem = true, tab = CreativeTab.IC2_MATERIALS)
+@ModBlock(name = "iron_cable", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "cables")
 class IronCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : BaseCableBlock(settings) {
 
     override fun getTransferRate(): Long = 2048L
@@ -53,7 +53,7 @@ class IronCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : Bas
 /**
  * 玻璃纤维导线。超高压传输，8192 EU/t，损耗仅 0.025 EU/格。
  */
-@ModBlock(name = "glass_fibre_cable", registerItem = true, tab = CreativeTab.IC2_MATERIALS)
+@ModBlock(name = "glass_fibre_cable", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "cables")
 class GlassFibreCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : BaseCableBlock(settings) {
 
     override fun getTransferRate(): Long = 8192L

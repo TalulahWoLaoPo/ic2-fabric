@@ -1,4 +1,4 @@
-package ic2_120.content
+package ic2_120.content.recipes
 
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack

@@ -20,28 +20,28 @@
 ### 矿物与矿石类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | block.ic2.lead_ore | 铅矿石 |
-| - [ ] | block.ic2.tin_ore | 锡矿石 |
-| - [ ] | block.ic2.uranium_ore | 铀矿石 |
-| - [ ] | block.ic2.deepslate_lead_ore | 深层铅矿石 |
-| - [ ] | block.ic2.deepslate_tin_ore | 深层锡矿石 |
-| - [ ] | block.ic2.deepslate_uranium_ore | 深层铀矿石 |
-| - [ ] | block.ic2.iridium_ore | 铱矿石 |
-| - [ ] | block.ic2.copper_ore | 铜矿石 |
+| - [x] | block.ic2.lead_ore | 铅矿石 |
+| - [x] | block.ic2.tin_ore | 锡矿石 |
+| - [x] | block.ic2.uranium_ore | 铀矿石 |
+| - [x] | block.ic2.deepslate_lead_ore | 深层铅矿石 |
+| - [x] | block.ic2.deepslate_tin_ore | 深层锡矿石 |
+| - [x] | block.ic2.deepslate_uranium_ore | 深层铀矿石 |
+| - [x] | block.ic2.iridium_ore | 铱矿石 |
+| - [x] | block.ic2.copper_ore | 铜矿石 |
 
 ### 块状材料类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | block.ic2.raw_lead_block | 粗铅块 |
-| - [ ] | block.ic2.raw_tin_block | 粗锡块 |
-| - [ ] | block.ic2.raw_uranium_block | 粗铀块 |
+| - [x] | block.ic2.raw_lead_block | 粗铅块 |
+| - [x] | block.ic2.raw_tin_block | 粗锡块 |
+| - [x] | block.ic2.raw_uranium_block | 粗铀块 |
 | - [x] | block.ic2.bronze_block | 青铜块 |
-| - [ ] | block.ic2.lead_block | 铅块 |
-| - [ ] | block.ic2.steel_block | 钢块 |
+| - [x] | block.ic2.lead_block | 铅块 |
+| - [x] | block.ic2.steel_block | 钢块 |
 | - [x] | block.ic2.tin_block | 锡块 |
-| - [ ] | block.ic2.uranium_block | 铀块 |
-| - [ ] | block.ic2.silver_block | 银块 |
-| - [ ] | block.ic2.coal_block | 压缩煤块 |
+| - [x] | block.ic2.uranium_block | 铀块 |
+| - [x] | block.ic2.silver_block | 银块 |
+| - [x] | block.ic2.coal_block | 压缩煤块 |
 | - [ ] | block.ic2.reinforced_stone | 防爆石 |
 | - [ ] | block.ic2.basalt | 玄武石 |
 
@@ -100,7 +100,7 @@
 ### 机器 - 发电类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | block.ic2.generator | 火力发电机 |
+| - [x] | block.ic2.generator | 火力发电机 |
 | - [ ] | block.ic2.geo_generator | 地热发电机 |
 | - [ ] | block.ic2.kinetic_generator | 动能发电机 |
 | - [ ] | block.ic2.rt_generator | 放射性同位素温差发电机 |
@@ -133,18 +133,18 @@
 ### 机器 - 基础加工类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | block.ic2.compressor | 压缩机 |
+| - [x] | block.ic2.compressor | 压缩机 |
 | - [x] | block.ic2.electric_furnace | 电炉 |
 | - [ ] | block.ic2.extractor | 提取机 |
 | - [ ] | block.ic2.iron_furnace | 铁炉 |
-| - [ ] | block.ic2.macerator | 打粉机 |
+| - [x] | block.ic2.macerator | 打粉机 |
 | - [ ] | block.ic2.recycler | 回收机 |
 | - [ ] | block.ic2.blast_furnace | 高炉 |
 | - [ ] | block.ic2.block_cutter | 方块切割机 |
 | - [ ] | block.ic2.centrifuge | 热能离心机 |
 | - [ ] | block.ic2.fermenter | 发酵机 |
 | - [ ] | block.ic2.induction_furnace | 感应炉 |
-| - [ ] | block.ic2.metal_former | 金属成型机 |
+| - [x] | block.ic2.metal_former | 金属成型机 |
 | - [ ] | block.ic2.ore_washing_plant | 洗矿机 |
 
 ### 机器 - 高级类
@@ -206,8 +206,8 @@
 | - [ ] | block.ic2.cesu | CESU 储电箱 |
 | - [ ] | block.ic2.mfe | MFE 储电箱 |
 | - [ ] | block.ic2.classic_mfe | MFE 储电箱 |
-| - [ ] | block.ic2.mfsu | MFSU 储电箱 |
-| - [ ] | block.ic2.classic_mfsu | MFSU 储电箱 |
+| - [x] | block.ic2.mfsu | MFSU 储电箱 |
+| - [ ] | block.ic2.classic_mfsu | 经典MFSU 储电箱 |
 | - [ ] | block.ic2.batbox_chargepad | 充电座 (BatBox) |
 | - [ ] | block.ic2.cesu_chargepad | 充电座 (CESU) |
 | - [ ] | block.ic2.mfe_chargepad | 充电座 (MFE) |
@@ -216,17 +216,17 @@
 ### 机器 - 电缆与变压器类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | block.ic2.copper_cable | 铜质导线 |
+| - [x] | block.ic2.copper_cable | 铜质导线 |
 | - [ ] | block.ic2.insulated_copper_cable | 绝缘铜质导线 |
-| - [ ] | block.ic2.glass_fibre_cable | 玻璃纤维导线 |
-| - [ ] | block.ic2.gold_cable | 金质导线 |
+| - [x] | block.ic2.glass_fibre_cable | 玻璃纤维导线 |
+| - [x] | block.ic2.gold_cable | 金质导线 |
 | - [ ] | block.ic2.insulated_gold_cable | 绝缘金质导线 |
 | - [ ] | block.ic2.double_insulated_gold_cable | 2x绝缘金质导线 |
-| - [ ] | block.ic2.iron_cable | 高压导线 |
+| - [x] | block.ic2.iron_cable | 高压导线 |
 | - [ ] | block.ic2.insulated_iron_cable | 绝缘高压导线 |
 | - [ ] | block.ic2.double_insulated_iron_cable | 2x绝缘高压导线 |
 | - [ ] | block.ic2.triple_insulated_iron_cable | 3x绝缘高压导线 |
-| - [ ] | block.ic2.tin_cable | 锡质导线 |
+| - [x] | block.ic2.tin_cable | 锡质导线 |
 | - [ ] | block.ic2.insulated_tin_cable | 绝缘锡质导线 |
 | - [ ] | block.ic2.detector_cable | EU 检测导线 |
 | - [ ] | block.ic2.splitter_cable | EU 分流导线 |
@@ -449,7 +449,7 @@
 | 发电机界面 | generator_*.png |
 | 反应堆界面 | reactor_*.png |
 | 变压器界面 | transformer_*.png |
-| 机器界面 | compressor.png, electric_furnace.png 等 |
+| 机器界面 | compressor.png, electric_furnace.png, metal_former.png 等 |
 | 槽位图标 | 物品槽、流体槽、升级槽等 |
 | 进度条 | 加工进度、发酵进度等 |
 | 按钮和滑块 | 交互元件 |
@@ -566,41 +566,41 @@
 | - [ ] | item.ic2.small_tin_dust | 小撮锡粉 |
 
 ### 原材料 - 锭与块类
-|  | ID | 名称 | 备注 |
-|--|----|------|------|
-| - [ ] | item.ic2.mixed_metal_ingot | 合金锭 | |
-| - [x] | item.ic2.bronze_ingot | 青铜锭 | |
-| - [x] | item.ic2.copper_ingot | 铜锭 | **ic2_120 已添加**，材质：`ic2:items/resource/ingot/copper` |
-| - [ ] | item.ic2.lead_ingot | 铅锭 | |
-| - [ ] | item.ic2.silver_ingot | 银锭 | |
-| - [ ] | item.ic2.steel_ingot | 钢锭 | |
-| - [x] | item.ic2.tin_ingot | 锡锭 | |
-| - [ ] | item.ic2.refined_iron_ingot | 精炼铁锭 | |
-| - [ ] | item.ic2.uranium_ingot | 铀锭 | |
+|  | ID | 名称 |
+|--|----|------|
+| - [x] | item.ic2.mixed_metal_ingot | 合金锭 |
+| - [x] | item.ic2.bronze_ingot | 青铜锭 |
+| - [x] | item.ic2.copper_ingot | 铜锭 |
+| - [x] | item.ic2.lead_ingot | 铅锭 |
+| - [x] | item.ic2.silver_ingot | 银锭 |
+| - [x] | item.ic2.steel_ingot | 钢锭 |
+| - [x] | item.ic2.tin_ingot | 锡锭 |
+| - [x] | item.ic2.refined_iron_ingot | 精炼铁锭 |
+| - [x] | item.ic2.uranium_ingot | 铀锭 |
 
 铜锭在 ic2_120 模组中已实现为可获取物品，使用本清单中的材质路径 `ic2:items/resource/ingot/copper`（纹理文件：`textures/items/resource/ingot/copper.png`）。
 
 ### 原材料 - 板类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | item.ic2.bronze_plate | 青铜板 |
-| - [ ] | item.ic2.copper_plate | 铜板 |
-| - [ ] | item.ic2.gold_plate | 金板 |
-| - [ ] | item.ic2.iron_plate | 铁板 |
-| - [ ] | item.ic2.lapis_plate | 青金石板 |
-| - [ ] | item.ic2.lead_plate | 铅板 |
-| - [ ] | item.ic2.obsidian_plate | 黑曜石板 |
-| - [ ] | item.ic2.steel_plate | 钢板 |
-| - [ ] | item.ic2.tin_plate | 锡板 |
-| - [ ] | item.ic2.dense_bronze_plate | 致密青铜板 |
-| - [ ] | item.ic2.dense_copper_plate | 致密铜板 |
-| - [ ] | item.ic2.dense_gold_plate | 致密金板 |
-| - [ ] | item.ic2.dense_iron_plate | 致密铁板 |
-| - [ ] | item.ic2.dense_lapis_plate | 致密青金石板 |
-| - [ ] | item.ic2.dense_lead_plate | 致密铅板 |
-| - [ ] | item.ic2.dense_obsidian_plate | 致密黑曜石板 |
-| - [ ] | item.ic2.dense_steel_plate | 致密钢板 |
-| - [ ] | item.ic2.dense_tin_plate | 致密锡板 |
+| - [x] | item.ic2.bronze_plate | 青铜板 |
+| - [x] | item.ic2.copper_plate | 铜板 |
+| - [x] | item.ic2.gold_plate | 金板 |
+| - [x] | item.ic2.iron_plate | 铁板 |
+| - [x] | item.ic2.lapis_plate | 青金石板 |
+| - [x] | item.ic2.lead_plate | 铅板 |
+| - [x] | item.ic2.obsidian_plate | 黑曜石板 |
+| - [x] | item.ic2.steel_plate | 钢板 |
+| - [x] | item.ic2.tin_plate | 锡板 |
+| - [x] | item.ic2.dense_bronze_plate | 致密青铜板 |
+| - [x] | item.ic2.dense_copper_plate | 致密铜板 |
+| - [x] | item.ic2.dense_gold_plate | 致密金板 |
+| - [x] | item.ic2.dense_iron_plate | 致密铁板 |
+| - [x] | item.ic2.dense_lapis_plate | 致密青金石板 |
+| - [x] | item.ic2.dense_lead_plate | 致密铅板 |
+| - [x] | item.ic2.dense_obsidian_plate | 致密黑曜石板 |
+| - [x] | item.ic2.dense_steel_plate | 致密钢板 |
+| - [x] | item.ic2.dense_tin_plate | 致密锡板 |
 
 ### 原材料 - 外壳类
 |  | ID | 名称 |
@@ -949,6 +949,7 @@
 | - [ ] | item.ic2.mfe | MFE 储电箱 |
 | - [ ] | item.ic2.mfe_chargepad | 充电座 (MFE) |
 | - [ ] | item.ic2.macerator | 打粉机 |
+| - [ ] | item.ic2.metal_former | 金属成型机 |
 | - [ ] | item.ic2.mfsu | MFSU 储电箱 |
 | - [ ] | item.ic2.mfsu_chargepad | 充电座 (MFSU) |
 | - [ ] | item.ic2.miner | 采矿机 |

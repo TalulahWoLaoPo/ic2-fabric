@@ -42,6 +42,7 @@ class CopperBlock : Block(
 - `name`: 注册名（不含命名空间）。为空时自动使用类名转换（如 `CopperBlock` → `copper_block`）
 - `registerItem`: 是否自动注册方块物品（默认 `true`）
 - `tab`: 创造模式物品栏位置，使用 `CreativeTab` 枚举常量
+- `group`: 可选。分组名；相同 `group` 的方块/物品在创造模式物品栏中会排在一起，避免反射扫描顺序不稳定导致的乱序
 
 **可用的物品栏枚举**：
 ```kotlin
@@ -76,6 +77,7 @@ class CopperIngot : Item(FabricItemSettings())
 **注解参数**：
 - `name`: 注册名（不含命名空间）。为空时自动使用类名转换
 - `tab`: 创造模式物品栏位置，使用 `CreativeTab` 枚举常量
+- `group`: 可选。分组名；相同 `group` 的物品在创造模式物品栏中会排在一起，避免反射扫描顺序不稳定导致的乱序
 
 ### 3. 注册创造模式物品栏
 
@@ -135,7 +137,21 @@ class ElectricFurnaceBlockEntity(
 - 方块实体需提供 `(BlockPos, BlockState)` 的副构造函数，内部通过 `ModBlockEntities.getType(当前类::class)` 调用主构造
 - 对应方块在 `createBlockEntity` 中应使用该副构造创建实体（如 `ElectricFurnaceBlockEntity(pos, state)`）
 
-### 5. 处理多个变体
+### 5. 控制物品栏内顺序（group）
+
+反射扫描到的类顺序不稳定，同一 tab 下的物品/方块在创造模式物品栏中的顺序可能杂乱。通过可选的 `group` 参数，可以让相同 `group` 的条目排在一起，组内按注册名稳定排序：
+
+```kotlin
+@ModItem(name = "copper_plate", tab = CreativeTab.IC2_MATERIALS, group = "plates")
+class CopperPlate : Item(...)
+
+@ModItem(name = "iron_plate", tab = CreativeTab.IC2_MATERIALS, group = "plates")
+class IronPlate : Item(...)
+```
+
+不指定 `group` 的条目会归为“空组”，按注册名与其他空组条目一起排序。
+
+### 6. 处理多个变体
 
 如果有多个只是参数不同的变体，创建多个类即可：
 
@@ -147,7 +163,7 @@ class CopperOre : Block(Settings.create().strength(3.0f))
 class DeepslateCopperOre : Block(Settings.create().strength(4.5f))
 ```
 
-### 6. 注册 ScreenHandler 与客户端 Screen（UI）
+### 7. 注册 ScreenHandler 与客户端 Screen（UI）
 
 **服务端 / 共用**：在 ScreenHandler 类上添加 `@ModScreenHandler`，并约定类有 companion 方法 `fromBuffer(syncId, playerInventory, buf)`：
 
@@ -171,7 +187,7 @@ class ElectricFurnaceScreen(handler: ElectricFurnaceScreenHandler, ...) : Handle
 
 主入口扫描包需包含 `ic2_120.content.screen`；客户端入口调用 `ClientScreenRegistrar.registerScreens(Ic2_120.MOD_ID, listOf("ic2_120.client"))`。
 
-### 7. 在主入口点启用自动注册
+### 8. 在主入口点启用自动注册
 
 ```kotlin
 package ic2_120
@@ -303,6 +319,10 @@ class HiddenBlock : Block(Settings.create())
 @ModItem(name = "my_item", tab = CreativeTab.MINECRAFT_REDSTONE)
 class MyItem : Item(Settings.create())
 ```
+
+### Q: 创造模式物品栏里顺序乱了怎么办？
+
+给希望排在一起的物品/方块设置相同的 `group`（字符串即可），例如 `group = "plates"`。相同 `group` 会聚在一起，组内按注册名排序；未设置 `group` 的会按注册名与空组一起排。
 
 ### Q: 类的构造函数需要参数怎么办？
 

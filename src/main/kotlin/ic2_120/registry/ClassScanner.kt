@@ -55,8 +55,8 @@ object ClassScanner {
 
     private val logger = LoggerFactory.getLogger("ic2_120/ClassScanner")
 
-    // 跟踪每个物品栏应该包含的物品ID
-    private val tabItems = mutableMapOf<CreativeTab, MutableList<Identifier>>()
+    // 跟踪每个物品栏应该包含的物品ID及分组（group 用于排序，相同 group 排在一起；空字符串表示不分组）
+    private val tabItems = mutableMapOf<CreativeTab, MutableList<Pair<Identifier, String>>>()
 
     /** 方块类 -> 注册名（path），供 ModBlockEntity/ModScreenHandler 等从 block 解析 name */
     private val blockClassToName = mutableMapOf<kotlin.reflect.KClass<*>, String>()
@@ -272,8 +272,11 @@ object ClassScanner {
                         continue
                     }
 
-                // 获取应该添加到这个物品栏的物品ID列表
-                val itemIds = tabItems[tabEnum] ?: emptyList()
+                // 获取应该添加到这个物品栏的物品ID列表，按 group 排序（相同 group 放一起，组内按 id 稳定排序）
+                val rawEntries = tabItems[tabEnum] ?: emptyList()
+                val itemIds = rawEntries
+                    .sortedWith(compareBy({ it.second }, { it.first.toString() }))
+                    .map { it.first }
 
                 logger.info("物品栏 {} 包含 {} 个物品: {}", name, itemIds.size, itemIds)
 
@@ -282,7 +285,7 @@ object ClassScanner {
                     .icon { net.minecraft.item.ItemStack(Registries.ITEM.get(iconId)) }
                     .displayName(Text.translatable("itemGroup.$modId.$name"))
                     .entries { _, entries ->
-                        // 添加所有属于这个物品栏的物品
+                        // 添加所有属于这个物品栏的物品（已按 group 排序）
                         for (itemId in itemIds) {
                             val item = Registries.ITEM.get(itemId)
                             if (item != net.minecraft.item.Items.AIR) {
@@ -407,9 +410,9 @@ object ClassScanner {
                     Registry.register(Registries.ITEM, id, blockItem)
                     logger.info("已注册方块物品: {}", id)
 
-                    // 记录物品应该添加到哪个物品栏
+                    // 记录物品应该添加到哪个物品栏（带 group 以便排序）
                     if (annotation.tab != CreativeTab.MINECRAFT_MISC) {
-                        tabItems.getOrPut(annotation.tab) { mutableListOf() }.add(id)
+                        tabItems.getOrPut(annotation.tab) { mutableListOf() }.add(id to annotation.group)
                     }
                 }
             } catch (e: Exception) {
@@ -434,9 +437,9 @@ object ClassScanner {
                 Registry.register(Registries.ITEM, id, instance)
                 logger.info("已注册物品: {}", id)
 
-                // 记录物品应该添加到哪个物品栏
+                // 记录物品应该添加到哪个物品栏（带 group 以便排序）
                 if (annotation.tab != CreativeTab.MINECRAFT_MISC) {
-                    tabItems.getOrPut(annotation.tab) { mutableListOf() }.add(id)
+                    tabItems.getOrPut(annotation.tab) { mutableListOf() }.add(id to annotation.group)
                 }
             } catch (e: Exception) {
                 logger.error("注册物品 {} 失败: {}", clazz.simpleName, e.message, e)

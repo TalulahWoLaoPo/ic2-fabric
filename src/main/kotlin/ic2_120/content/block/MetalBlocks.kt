@@ -10,7 +10,7 @@ import net.minecraft.block.PillarBlock
 /**
  * 铜方块。
  */
-@ModBlock(name = "copper_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS)
+@ModBlock(name = "copper_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "metal_blocks")
 class CopperBlock : Block(
     AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(5.0f, 6.0f)
 )
@@ -18,7 +18,7 @@ class CopperBlock : Block(
 /**
  * 锡方块。
  */
-@ModBlock(name = "tin_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS)
+@ModBlock(name = "tin_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "metal_blocks")
 class TinBlock : Block(
     AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(4.0f, 5.0f)
 )
@@ -26,7 +26,7 @@ class TinBlock : Block(
 /**
  * 青铜方块。
  */
-@ModBlock(name = "bronze_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS)
+@ModBlock(name = "bronze_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "metal_blocks")
 class BronzeBlock : Block(
     AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(5.0f, 6.0f)
 )
@@ -34,35 +34,35 @@ class BronzeBlock : Block(
 /**
  * 橡胶原木。
  */
-@ModBlock(name = "rubber_wood", registerItem = true, tab = CreativeTab.IC2_MATERIALS)
+@ModBlock(name = "rubber_wood", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "wood")
 class RubberWood : PillarBlock(
     AbstractBlock.Settings.copy(Blocks.OAK_LOG).strength(2.0f)
 )
 
 // ========== 粗金属块（raw） ==========
 
-@ModBlock(name = "raw_lead_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS)
+@ModBlock(name = "raw_lead_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "raw_blocks")
 class RawLeadBlock : Block(AbstractBlock.Settings.copy(Blocks.RAW_IRON_BLOCK).strength(5.0f, 6.0f))
 
-@ModBlock(name = "raw_tin_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS)
+@ModBlock(name = "raw_tin_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "raw_blocks")
 class RawTinBlock : Block(AbstractBlock.Settings.copy(Blocks.RAW_IRON_BLOCK).strength(5.0f, 6.0f))
 
-@ModBlock(name = "raw_uranium_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS)
+@ModBlock(name = "raw_uranium_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "raw_blocks")
 class RawUraniumBlock : Block(AbstractBlock.Settings.copy(Blocks.RAW_IRON_BLOCK).strength(5.0f, 6.0f))
 
 // ========== 金属块 ==========
 
-@ModBlock(name = "lead_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS)
+@ModBlock(name = "lead_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "metal_blocks")
 class LeadBlock : Block(AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(5.0f, 6.0f))
 
-@ModBlock(name = "steel_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS)
+@ModBlock(name = "steel_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "metal_blocks")
 class SteelBlock : Block(AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(5.0f, 6.0f))
 
-@ModBlock(name = "uranium_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS)
+@ModBlock(name = "uranium_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "metal_blocks")
 class UraniumBlock : Block(AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(5.0f, 6.0f))
 
-@ModBlock(name = "silver_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS)
+@ModBlock(name = "silver_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "metal_blocks")
 class SilverBlock : Block(AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(5.0f, 6.0f))
 
-@ModBlock(name = "coal_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS)
+@ModBlock(name = "coal_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "metal_blocks")
 class CoalBlock : Block(AbstractBlock.Settings.copy(Blocks.COAL_BLOCK).strength(5.0f, 6.0f))

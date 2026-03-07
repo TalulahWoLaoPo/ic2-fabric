@@ -1,11 +1,11 @@
 package ic2_120.content.blockentities
 
-import ic2_120.content.recipes.MaceratorRecipes
-import ic2_120.content.MaceratorSync
+import ic2_120.content.recipes.MetalFormerRecipes
+import ic2_120.content.MetalFormerSync
 import ic2_120.content.ModBlockEntities
 import ic2_120.content.pullEnergyFromNeighbors
-import ic2_120.content.block.MaceratorBlock
-import ic2_120.content.screen.MaceratorScreenHandler
+import ic2_120.content.block.MetalFormerBlock
+import ic2_120.content.screen.MetalFormerScreenHandler
 import ic2_120.content.syncs.SyncedData
 import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.annotation.RegisterEnergy
@@ -15,7 +15,6 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventories
 import net.minecraft.inventory.Inventory
-import net.minecraft.inventory.SimpleInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
@@ -25,8 +24,8 @@ import net.minecraft.util.collection.DefaultedList
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 
-@ModBlockEntity(block = MaceratorBlock::class)
-class MaceratorBlockEntity(
+@ModBlockEntity(block = MetalFormerBlock::class)
+class MetalFormerBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
@@ -36,10 +35,10 @@ class MaceratorBlockEntity(
 
     val syncedData = SyncedData(this)
     @RegisterEnergy
-    val sync = MaceratorSync(syncedData) { world?.time }
+    val sync = MetalFormerSync(syncedData) { world?.time }
 
     constructor(pos: BlockPos, state: BlockState) : this(
-        ModBlockEntities.getType(MaceratorBlockEntity::class),
+        ModBlockEntities.getType(MetalFormerBlockEntity::class),
         pos,
         state
     )
@@ -63,16 +62,16 @@ class MaceratorBlockEntity(
         buf.writeVarInt(syncedData.size())
     }
 
-    override fun getDisplayName(): Text = Text.translatable("block.ic2_120.macerator")
+    override fun getDisplayName(): Text = Text.translatable("block.ic2_120.metal_former")
 
     override fun createMenu(syncId: Int, playerInventory: PlayerInventory, player: PlayerEntity?): ScreenHandler =
-        MaceratorScreenHandler(syncId, playerInventory, this, net.minecraft.screen.ScreenHandlerContext.create(world!!, pos), syncedData)
+        MetalFormerScreenHandler(syncId, playerInventory, this, net.minecraft.screen.ScreenHandlerContext.create(world!!, pos), syncedData)
 
     override fun readNbt(nbt: NbtCompound) {
         super.readNbt(nbt)
         Inventories.readNbt(nbt, inventory)
         syncedData.readNbt(nbt)
-        sync.amount = nbt.getLong(MaceratorSync.NBT_ENERGY_STORED)
+        sync.amount = nbt.getLong(MetalFormerSync.NBT_ENERGY_STORED)
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
     }
 
@@ -80,22 +79,24 @@ class MaceratorBlockEntity(
         super.writeNbt(nbt)
         Inventories.writeNbt(nbt, inventory)
         syncedData.writeNbt(nbt)
-        nbt.putLong(MaceratorSync.NBT_ENERGY_STORED, sync.amount)
+        nbt.putLong(MetalFormerSync.NBT_ENERGY_STORED, sync.amount)
     }
 
     fun tick(world: World, pos: BlockPos, state: BlockState) {
         if (world.isClient) return
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
-        pullEnergyFromNeighbors(world, pos, sync, MaceratorSync.MAX_INSERT)
+        pullEnergyFromNeighbors(world, pos, sync, MetalFormerSync.MAX_INSERT)
 
         val input = getStack(0)
         if (input.isEmpty()) {
             if (sync.progress != 0) sync.progress = 0
+            setActiveState(world, pos, state, false)
             return
         }
 
-        val result = MaceratorRecipes.getOutput(input) ?: run {
+        val result = MetalFormerRecipes.getOutput(input) ?: run {
             if (sync.progress != 0) sync.progress = 0
+            setActiveState(world, pos, state, false)
             return
         }
         val outputSlot = getStack(1)
@@ -105,29 +106,35 @@ class MaceratorBlockEntity(
 
         if (!canAccept) {
             if (sync.progress != 0) sync.progress = 0
+            setActiveState(world, pos, state, false)
             return
         }
 
-        if (sync.progress >= MaceratorSync.PROGRESS_MAX) {
+        if (sync.progress >= MetalFormerSync.PROGRESS_MAX) {
             input.decrement(1)
             if (outputSlot.isEmpty()) setStack(1, result)
             else outputSlot.increment(result.count)
             sync.progress = 0
             markDirty()
+            setActiveState(world, pos, state, false)
             return
         }
 
-        val need = MaceratorSync.ENERGY_PER_TICK
+        val need = MetalFormerSync.ENERGY_PER_TICK
         if (sync.amount >= need) {
             sync.amount = (sync.amount - need).coerceAtLeast(0L)
             sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
             sync.progress += 1
             markDirty()
+            setActiveState(world, pos, state, true)
+        } else {
+            setActiveState(world, pos, state, false)
         }
+    }
 
-        val active = sync.progress > 0
-        if (state.get(MaceratorBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(MaceratorBlock.ACTIVE, active))
+    private fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
+        if (state.get(MetalFormerBlock.ACTIVE) != active) {
+            world.setBlockState(pos, state.with(MetalFormerBlock.ACTIVE, active))
         }
     }
 }
