@@ -1,0 +1,23 @@
+{
+  "itemGroup.ic2_120.ic2_materials": "IC2 材料",
+  "itemGroup.ic2_120.ic2_machines": "IC2 机器",
+  "itemGroup.ic2_120.ic2_tools": "工具",
+  "item.ic2_120.copper_ingot": "铜锭",
+  "item.ic2_120.tin_ingot": "锡锭",
+  "item.ic2_120.bronze_ingot": "青铜锭",
+  "item.ic2_120.rubber": "橡胶",
+  "block.ic2_120.copper_block": "铜块",
+  "block.ic2_120.tin_block": "锡块",
+  "block.ic2_120.bronze_block": "青铜块",
+  "block.ic2_120.rubber_wood": "橡胶木",
+  "block.ic2_120.copper_cable": "铜质导线",
+  "block.ic2_120.tin_cable": "锡质导线",
+  "block.ic2_120.gold_cable": "金质导线",
+  "block.ic2_120.iron_cable": "高压导线",
+  "block.ic2_120.glass_fibre_cable": "玻璃纤维导线",
+  "block.ic2_120.electric_furnace": "电力熔炉",
+  "block.ic2_120.mfsu": "MFSU储电箱",
+  "block.ic2_120.mfsu_full": "MFSU储电箱（满电）",
+  "container.ic2_120.mfsu": "MFSU储电箱",
+  "item.ic2_120.mining_laser": "采矿镭射枪"
+}

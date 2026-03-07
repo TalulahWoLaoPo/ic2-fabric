@@ -1,0 +1,64 @@
+package ic2_120
+
+import ic2_120.content.block.CableBlockEntity
+import ic2_120.content.block.EnergyNetworkManager
+import ic2_120.content.block.MfsuBlock
+import ic2_120.registry.ClassScanner
+import ic2_120.registry.CreativeTab
+import net.fabricmc.api.ModInitializer
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents
+import net.minecraft.item.Item
+import net.minecraft.item.ItemStack
+import com.mojang.serialization.Lifecycle
+import net.minecraft.registry.Registries
+import net.minecraft.registry.RegistryKey
+import net.minecraft.registry.RegistryKeys
+import net.minecraft.registry.SimpleRegistry
+import net.minecraft.util.Identifier
+import org.slf4j.LoggerFactory
+
+object Ic2_120 : ModInitializer {
+
+    const val MOD_ID = "ic2_120"
+
+    private val logger = LoggerFactory.getLogger(MOD_ID)
+
+    override fun onInitialize() {
+        // 使用类级别注解的自动注册系统
+        ClassScanner.scanAndRegister(
+            MOD_ID,
+            listOf(
+                "ic2_120.content.tab",    // 扫描物品栏类（必须先注册）
+                "ic2_120.content.block", // 扫描方块类
+                "ic2_120.content.screen",// 扫描 ScreenHandler 类
+                "ic2_120.content.item"   // 扫描物品类
+            )
+        )
+
+        // 特殊处理：导线 BlockEntity 需在所有方块注册后统一注册（一个 BE 类型关联多种导线方块）
+        CableBlockEntity.register(MOD_ID)
+
+        // 世界卸载时清理电网缓存
+        ServerWorldEvents.UNLOAD.register { _, world ->
+            EnergyNetworkManager.onWorldUnload(world)
+        }
+
+        // 添加特殊物品：MFSU 满电变体（仅创造模式物品栏可拿，放置即满电）
+        val mfsuId = Identifier(MOD_ID, "mfsu")
+        val mfsuBlock = Registries.BLOCK.get(mfsuId)
+        val mfsuKey = RegistryKey.of(RegistryKeys.ITEM, mfsuId)
+        val existingMfsu = Registries.ITEM.get(mfsuId)
+        val rawId = Registries.ITEM.getRawId(existingMfsu)
+        val customMfsuItem = MfsuBlock.MfsuBlockItem(mfsuBlock, net.fabricmc.fabric.api.item.v1.FabricItemSettings())
+        (Registries.ITEM as SimpleRegistry<Item>).set(rawId, mfsuKey, customMfsuItem, Lifecycle.stable())
+        val ic2MachinesKey = RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier(MOD_ID, CreativeTab.IC2_MACHINES.id))
+        ItemGroupEvents.modifyEntriesEvent(ic2MachinesKey).register { entries ->
+            val fullStack = ItemStack(Registries.ITEM.get(mfsuId))
+            fullStack.orCreateNbt.putBoolean(MfsuBlock.NBT_FULL, true)
+            entries.add(fullStack)
+        }
+
+        logger.info("IC2 1.20 模组已加载（类注解驱动自动注册）")
+    }
+}
