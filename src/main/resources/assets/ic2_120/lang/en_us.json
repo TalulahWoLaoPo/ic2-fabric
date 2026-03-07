@@ -27,6 +27,8 @@
   "block.ic2_120.coal_block": "Compressed Coal Ball",
   "block.ic2_120.rubber_wood": "Rubber Wood",
   "block.ic2_120.electric_furnace": "Electric Furnace",
+  "block.ic2_120.generator": "Generator",
+  "block.ic2_120.macerator": "Macerator",
   "block.ic2_120.mfsu": "MFSU",
   "block.ic2_120.mfsu_full": "MFSU (Full)",
   "container.ic2_120.mfsu": "MFSU",

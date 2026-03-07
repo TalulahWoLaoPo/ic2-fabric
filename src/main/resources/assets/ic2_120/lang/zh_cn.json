@@ -32,6 +32,8 @@
   "block.ic2_120.iron_cable": "高压导线",
   "block.ic2_120.glass_fibre_cable": "玻璃纤维导线",
   "block.ic2_120.electric_furnace": "电力熔炉",
+  "block.ic2_120.generator": "火力发电机",
+  "block.ic2_120.macerator": "粉碎机",
   "block.ic2_120.mfsu": "MFSU储电箱",
   "block.ic2_120.mfsu_full": "MFSU储电箱（满电）",
   "container.ic2_120.mfsu": "MFSU储电箱",
