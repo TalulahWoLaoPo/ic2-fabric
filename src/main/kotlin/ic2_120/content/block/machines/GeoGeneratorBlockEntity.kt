@@ -99,14 +99,14 @@ class GeoGeneratorBlockEntity(
         override fun canExtract(variant: FluidVariant): Boolean = false
 
         override fun onFinalCommit() {
-            sync.lavaAmountMb = (amount / FluidConstants.BUCKET * 1000L).toInt().coerceAtLeast(0)
+            sync.lavaAmountMb = (amount * 1000L / FluidConstants.BUCKET).toInt().coerceAtLeast(0)
             markDirty()
         }
 
         fun setStoredLava(newAmount: Long) {
             amount = newAmount.coerceIn(0L, tankCapacity)
             variant = if (amount > 0L) FluidVariant.of(Fluids.LAVA) else FluidVariant.blank()
-            sync.lavaAmountMb = (amount / FluidConstants.BUCKET * 1000L).toInt().coerceAtLeast(0)
+            sync.lavaAmountMb = (amount * 1000L / FluidConstants.BUCKET).toInt().coerceAtLeast(0)
         }
 
         fun getStoredAmount(): Long = amount
@@ -122,7 +122,7 @@ class GeoGeneratorBlockEntity(
             if (actual <= 0L) return 0L
             amount += actual
             if (variant.fluid != Fluids.LAVA) variant = FluidVariant.of(Fluids.LAVA)
-            sync.lavaAmountMb = (amount / FluidConstants.BUCKET * 1000L).toInt().coerceAtLeast(0)
+            sync.lavaAmountMb = (amount * 1000L / FluidConstants.BUCKET).toInt().coerceAtLeast(0)
             return actual
         }
 
@@ -133,7 +133,7 @@ class GeoGeneratorBlockEntity(
             if (actual <= 0L) return 0L
             amount -= actual
             if (amount <= 0L) variant = FluidVariant.blank()
-            sync.lavaAmountMb = (amount / FluidConstants.BUCKET * 1000L).toInt().coerceAtLeast(0)
+            sync.lavaAmountMb = (amount * 1000L / FluidConstants.BUCKET).toInt().coerceAtLeast(0)
             return actual
         }
     }
