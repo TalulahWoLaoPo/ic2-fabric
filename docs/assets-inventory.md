@@ -72,7 +72,7 @@
 ### 建筑与装饰类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | - [ ] | block.ic2.iron_fence | 铁栅栏 |
+| - [x] | block.ic2.iron_fence | 铁栅栏 |
 | - [ ] | block.ic2.reinforced_glass | 防爆玻璃 |
 | - [ ] | block.ic2.foam | 建筑泡沫 |
 | - [ ] | block.ic2.white_wall | 建筑泡沫墙 (白色) |
@@ -657,7 +657,7 @@
 | - [ ] | item.ic2.iridium_neutron_reflector | 铱中子反射板 |
 | - [ ] | item.ic2.rsh_condensator | 红石冷凝模块 |
 | - [ ] | item.ic2.lzh_condensator | 青金石冷凝模块 |
-| - [ ] | item.ic2.fuel_rod | 燃料棒 (空) |
+| - [x] | item.ic2.fuel_rod | 燃料棒 (空) |
 | - [ ] | item.ic2.uranium_fuel_rod | 燃料棒 (铀) |
 | - [ ] | item.ic2.dual_uranium_fuel_rod | 双联燃料棒 (铀) |
 | - [ ] | item.ic2.quad_uranium_fuel_rod | 四联燃料棒 (铀) |
@@ -684,7 +684,7 @@
 |--|----|------|
 | - [ ] | item.ic2.small_power_unit | 小型驱动把手 |
 | - [ ] | item.ic2.power_unit | 驱动把手 |
-| - [ ] | item.ic2.tin_can | 锡罐 (空) |
+| - [x] | item.ic2.tin_can | 锡罐 (空) |
 | - [ ] | item.ic2.filled_tin_can | 锡罐 (满) |
 
 ### 碳材料类
@@ -724,8 +724,8 @@
 ### 柄与转子类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | item.ic2.iron_shaft | 铁柄 (铁) |
-| - [ ] | item.ic2.steel_shaft | 铁柄 (钢) |
+| - [x] | item.ic2.iron_shaft | 铁柄 (铁) |
+| - [x] | item.ic2.steel_shaft | 铁柄 (钢) |
 | - [ ] | item.ic2.wooden_rotor_blade | 木扇叶 |
 | - [ ] | item.ic2.iron_rotor_blade | 铁扇叶 |
 | - [ ] | item.ic2.steel_rotor_blade | 钢扇叶 |
@@ -741,7 +741,7 @@
 ### 货币与特殊物品
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | item.ic2.coin | 工业货币 |
+| - [x] | item.ic2.coin | 工业货币 |
 | - [ ] | item.ic2.resin | 粘性树脂 |
 | - [ ] | item.ic2.slag | 渣渣 |
 | - [ ] | item.ic2.iodine | 碘 |
@@ -929,7 +929,7 @@
 | - [ ] | item.ic2.extractor | 提取机 |
 | - [ ] | item.ic2.hv_transformer | 高压变压器 |
 | - [ ] | item.ic2.iron_cable | 高压导线 |
-| - [ ] | item.ic2.iron_fence | 铁栅栏 |
+| - [x] | item.ic2.iron_fence | 铁栅栏 |
 | - [ ] | item.ic2.lv_transformer | 低压变压器 |
 | - [ ] | item.ic2.mfe | MFE 储电箱 |
 | - [ ] | item.ic2.mfe_chargepad | 充电座 (MFE) |
