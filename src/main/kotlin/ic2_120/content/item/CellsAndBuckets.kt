@@ -4,6 +4,7 @@ import ic2_120.Ic2_120
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.annotation.ModItem
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
@@ -25,6 +26,8 @@ import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.ItemUsageContext
 import net.minecraft.registry.Registries
+import net.minecraft.registry.RegistryKeys
+import net.minecraft.registry.RegistryKey
 import net.minecraft.sound.SoundCategory
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
@@ -37,6 +40,7 @@ import net.minecraft.world.RaycastContext
 import net.minecraft.world.World
 import net.minecraft.world.event.GameEvent
 import net.minecraft.item.Items
+import org.slf4j.LoggerFactory
 
 /** 通用流体单元 NBT 键：存储 FluidVariant */
 const val FLUID_CELL_NBT_KEY = "FluidVariant"
@@ -368,6 +372,8 @@ private class FluidCellStorage(private val ctx: ContainerItemContext) : Storage<
  */
 object CellAndBucketFluidRegistration {
 
+    private val logger = LoggerFactory.getLogger("ic2_120/CellAndBucketFluidRegistration")
+
     fun register() {
         val modId = Ic2_120.MOD_ID
         val emptyCell = Registries.ITEM.get(Identifier(modId, "empty_cell"))
@@ -427,6 +433,20 @@ object CellAndBucketFluidRegistration {
                 }
             }
             ActionResult.PASS
+        }
+
+        // 遍历所有流体，将满流体单元注册到创造模式物品栏（IC2 材料）
+        val ic2MaterialsKey = RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier(modId, CreativeTab.IC2_MATERIALS.id))
+        ItemGroupEvents.modifyEntriesEvent(ic2MaterialsKey).register { entries ->
+            val fluids = Registries.FLUID.filter { fluid ->
+                fluid != Fluids.EMPTY && fluid != Fluids.FLOWING_LAVA && fluid != Fluids.FLOWING_WATER
+            }.sortedBy { Registries.FLUID.getId(it).toString() }
+            for (fluid in fluids) {
+                val fluidId = Registries.FLUID.getId(fluid)
+                logger.info("注册流体单元到创造模式物品栏: {}", fluidId)
+                val stack = ItemStack(fluidCell).apply { setFluidCellVariant(FluidVariant.of(fluid)) }
+                entries.addAfter(fluidCell, stack)
+            }
         }
     }
 }
