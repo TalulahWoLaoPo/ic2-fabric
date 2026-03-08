@@ -2,6 +2,8 @@
 
 IndustrialCraft 2 的 Minecraft 1.20.1 Fabric 移植版本，使用 Kotlin 编写。
 
+**玩家向说明**：游戏内容与玩法请查看 [mod特性.md](mod特性.md)。本文档面向开发者。
+
 ## 项目特性
 
 - 📦 基于 Fabric Loader 和 Fabric API

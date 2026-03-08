@@ -256,5 +256,8 @@
   "item.ic2_120.empty_mug": "Stone Mug",
   "item.ic2_120.coffee_mug": "Coffee",
   "item.ic2_120.cold_coffee_mug": "Cold Coffee",
-  "item.ic2_120.dark_coffee_mug": "Dark Coffee"
+  "item.ic2_120.dark_coffee_mug": "Dark Coffee",
+  "item.ic2_120.energy_debug_stick": "Energy Debug Stick",
+  "message.ic2_120.energy_debug_stick.no_energy": "No energy storage on this block",
+  "message.ic2_120.energy_debug_stick.info": "%s / %s EU (%s%%) | In:%s Out:%s | Once: +%s / -%s EU"
 }

@@ -21,6 +21,9 @@ class GeneratorScreen(
 ) : HandledScreen<GeneratorScreenHandler>(handler, playerInventory, title) {
 
     private val ui = ComposeUI()
+    /** 上一帧同步到的能量，用于客户端计算输出速率 */
+    private var lastEnergy: Long = -1
+    private var outputRate: Int = 0
 
     init {
         backgroundWidth = PANEL_WIDTH
@@ -56,6 +59,11 @@ class GeneratorScreen(
         val left = x
         val top = y
         val energy = handler.sync.energy.toLong().coerceAtLeast(0)
+        if (lastEnergy >= 0) {
+            val deltaEu = energy - lastEnergy
+            outputRate = if (deltaEu < 0) (-deltaEu).coerceAtMost(Int.MAX_VALUE.toLong()).toInt() else 0
+        }
+        lastEnergy = energy
         val cap = GeneratorSync.ENERGY_CAPACITY
         val energyFraction = if (cap > 0) (energy.toFloat() / cap).coerceIn(0f, 1f) else 0f
         val contentW = (backgroundWidth - 16).coerceAtLeast(0)
@@ -78,13 +86,26 @@ class GeneratorScreen(
                     )
                 }
                 Text(
-                    "$energy / $cap EU",
+                    "${formatEu(energy)} / ${formatEu(cap)} EU",
                     color = 0xCCCCCC,
+                    shadow = false
+                )
+                Text(
+                    "输出 ${formatEu(outputRate.toLong())} EU/t",
+                    color = 0xAAAAAA,
                     shadow = false
                 )
             }
         }
         drawMouseoverTooltip(context, mouseX, mouseY)
+    }
+
+    private fun formatEu(value: Long): String {
+        return when {
+            value >= 1_000_000 -> String.format("%.1fM", value / 1_000_000.0)
+            value >= 1_000 -> String.format("%.1fK", value / 1_000.0)
+            else -> value.toString()
+        }
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean =

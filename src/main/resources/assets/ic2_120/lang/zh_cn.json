@@ -261,5 +261,8 @@
   "item.ic2_120.empty_mug": "石杯",
   "item.ic2_120.coffee_mug": "咖啡",
   "item.ic2_120.cold_coffee_mug": "冷咖啡",
-  "item.ic2_120.dark_coffee_mug": "黑咖啡"
+  "item.ic2_120.dark_coffee_mug": "黑咖啡",
+  "item.ic2_120.energy_debug_stick": "能量调试棒",
+  "message.ic2_120.energy_debug_stick.no_energy": "该方块无能量存储",
+  "message.ic2_120.energy_debug_stick.info": "%s / %s EU (%s%%) | 输入:%s 输出:%s | 单次可入 %s / 可出 %s EU"
 }
