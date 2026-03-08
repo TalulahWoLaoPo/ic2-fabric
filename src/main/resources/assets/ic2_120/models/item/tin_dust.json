@@ -1,5 +1,5 @@
 {
-  "parent": "minecraft:item/generated",
+  "parent": "ic2:item/default",
   "textures": {
     "layer0": "ic2:item/resource/dust/tin"
   }

@@ -106,9 +106,23 @@ enum class CreativeTab(val id: String) {
 
 **重要**：使用 Gradle 构建时，**不要使用 `--no-daemon` 参数**。让 Gradle Daemon 保持运行以加快构建速度。
 
-正确的构建命令：
+### 常用构建命令
+
 ```bash
+# 完整构建（服务端 + 客户端）
 ./gradlew build
+
+# 只编译服务端代码（src/main/kotlin）
+./gradlew compileKotlin
+
+# 只编译客户端代码（src/client/kotlin）
+./gradlew compileClientKotlin
+
+# 仅运行数据生成器（资源/数据包自动生成，入口见 Ic2_120DataGenerator）
+./gradlew runDatagen
+
+
+# 运行客户端进行测试
 ./gradlew runClient
 ```
 
@@ -116,5 +130,10 @@ enum class CreativeTab(val id: String) {
 ```bash
 ./gradlew build --no-daemon  # ❌ 不要使用
 ```
+
+**编译任务说明**：
+- `compileKotlin` - 编译通用/服务端 Kotlin 代码
+- `compileClientKotlin` - 编译客户端专用 Kotlin 代码
+- `build` - 完整构建，包含编译、打包、测试等所有任务
 
 **原因**：Gradle Daemon 是一个长期运行的后台进程，可以缓存项目状态和依赖信息，显著提升后续构建速度。使用 `--no-daemon` 会每次都启动新进程，导致构建变慢。

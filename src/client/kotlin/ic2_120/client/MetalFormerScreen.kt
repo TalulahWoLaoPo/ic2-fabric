@@ -4,7 +4,7 @@ import ic2_120.client.compose.*
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
 import ic2_120.client.ui.ProgressBar
-import ic2_120.content.MetalFormerSync
+import ic2_120.content.sync.MetalFormerSync
 import ic2_120.content.block.MetalFormerBlock
 import ic2_120.content.screen.MetalFormerScreenHandler
 import ic2_120.registry.annotation.ModScreen

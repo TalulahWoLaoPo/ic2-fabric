@@ -1,6 +1,6 @@
 package ic2_120.content.screen
 
-import ic2_120.content.CompressorSync
+import ic2_120.content.sync.CompressorSync
 import ic2_120.content.block.CompressorBlock
 import ic2_120.content.syncs.SyncedDataView
 import ic2_120.registry.annotation.ModScreenHandler

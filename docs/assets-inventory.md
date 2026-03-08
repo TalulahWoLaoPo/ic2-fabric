@@ -500,61 +500,61 @@
 ### 原材料 - 矿石与粉末类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | item.ic2.raw_lead | 粗铅 |
-| - [ ] | item.ic2.raw_tin | 粗锡 |
-| - [ ] | item.ic2.raw_uranium | 粗铀 |
-| - [ ] | item.ic2.crushed_copper | 粉碎铜矿石 |
-| - [ ] | item.ic2.crushed_gold | 粉碎金矿石 |
-| - [ ] | item.ic2.crushed_iron | 粉碎铁矿石 |
-| - [ ] | item.ic2.crushed_lead | 粉碎铅矿石 |
-| - [ ] | item.ic2.crushed_silver | 粉碎银矿石 |
-| - [ ] | item.ic2.crushed_tin | 粉碎锡矿石 |
-| - [ ] | item.ic2.crushed_uranium | 粉碎铀矿石 |
-| - [ ] | item.ic2.purified_copper | 纯净的粉碎铜矿石 |
-| - [ ] | item.ic2.purified_gold | 纯净的粉碎金矿石 |
-| - [ ] | item.ic2.purified_iron | 纯净的粉碎铁矿石 |
-| - [ ] | item.ic2.purified_lead | 纯净的粉碎铅矿石 |
-| - [ ] | item.ic2.purified_silver | 纯净的粉碎银矿石 |
-| - [ ] | item.ic2.purified_tin | 纯净的粉碎锡矿石 |
-| - [ ] | item.ic2.purified_uranium | 纯净的粉碎铀矿石 |
+| - [x] | item.ic2.raw_lead | 粗铅 |
+| - [x] | item.ic2.raw_tin | 粗锡 |
+| - [x] | item.ic2.raw_uranium | 粗铀 |
+| - [x] | item.ic2.crushed_copper | 粉碎铜矿石 |
+| - [x] | item.ic2.crushed_gold | 粉碎金矿石 |
+| - [x] | item.ic2.crushed_iron | 粉碎铁矿石 |
+| - [x] | item.ic2.crushed_lead | 粉碎铅矿石 |
+| - [x] | item.ic2.crushed_silver | 粉碎银矿石 |
+| - [x] | item.ic2.crushed_tin | 粉碎锡矿石 |
+| - [x] | item.ic2.crushed_uranium | 粉碎铀矿石 |
+| - [x] | item.ic2.purified_copper | 纯净的粉碎铜矿石 |
+| - [x] | item.ic2.purified_gold | 纯净的粉碎金矿石 |
+| - [x] | item.ic2.purified_iron | 纯净的粉碎铁矿石 |
+| - [x] | item.ic2.purified_lead | 纯净的粉碎铅矿石 |
+| - [x] | item.ic2.purified_silver | 纯净的粉碎银矿石 |
+| - [x] | item.ic2.purified_tin | 纯净的粉碎锡矿石 |
+| - [x] | item.ic2.purified_uranium | 纯净的粉碎铀矿石 |
 
 ### 原材料 - 粉尘类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | item.ic2.bronze_dust | 青铜粉 |
-| - [ ] | item.ic2.clay_dust | 粘土粉 |
-| - [ ] | item.ic2.coal_dust | 煤粉 |
-| - [ ] | item.ic2.coal_fuel_dust | 湿煤粉 |
-| - [ ] | item.ic2.copper_dust | 铜粉 |
-| - [ ] | item.ic2.diamond_dust | 钻石粉 |
-| - [ ] | item.ic2.energium_dust | 能量水晶粉 |
-| - [ ] | item.ic2.gold_dust | 金粉 |
-| - [ ] | item.ic2.iron_dust | 铁粉 |
-| - [ ] | item.ic2.lapis_dust | 青金石粉 |
-| - [ ] | item.ic2.lead_dust | 铅粉 |
-| - [ ] | item.ic2.lithium_dust | 锂粉 |
-| - [ ] | item.ic2.obsidian_dust | 黑曜石粉 |
-| - [ ] | item.ic2.silicon_dioxide_dust | 二氧化硅粉 |
-| - [ ] | item.ic2.silver_dust | 银粉 |
-| - [ ] | item.ic2.stone_dust | 石粉 |
-| - [ ] | item.ic2.sulfur_dust | 硫粉 |
-| - [ ] | item.ic2.tin_dust | 锡粉 |
-| - [ ] | item.ic2.hydrated_tin_dust | 氢氧化锡粉 |
+| - [x] | item.ic2.bronze_dust | 青铜粉 |
+| - [x] | item.ic2.clay_dust | 粘土粉 |
+| - [x] | item.ic2.coal_dust | 煤粉 |
+| - [x] | item.ic2.coal_fuel_dust | 湿煤粉 |
+| - [x] | item.ic2.copper_dust | 铜粉 |
+| - [x] | item.ic2.diamond_dust | 钻石粉 |
+| - [x] | item.ic2.energium_dust | 能量水晶粉 |
+| - [x] | item.ic2.gold_dust | 金粉 |
+| - [x] | item.ic2.iron_dust | 铁粉 |
+| - [x] | item.ic2.lapis_dust | 青金石粉 |
+| - [x] | item.ic2.lead_dust | 铅粉 |
+| - [x] | item.ic2.lithium_dust | 锂粉 |
+| - [x] | item.ic2.obsidian_dust | 黑曜石粉 |
+| - [x] | item.ic2.silicon_dioxide_dust | 二氧化硅粉 |
+| - [x] | item.ic2.silver_dust | 银粉 |
+| - [x] | item.ic2.stone_dust | 石粉 |
+| - [x] | item.ic2.sulfur_dust | 硫粉 |
+| - [x] | item.ic2.tin_dust | 锡粉 |
+| - [x] | item.ic2.hydrated_tin_dust | 氢氧化锡粉 |
 
 ### 原材料 - 小撮粉尘类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | item.ic2.small_bronze_dust | 小撮青铜粉 |
-| - [ ] | item.ic2.small_copper_dust | 小撮铜粉 |
-| - [ ] | item.ic2.small_gold_dust | 小撮金粉 |
-| - [ ] | item.ic2.small_iron_dust | 小撮铁粉 |
-| - [ ] | item.ic2.small_lapis_dust | 小撮青金石粉 |
-| - [ ] | item.ic2.small_lead_dust | 小撮铅粉 |
-| - [ ] | item.ic2.small_lithium_dust | 小撮锂粉 |
-| - [ ] | item.ic2.small_obsidian_dust | 小撮黑曜石粉 |
-| - [ ] | item.ic2.small_silver_dust | 小撮银粉 |
-| - [ ] | item.ic2.small_sulfur_dust | 小撮硫粉 |
-| - [ ] | item.ic2.small_tin_dust | 小撮锡粉 |
+| - [x] | item.ic2.small_bronze_dust | 小撮青铜粉 |
+| - [x] | item.ic2.small_copper_dust | 小撮铜粉 |
+| - [x] | item.ic2.small_gold_dust | 小撮金粉 |
+| - [x] | item.ic2.small_iron_dust | 小撮铁粉 |
+| - [x] | item.ic2.small_lapis_dust | 小撮青金石粉 |
+| - [x] | item.ic2.small_lead_dust | 小撮铅粉 |
+| - [x] | item.ic2.small_lithium_dust | 小撮锂粉 |
+| - [x] | item.ic2.small_obsidian_dust | 小撮黑曜石粉 |
+| - [x] | item.ic2.small_silver_dust | 小撮银粉 |
+| - [x] | item.ic2.small_sulfur_dust | 小撮硫粉 |
+| - [x] | item.ic2.small_tin_dust | 小撮锡粉 |
 
 ### 原材料 - 锭与块类
 |  | ID | 名称 |
@@ -596,28 +596,28 @@
 ### 原材料 - 外壳类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | item.ic2.bronze_casing | 青铜外壳 |
-| - [ ] | item.ic2.copper_casing | 铜质外壳 |
-| - [ ] | item.ic2.gold_casing | 黄金外壳 |
-| - [ ] | item.ic2.iron_casing | 铁质外壳 |
-| - [ ] | item.ic2.lead_casing | 铅质外壳 |
-| - [ ] | item.ic2.steel_casing | 钢质外壳 |
-| - [ ] | item.ic2.tin_casing | 锡质外壳 |
+| - [x] | item.ic2.bronze_casing | 青铜外壳 |
+| - [x] | item.ic2.copper_casing | 铜质外壳 |
+| - [x] | item.ic2.gold_casing | 黄金外壳 |
+| - [x] | item.ic2.iron_casing | 铁质外壳 |
+| - [x] | item.ic2.lead_casing | 铅质外壳 |
+| - [x] | item.ic2.steel_casing | 钢质外壳 |
+| - [x] | item.ic2.tin_casing | 锡质外壳 |
 
 ### 核能相关材料
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | item.ic2.uranium | 浓缩铀核燃料 |
-| - [ ] | item.ic2.uranium_235 | 铀 -235 |
-| - [ ] | item.ic2.uranium_238 | 铀 -238 |
-| - [ ] | item.ic2.plutonium | 钚 |
-| - [ ] | item.ic2.mox | 钚铀混合氧化物核燃料 (MOX) |
-| - [ ] | item.ic2.small_uranium_235 | 小撮铀 -235 |
-| - [ ] | item.ic2.small_uranium_238 | 小撮铀 -238 |
-| - [ ] | item.ic2.small_plutonium | 小撮钚 |
-| - [ ] | item.ic2.uranium_pellet | 浓缩铀核燃料靶丸 |
-| - [ ] | item.ic2.mox_pellet | 钚铀混合氧化物核燃料靶丸 (MOX) |
-| - [ ] | item.ic2.rtg_pellet | 放射性同位素燃料靶丸 |
+| - [x] | item.ic2.uranium | 浓缩铀核燃料 |
+| - [x] | item.ic2.uranium_235 | 铀 -235 |
+| - [x] | item.ic2.uranium_238 | 铀 -238 |
+| - [x] | item.ic2.plutonium | 钚 |
+| - [x] | item.ic2.mox | 钚铀混合氧化物核燃料 (MOX) |
+| - [x] | item.ic2.small_uranium_235 | 小撮铀 -235 |
+| - [x] | item.ic2.small_uranium_238 | 小撮铀 -238 |
+| - [x] | item.ic2.small_plutonium | 小撮钚 |
+| - [x] | item.ic2.uranium_pellet | 浓缩铀核燃料靶丸 |
+| - [x] | item.ic2.mox_pellet | 钚铀混合氧化物核燃料靶丸 (MOX) |
+| - [x] | item.ic2.rtg_pellet | 放射性同位素燃料靶丸 |
 
 ### 核反应堆组件
 |  | ID | 名称 |
@@ -841,9 +841,9 @@
 ### 工具类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | item.ic2.cutter | 板材切割剪刀 |
+| - [x] | item.ic2.cutter | 板材切割剪刀 |
 | - [ ] | item.ic2.debug_item | 测试工具 |
-| - [ ] | item.ic2.forge_hammer | 锻造锤 |
+| - [x] | item.ic2.forge_hammer | 锻造锤 |
 | - [ ] | item.ic2.tool_box | 工具箱 |
 | - [ ] | item.ic2.meter | EU 电表 |
 | - [ ] | item.ic2.treetap | 木龙头 |

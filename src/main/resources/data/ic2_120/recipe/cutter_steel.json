@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "P P",
+    " P ",
+    "I I"
+  ],
+  "key": {
+    "P": {
+      "item": "ic2_120:steel_ingot"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "ic2_120:cutter",
+    "count": 1
+  }
+}

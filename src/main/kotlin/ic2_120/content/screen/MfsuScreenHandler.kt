@@ -1,6 +1,6 @@
 package ic2_120.content.screen
 
-import ic2_120.content.MfsuSync
+import ic2_120.content.sync.MfsuSync
 import ic2_120.content.syncs.SyncedDataView
 import ic2_120.content.block.MfsuBlock
 import ic2_120.registry.annotation.ModScreenHandler

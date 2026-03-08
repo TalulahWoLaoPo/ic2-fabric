@@ -1,6 +1,6 @@
 package ic2_120.content.screen
 
-import ic2_120.content.MaceratorSync
+import ic2_120.content.sync.MaceratorSync
 import ic2_120.content.block.MaceratorBlock
 import ic2_120.content.syncs.SyncedDataView
 import ic2_120.registry.annotation.ModScreenHandler

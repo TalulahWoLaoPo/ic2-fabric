@@ -1,6 +1,6 @@
 package ic2_120.content.screen
 
-import ic2_120.content.MetalFormerSync
+import ic2_120.content.sync.MetalFormerSync
 import ic2_120.content.block.MetalFormerBlock
 import ic2_120.content.syncs.SyncedDataView
 import ic2_120.registry.annotation.ModScreenHandler

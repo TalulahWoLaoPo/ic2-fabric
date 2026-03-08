@@ -3,7 +3,7 @@ package ic2_120.client
 import ic2_120.client.ui.GuiBackground
 import ic2_120.client.compose.*
 import ic2_120.client.ui.EnergyBar
-import ic2_120.content.MfsuSync
+import ic2_120.content.sync.MfsuSync
 import ic2_120.content.block.MfsuBlock
 import ic2_120.content.screen.MfsuScreenHandler
 import ic2_120.registry.annotation.ModScreen

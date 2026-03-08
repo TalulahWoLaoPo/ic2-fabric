@@ -1,6 +1,6 @@
 package ic2_120.content.screen
 
-import ic2_120.content.GeneratorSync
+import ic2_120.content.sync.GeneratorSync
 import ic2_120.content.block.GeneratorBlock
 import ic2_120.content.syncs.SyncedDataView
 import ic2_120.registry.annotation.ModScreenHandler

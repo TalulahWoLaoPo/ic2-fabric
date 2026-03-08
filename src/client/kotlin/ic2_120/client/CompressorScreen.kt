@@ -4,7 +4,7 @@ import ic2_120.client.compose.*
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
 import ic2_120.client.ui.ProgressBar
-import ic2_120.content.CompressorSync
+import ic2_120.content.sync.CompressorSync
 import ic2_120.content.block.CompressorBlock
 import ic2_120.content.screen.CompressorScreenHandler
 import ic2_120.registry.annotation.ModScreen

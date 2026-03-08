@@ -1,6 +1,6 @@
 package ic2_120.client
 
-import ic2_120.content.block.BaseCableBlock
+import ic2_120.content.block.cables.BaseCableBlock
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
 import net.minecraft.item.BlockItem
 import net.minecraft.text.Text
