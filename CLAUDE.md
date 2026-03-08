@@ -137,3 +137,5 @@ enum class CreativeTab(val id: String) {
 - `build` - 完整构建，包含编译、打包、测试等所有任务
 
 **原因**：Gradle Daemon 是一个长期运行的后台进程，可以缓存项目状态和依赖信息，显著提升后续构建速度。使用 `--no-daemon` 会每次都启动新进程，导致构建变慢。
+
+合成表在src\main\kotlin\ic2_120\content\recipes\ModRecipeProvider.kt定义

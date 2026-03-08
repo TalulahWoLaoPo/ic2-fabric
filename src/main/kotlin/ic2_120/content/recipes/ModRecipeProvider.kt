@@ -3,6 +3,7 @@ package ic2_120.content.recipes
 import ic2_120.Ic2_120
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider
+import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
 import net.minecraft.data.server.recipe.ShapelessRecipeJsonBuilder
 import net.minecraft.item.Item
 import net.minecraft.item.Items
@@ -112,6 +113,35 @@ class ModRecipeProvider(output: FabricDataOutput) : FabricRecipeProvider(output)
         createShapeless(recipeExporter, "glass_fibre_cable", RecipeCategory.MISC, item("ic2_120:glass_fibre_cable"), 2,
             item("ic2_120:cutter"), Items.GLASS
         )
+
+        // ==================== 青铜工具配方 ====================
+        val bronze = item("ic2_120:bronze_ingot")
+        val stick = Items.STICK
+        ShapedRecipeJsonBuilder.create(RecipeCategory.TOOLS, item("ic2_120:bronze_sword"), 1)
+            .pattern("M").pattern("M").pattern("S")
+            .input('M', bronze).input('S', stick)
+            .criterion(hasItem(bronze), conditionsFromItem(bronze))
+            .offerTo(recipeExporter, Identifier(Ic2_120.MOD_ID, "bronze_sword"))
+        ShapedRecipeJsonBuilder.create(RecipeCategory.TOOLS, item("ic2_120:bronze_pickaxe"), 1)
+            .pattern("MMM").pattern(" S ").pattern(" S ")
+            .input('M', bronze).input('S', stick)
+            .criterion(hasItem(bronze), conditionsFromItem(bronze))
+            .offerTo(recipeExporter, Identifier(Ic2_120.MOD_ID, "bronze_pickaxe"))
+        ShapedRecipeJsonBuilder.create(RecipeCategory.TOOLS, item("ic2_120:bronze_axe"), 1)
+            .pattern("MM").pattern("MS").pattern(" S")
+            .input('M', bronze).input('S', stick)
+            .criterion(hasItem(bronze), conditionsFromItem(bronze))
+            .offerTo(recipeExporter, Identifier(Ic2_120.MOD_ID, "bronze_axe"))
+        ShapedRecipeJsonBuilder.create(RecipeCategory.TOOLS, item("ic2_120:bronze_shovel"), 1)
+            .pattern("M").pattern("S").pattern("S")
+            .input('M', bronze).input('S', stick)
+            .criterion(hasItem(bronze), conditionsFromItem(bronze))
+            .offerTo(recipeExporter, Identifier(Ic2_120.MOD_ID, "bronze_shovel"))
+        ShapedRecipeJsonBuilder.create(RecipeCategory.TOOLS, item("ic2_120:bronze_hoe"), 1)
+            .pattern("MM").pattern(" S").pattern(" S")
+            .input('M', bronze).input('S', stick)
+            .criterion(hasItem(bronze), conditionsFromItem(bronze))
+            .offerTo(recipeExporter, Identifier(Ic2_120.MOD_ID, "bronze_hoe"))
     }
 
     private fun createShapeless(

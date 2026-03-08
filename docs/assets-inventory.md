@@ -885,11 +885,11 @@
 ### 农具类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | item.ic2.bronze_axe | 青铜斧 |
-| - [ ] | item.ic2.bronze_hoe | 青铜锄 |
-| - [ ] | item.ic2.bronze_sword | 青铜剑 |
-| - [ ] | item.ic2.bronze_shovel | 青铜铲 |
-| - [ ] | item.ic2.bronze_pickaxe | 青铜镐 |
+| - [x] | item.ic2.bronze_axe | 青铜斧 |
+| - [x] | item.ic2.bronze_hoe | 青铜锄 |
+| - [x] | item.ic2.bronze_sword | 青铜剑 |
+| - [x] | item.ic2.bronze_shovel | 青铜铲 |
+| - [x] | item.ic2.bronze_pickaxe | 青铜镐 |
 
 ### 载具类
 |  | ID | 名称 |

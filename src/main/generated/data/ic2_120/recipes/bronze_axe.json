@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "M": {
+      "item": "ic2_120:bronze_ingot"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
+  "pattern": [
+    "MM",
+    "MS",
+    " S"
+  ],
+  "result": {
+    "item": "ic2_120:bronze_axe"
+  },
+  "show_notification": true
+}
