@@ -97,3 +97,25 @@ class Scrap : Item(FabricItemSettings())
 
 @ModItem(name = "scrap_box", tab = CreativeTab.IC2_MATERIALS, group = "energy_balls")
 class ScrapBox : Item(FabricItemSettings())
+
+// ========== 柄与涡轮类 ==========
+
+@ModItem(name = "steam_turbine_blade", tab = CreativeTab.IC2_MATERIALS, group = "rotor_blades")
+class SteamTurbineBlade : Item(FabricItemSettings())
+
+@ModItem(name = "steam_turbine", tab = CreativeTab.IC2_MATERIALS, group = "rotors")
+class SteamTurbine : Item(FabricItemSettings())
+
+@ModItem(name = "jetpack_attachment_plate", tab = CreativeTab.IC2_MATERIALS, group = "circuits")
+class JetpackAttachmentPlate : Item(FabricItemSettings())
+
+// ========== 货币与特殊物品 ==========
+
+@ModItem(name = "resin", tab = CreativeTab.IC2_MATERIALS, group = "misc")
+class Resin : Item(FabricItemSettings())
+
+@ModItem(name = "slag", tab = CreativeTab.IC2_MATERIALS, group = "misc")
+class Slag : Item(FabricItemSettings())
+
+@ModItem(name = "iodine", tab = CreativeTab.IC2_MATERIALS, group = "misc")
+class Iodine : Item(FabricItemSettings())

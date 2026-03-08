@@ -730,9 +730,9 @@
 | - [x] | item.ic2.iron_rotor_blade | 铁扇叶 |
 | - [x] | item.ic2.steel_rotor_blade | 钢扇叶 |
 | - [x] | item.ic2.carbon_rotor_blade | 碳扇叶 |
-| - [ ] | item.ic2.steam_turbine_blade | 蒸汽涡轮扇叶 |
-| - [ ] | item.ic2.steam_turbine | 蒸汽涡轮 |
-| - [ ] | item.ic2.jetpack_attachment_plate | 喷射背包连接部件 |
+| - [x] | item.ic2.steam_turbine_blade | 蒸汽涡轮扇叶 |
+| - [x] | item.ic2.steam_turbine | 蒸汽涡轮 |
+| - [x] | item.ic2.jetpack_attachment_plate | 喷射背包连接部件 |
 | - [x] | item.ic2.wooden_rotor | 转子 (木) |
 | - [x] | item.ic2.iron_rotor | 转子 (铁) |
 | - [x] | item.ic2.steel_rotor | 转子 (钢) |
@@ -742,39 +742,39 @@
 |  | ID | 名称 |
 |--|----|------|
 | - [x] | item.ic2.coin | 工业货币 |
-| - [ ] | item.ic2.resin | 粘性树脂 |
-| - [ ] | item.ic2.slag | 渣渣 |
-| - [ ] | item.ic2.iodine | 碘 |
+| - [x] | item.ic2.resin | 粘性树脂 |
+| - [x] | item.ic2.slag | 渣渣 |
+| - [x] | item.ic2.iodine | 碘 |
 
 ### 容器类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | item.ic2.water_cell | 水单元 |
-| - [ ] | item.ic2.lava_cell | 岩浆单元 |
-| - [ ] | item.ic2.air_cell | 压缩空气单元 |
-| - [ ] | item.ic2.biofuel_cell | 植物能量单元 |
-| - [ ] | item.ic2.bio_cell | 压缩植物球单元 |
-| - [ ] | item.ic2.weed_ex_cell | 除草剂 |
-| - [ ] | item.ic2.construction_foam_bucket | 建筑泡沫桶 |
-| - [ ] | item.ic2.biofuel_bucket | 生物燃料桶 |
-| - [ ] | item.ic2.biofuel_cell | 生物质桶 |
-| - [ ] | item.ic2.biomass_bucket | 生物质桶 |
-| - [ ] | item.ic2.construct_foam_bucket | 建筑泡沫桶 |
-| - [ ] | item.ic2.coolant_bucket | 冷却液桶 |
+| - [x] | item.ic2.water_cell | 水单元 |
+| - [x] | item.ic2.lava_cell | 岩浆单元 |
+| - [x] | item.ic2.air_cell | 压缩空气单元 |
+| - [x] | item.ic2.biofuel_cell | 植物能量单元 |
+| - [x] | item.ic2.bio_cell | 压缩植物球单元 |
+| - [x] | item.ic2.weed_ex_cell | 除草剂 |
+| - [x] | item.ic2.construction_foam_bucket | 建筑泡沫桶 |
+| - [x] | item.ic2.biofuel_bucket | 生物燃料桶 |
+| - [x] | item.ic2.biofuel_cell | 生物质桶 |
+| - [x] | item.ic2.biomass_bucket | 生物质桶 |
+| - [x] | item.ic2.construct_foam_bucket | 建筑泡沫桶 |
+| - [x] | item.ic2.coolant_bucket | 冷却液桶 |
 
 ### 工具升级类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | item.ic2.overclocker_upgrade | 超频升级 |
-| - [ ] | item.ic2.transformer_upgrade | 高压升级 |
-| - [ ] | item.ic2.energy_storage_upgrade | 储能升级 |
-| - [ ] | item.ic2.redstone_inverter_upgrade | 红石信号反转升级 |
-| - [ ] | item.ic2.ejector_upgrade | 弹出升级 |
-| - [ ] | item.ic2.advanced_ejector_upgrade | 自动弹出升级 |
-| - [ ] | item.ic2.pulling_upgrade | 抽入升级 |
-| - [ ] | item.ic2.advanced_pulling_upgrade | 自动抽入升级 |
-| - [ ] | item.ic2.fluid_ejector_upgrade | 流体弹出升级 |
-| - [ ] | item.ic2.fluid_pulling_upgrade | 流体抽入升级 |
+| - [x] | item.ic2.overclocker_upgrade | 超频升级 |
+| - [x] | item.ic2.transformer_upgrade | 高压升级 |
+| - [x] | item.ic2.energy_storage_upgrade | 储能升级 |
+| - [x] | item.ic2.redstone_inverter_upgrade | 红石信号反转升级 |
+| - [x] | item.ic2.ejector_upgrade | 弹出升级 |
+| - [x] | item.ic2.advanced_ejector_upgrade | 自动弹出升级 |
+| - [x] | item.ic2.pulling_upgrade | 抽入升级 |
+| - [x] | item.ic2.advanced_pulling_upgrade | 自动抽入升级 |
+| - [x] | item.ic2.fluid_ejector_upgrade | 流体弹出升级 |
+| - [x] | item.ic2.fluid_pulling_upgrade | 流体抽入升级 |
 
 ### 地形转换模板类
 |  | ID | 名称 |
