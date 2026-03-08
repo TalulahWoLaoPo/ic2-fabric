@@ -12,7 +12,8 @@ class EnergyBarNode(
     val barWidth: Int,
     val barHeight: Int,
     val emptyColor: Int = 0xFFCC0000.toInt(),
-    val fullColor: Int = 0xFF00CC00.toInt()
+    val fullColor: Int = 0xFF00CC00.toInt(),
+    val gradient: Boolean = true
 ) : UiNode() {
 
     /** 实际绘制宽度：若 modifier 指定了 width 则自适应，否则用 barWidth */
@@ -39,14 +40,17 @@ class EnergyBarNode(
         val filledW = (fraction.coerceIn(0f, 1f) * w).toInt()
         if (filledW > 0) {
             ctx.drawContext.enableScissor(x, y, x + filledW, y + h)
-            // 用竖条模拟从左（红）到右（绿）的渐变
-            val strips = maxOf(2, w)
-            for (i in 0 until strips) {
-                val t = i.toFloat() / (strips - 1).coerceAtLeast(1)
-                val color = lerpArgb(emptyColor, fullColor, t)
-                val x1 = x + (i * w / strips)
-                val x2 = x + ((i + 1) * w / strips).coerceAtMost(x + w)
-                ctx.drawContext.fill(x1, y, x2, y + h, color)
+            if (gradient) {
+                val strips = maxOf(2, w)
+                for (i in 0 until strips) {
+                    val t = i.toFloat() / (strips - 1).coerceAtLeast(1)
+                    val color = lerpArgb(emptyColor, fullColor, t)
+                    val x1 = x + (i * w / strips)
+                    val x2 = x + ((i + 1) * w / strips).coerceAtMost(x + w)
+                    ctx.drawContext.fill(x1, y, x2, y + h, color)
+                }
+            } else {
+                ctx.drawContext.fill(x, y, x + filledW, y + h, fullColor)
             }
             ctx.drawContext.disableScissor()
         }
@@ -77,6 +81,7 @@ class EnergyBarNode(
  * @param fraction 当前能量比例，0f～1f
  * @param barWidth  条带宽度（默认 100）
  * @param barHeight 条带高度（默认 8）
+ * @param gradient 是否渐变（true=红到绿，false=纯色）
  */
 fun UiScope.EnergyBar(
     fraction: Float,
@@ -84,12 +89,13 @@ fun UiScope.EnergyBar(
     barHeight: Int = 8,
     emptyColor: Int = 0xFFCC0000.toInt(),
     fullColor: Int = 0xFF00CC00.toInt(),
+    gradient: Boolean = true,
     x: Int = 0,
     y: Int = 0,
     absolute: Boolean = false,
     modifier: Modifier = Modifier.EMPTY
 ) {
-    val node = EnergyBarNode(fraction, barWidth, barHeight, emptyColor, fullColor).apply {
+    val node = EnergyBarNode(fraction, barWidth, barHeight, emptyColor, fullColor, gradient).apply {
         this.position = if (absolute) Position.Absolute(x, y) else Position.Flow(x, y)
         this.modifier = modifier
     }

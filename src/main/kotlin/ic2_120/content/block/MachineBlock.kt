@@ -5,11 +5,14 @@ import net.minecraft.block.BlockRenderType
 import net.minecraft.block.BlockState
 import net.minecraft.block.BlockWithEntity
 import net.minecraft.block.entity.BlockEntity
+import net.minecraft.inventory.Inventory
 import net.minecraft.item.ItemPlacementContext
 import net.minecraft.state.StateManager
 import net.minecraft.state.property.Properties
+import net.minecraft.util.ItemScatterer
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
+import net.minecraft.world.World
 
 /**
  * 简单的机器方块基类。
@@ -43,6 +46,20 @@ abstract class MachineBlock(settings: AbstractBlock.Settings) : BlockWithEntity(
         defaultState.with(Properties.HORIZONTAL_FACING, ctx.horizontalPlayerFacing.opposite)
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? = null
+
+    /**
+     * 方块被破坏时，将 BlockEntity 内 Inventory 的物品散落掉落，而非凭空消失。
+     * 仅当方块被替换（如挖掉）且未被活塞推动时生效。
+     */
+    override fun onStateReplaced(state: BlockState, world: World, pos: BlockPos, newState: BlockState, moved: Boolean) {
+        if (!world.isClient && !state.isOf(newState.block) && !moved) {
+            val be = world.getBlockEntity(pos)
+            if (be is Inventory) {
+                ItemScatterer.spawn(world, pos, be)
+            }
+        }
+        super.onStateReplaced(state, world, pos, newState, moved)
+    }
 
     /**
      * BlockWithEntity 默认可能不会使用 JSON 模型渲染，显式指定为 MODEL

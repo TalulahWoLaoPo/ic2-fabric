@@ -25,6 +25,10 @@ object ProgressBar {
      * @param width 总宽度
      * @param height 高度（建议 8～10）
      * @param fraction 进度 0f～1f
+     * @param gradient 是否渐变（true=从左到右渐变，false=纯色）
+     * @param startColor 渐变起始色（仅 gradient=true 时生效，左端）
+     * @param endColor 渐变结束色（仅 gradient=true 时生效，右端）
+     * @param solidColor 纯色填充色（仅 gradient=false 时生效）
      */
     @JvmStatic
     fun draw(
@@ -33,26 +37,45 @@ object ProgressBar {
         y: Int,
         width: Int,
         height: Int,
-        fraction: Float
+        fraction: Float,
+        gradient: Boolean = false,
+        startColor: Int = 0xFFCC0000.toInt(),
+        endColor: Int = 0xFF00CC00.toInt(),
+        solidColor: Int = FILL_COLOR
     ) {
         val f = fraction.coerceIn(0f, 1f)
         context.fill(x, y, x + width, y + height, BG_COLOR)
         val filledW = (f * width).toInt()
         if (filledW > 0) {
-            context.fill(x, y, x + filledW, y + height, FILL_COLOR)
+            if (gradient) {
+                val strips = maxOf(2, filledW)
+                for (i in 0 until strips) {
+                    val t = i.toFloat() / (strips - 1).coerceAtLeast(1)
+                    val color = interpolateColor(startColor, endColor, t)
+                    val x1 = x + (i * filledW / strips)
+                    val x2 = x + ((i + 1) * filledW / strips).coerceAtMost(x + filledW)
+                    context.fill(x1, y, x2, y + height, color)
+                }
+            } else {
+                context.fill(x, y, x + filledW, y + height, solidColor)
+            }
         }
         context.drawBorder(x, y, width, height, BORDER_COLOR)
     }
 
+    /** 岩浆条纯色（橙红） */
+    const val LAVA_SOLID_COLOR = 0xFFCC4400.toInt()
+
     /**
-     * 绘制竖向燃烧进度条，从红到蓝渐变（满=红，空=蓝）。
-     * 进度条从底部向上填充，表示燃料消耗。
+     * 绘制竖向燃料/容量条。
      * @param context DrawContext
      * @param x 左上角 X
      * @param y 左上角 Y
      * @param width 宽度（建议 6～8）
      * @param height 总高度
-     * @param fraction 剩余燃料比例 0f～1f（1=满，0=空）
+     * @param fraction 剩余比例 0f～1f（1=满，0=空）
+     * @param gradient 是否渐变（true=红到蓝，false=纯色）
+     * @param solidColor 非渐变时的填充色（仅 gradient=false 时生效）
      */
     @JvmStatic
     fun drawVerticalFuelBar(
@@ -61,7 +84,9 @@ object ProgressBar {
         y: Int,
         width: Int,
         height: Int,
-        fraction: Float
+        fraction: Float,
+        gradient: Boolean = true,
+        solidColor: Int = LAVA_SOLID_COLOR
     ) {
         val f = fraction.coerceIn(0f, 1f)
 
@@ -71,16 +96,16 @@ object ProgressBar {
         // 计算填充高度
         val filledH = (f * height).toInt()
         if (filledH > 0) {
-            // 从底部向上绘制渐变（红 -> 橙 -> 黄 -> 绿 -> 蓝）
-            // 底部是燃料充足（红），顶部是燃料即将耗尽（蓝）
-            for (row in 0 until filledH) {
-                // row=0 是底部，row=filledH-1 是顶部
-                // progress: 0（底）到 1（顶）
-                val progress = row.toFloat() / filledH.coerceAtLeast(1)
-                val color = interpolateColor(0xFFFF0000.toInt(), 0xFF0000FF.toInt(), progress)
-                // 从底部往上绘制
-                val drawY = y + height - filledH + row
-                context.fill(x, drawY, x + width, drawY + 1, color)
+            if (gradient) {
+                // 从底部向上绘制渐变（红 -> 蓝）
+                for (row in 0 until filledH) {
+                    val progress = row.toFloat() / filledH.coerceAtLeast(1)
+                    val color = interpolateColor(0xFFFF0000.toInt(), 0xFF0000FF.toInt(), progress)
+                    val drawY = y + height - filledH + row
+                    context.fill(x, drawY, x + width, drawY + 1, color)
+                }
+            } else {
+                context.fill(x, y + height - filledH, x + width, y + height, solidColor)
             }
         }
 

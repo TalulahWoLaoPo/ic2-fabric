@@ -10,6 +10,9 @@ import net.minecraft.item.Item
 @ModItem(name = "water_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
 class WaterCell : Item(FabricItemSettings())
 
+@ModItem(name = "empty_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
+class EmptyCell : Item(FabricItemSettings())
+
 @ModItem(name = "lava_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
 class LavaCell : Item(FabricItemSettings())
 
