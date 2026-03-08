@@ -670,14 +670,14 @@
 ### 电路与机械部件
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | item.ic2.circuit | 电路板 |
-| - [ ] | item.ic2.advanced_circuit | 高级电路板 |
-| - [ ] | item.ic2.alloy | 高级合金 |
-| - [ ] | item.ic2.iridium | 强化铱板 |
-| - [ ] | item.ic2.coil | 线圈 |
-| - [ ] | item.ic2.electric_motor | 电动马达 |
-| - [ ] | item.ic2.heat_conductor | 热传导器 |
-| - [ ] | item.ic2.copper_boiler | 铜锅炉 |
+| - [x] | item.ic2.circuit | 电路板 |
+| - [x] | item.ic2.advanced_circuit | 高级电路板 |
+| - [x] | item.ic2.alloy | 高级合金 |
+| - [x] | item.ic2.iridium | 强化铱板 |
+| - [x] | item.ic2.coil | 线圈 |
+| - [x] | item.ic2.electric_motor | 电动马达 |
+| - [x] | item.ic2.heat_conductor | 热传导器 |
+| - [x] | item.ic2.copper_boiler | 铜锅炉 |
 
 ### 驱动与动力类
 |  | ID | 名称 |
@@ -690,24 +690,24 @@
 ### 碳材料类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | item.ic2.carbon_fibre | 粗制碳网 |
-| - [ ] | item.ic2.carbon_mesh | 粗制碳板 |
-| - [ ] | item.ic2.carbon_plate | 碳板 |
-| - [ ] | item.ic2.rotor_blade | 扇叶 |
+| - [x] | item.ic2.carbon_fibre | 粗制碳网 |
+| - [x] | item.ic2.carbon_mesh | 粗制碳板 |
+| - [x] | item.ic2.carbon_plate | 碳板 |
+| - [x] | item.ic2.rotor_blade | 扇叶 |
 
 ### 能源球类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | item.ic2.coal_ball | 煤球 |
+| - [x] | item.ic2.coal_ball | 煤球 |
 | - [ ] | item.ic2.coal_block | 压缩煤球 |
-| - [ ] | item.ic2.coal_chunk | 煤块 |
-| - [ ] | item.ic2.industrial_diamond | 工业钻石 |
-| - [ ] | item.ic2.plant_ball | 植物球 |
-| - [ ] | item.ic2.compressed_plants | 压缩植物 |
-| - [ ] | item.ic2.bio_chaff | 糠 |
-| - [ ] | item.ic2.compressed_hydrated_coal | 压缩煤 |
-| - [ ] | item.ic2.scrap | 废料 |
-| - [ ] | item.ic2.scrap_box | 废料盒 |
+| - [x] | item.ic2.coal_chunk | 煤块 |
+| - [x] | item.ic2.industrial_diamond | 工业钻石 |
+| - [x] | item.ic2.plant_ball | 植物球 |
+| - [x] | item.ic2.compressed_plants | 压缩植物 |
+| - [x] | item.ic2.bio_chaff | 糠 |
+| - [x] | item.ic2.compressed_hydrated_coal | 压缩煤 |
+| - [x] | item.ic2.scrap | 废料 |
+| - [x] | item.ic2.scrap_box | 废料盒 |
 
 ### 建筑泡沫类
 |  | ID | 名称 |
@@ -726,17 +726,17 @@
 |--|----|------|
 | - [x] | item.ic2.iron_shaft | 铁柄 (铁) |
 | - [x] | item.ic2.steel_shaft | 铁柄 (钢) |
-| - [ ] | item.ic2.wooden_rotor_blade | 木扇叶 |
-| - [ ] | item.ic2.iron_rotor_blade | 铁扇叶 |
-| - [ ] | item.ic2.steel_rotor_blade | 钢扇叶 |
-| - [ ] | item.ic2.carbon_rotor_blade | 碳扇叶 |
+| - [x] | item.ic2.wooden_rotor_blade | 木扇叶 |
+| - [x] | item.ic2.iron_rotor_blade | 铁扇叶 |
+| - [x] | item.ic2.steel_rotor_blade | 钢扇叶 |
+| - [x] | item.ic2.carbon_rotor_blade | 碳扇叶 |
 | - [ ] | item.ic2.steam_turbine_blade | 蒸汽涡轮扇叶 |
 | - [ ] | item.ic2.steam_turbine | 蒸汽涡轮 |
 | - [ ] | item.ic2.jetpack_attachment_plate | 喷射背包连接部件 |
-| - [ ] | item.ic2.wooden_rotor | 转子 (木) |
-| - [ ] | item.ic2.iron_rotor | 转子 (铁) |
-| - [ ] | item.ic2.steel_rotor | 转子 (钢) |
-| - [ ] | item.ic2.carbon_rotor | 转子 (碳) |
+| - [x] | item.ic2.wooden_rotor | 转子 (木) |
+| - [x] | item.ic2.iron_rotor | 转子 (铁) |
+| - [x] | item.ic2.steel_rotor | 转子 (钢) |
+| - [x] | item.ic2.carbon_rotor | 转子 (碳) |
 
 ### 货币与特殊物品
 |  | ID | 名称 |
