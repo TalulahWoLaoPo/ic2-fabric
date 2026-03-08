@@ -34,7 +34,7 @@ object BronzeToolMaterial : ToolMaterial {
 
 /** 锻造锤 - 将锭锻造成板，将板锻造成外壳 */
 @ModItem(name = "forge_hammer", tab = CreativeTab.IC2_TOOLS)
-class ForgeHammer : Item(FabricItemSettings().maxDamage(80).maxCount(1)) {
+class ForgeHammer : Item(FabricItemSettings().maxDamage(80)) {
     override fun getRecipeRemainder(stack: ItemStack): ItemStack {
         val result = stack.copy()
         if (result.damage < result.maxDamage - 1) {
@@ -47,7 +47,7 @@ class ForgeHammer : Item(FabricItemSettings().maxDamage(80).maxCount(1)) {
 
 /** 板材切割剪刀 - 将板材切割成导线 */
 @ModItem(name = "cutter", tab = CreativeTab.IC2_TOOLS)
-class Cutter : Item(FabricItemSettings().maxDamage(60).maxCount(1)) {
+class Cutter : Item(FabricItemSettings().maxDamage(60)) {
     override fun getRecipeRemainder(stack: ItemStack): ItemStack {
         val result = stack.copy()
         if (result.damage < result.maxDamage - 1) {
@@ -91,7 +91,7 @@ class Meter : Item(FabricItemSettings().maxCount(1))
 
 /** 木龙头 - 从橡胶木提取树脂 */
 @ModItem(name = "treetap", tab = CreativeTab.IC2_TOOLS, group = "tools")
-class Treetap : Item(FabricItemSettings().maxDamage(64).maxCount(1)) {
+class Treetap : Item(FabricItemSettings().maxDamage(64)) {
     override fun getRecipeRemainder(stack: ItemStack): ItemStack {
         val result = stack.copy()
         if (result.damage < result.maxDamage - 1) {
@@ -104,7 +104,7 @@ class Treetap : Item(FabricItemSettings().maxDamage(64).maxCount(1)) {
 
 /** 扳手 - 拆卸机器、旋转方块 */
 @ModItem(name = "wrench", tab = CreativeTab.IC2_TOOLS, group = "tools")
-class Wrench : Item(FabricItemSettings().maxDamage(120).maxCount(1)) {
+class Wrench : Item(FabricItemSettings().maxDamage(120)) {
     override fun getRecipeRemainder(stack: ItemStack): ItemStack {
         val result = stack.copy()
         if (result.damage < result.maxDamage - 1) {

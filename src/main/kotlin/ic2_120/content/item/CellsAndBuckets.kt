@@ -5,8 +5,17 @@ import ic2_120.registry.CreativeTab
 import ic2_120.registry.annotation.ModItem
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorageUtil
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant
+import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage
+import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction
 import net.minecraft.block.FluidDrainable
 import net.minecraft.block.FluidFillable
 import net.minecraft.fluid.Fluid
@@ -24,28 +33,69 @@ import net.minecraft.util.TypedActionResult
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.hit.HitResult
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Vec3d
 import net.minecraft.world.RaycastContext
 import net.minecraft.world.World
 import net.minecraft.world.event.GameEvent
 import net.minecraft.item.Items
 
+/** 通用流体单元 NBT 键：存储 FluidVariant */
+const val FLUID_CELL_NBT_KEY = "FluidVariant"
+
+/** 从 NBT 读取 FluidVariant，空则返回 null */
+fun ItemStack.getFluidCellVariant(): FluidVariant? {
+    val nbt = nbt ?: return null
+    val fluidTag = nbt.getCompound(FLUID_CELL_NBT_KEY)
+    if (fluidTag.isEmpty) return null
+    return FluidVariant.fromNbt(fluidTag)
+}
+
+/** 将 FluidVariant 写入 NBT */
+fun ItemStack.setFluidCellVariant(variant: FluidVariant) {
+    orCreateNbt.put(FLUID_CELL_NBT_KEY, variant.toNbt())
+}
+
+/** 判断流体单元是否为空 */
+fun ItemStack.isFluidCellEmpty(): Boolean = getFluidCellVariant() == null || getFluidCellVariant() == FluidVariant.blank()
+
+/** 将桶物品转为满流体单元 ItemStack（供 UseBlockCallback 等使用） */
+internal fun bucketToFilledFluidCell(bucketStack: ItemStack): ItemStack? {
+    val fluid = when (bucketStack.item) {
+        Items.WATER_BUCKET -> Fluids.WATER
+        Items.LAVA_BUCKET -> Fluids.LAVA
+        else -> {
+            val ctx = ContainerItemContext.withInitial(bucketStack)
+            val storage = ctx.find(FluidStorage.ITEM) ?: return null
+            var found: Fluid? = null
+            for (view in storage) {
+                if (view.amount >= FluidConstants.BUCKET) {
+                    found = view.resource.fluid
+                    break
+                }
+            }
+            found ?: return null
+        }
+    }
+    return ItemStack(Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "fluid_cell"))).apply {
+        setFluidCellVariant(FluidVariant.of(fluid))
+    }
+}
+
 /**
- * 流体单元基类：实现 FluidModificationItem，支持与世界中的水/岩浆方块交互（放置、收集）。
- * 同时保留 FluidStorage 以支持储罐等方块实体。
+ * 通用流体单元：在 NBT 中存储 FluidVariant，支持任意流体。
+ * 使用 Fabric Fluid API 获取流体颜色并渲染到物品中心（客户端 FluidCellColorProvider）。
  */
-abstract class FluidCellItem(
-    settings: FabricItemSettings,
-    private val fluid: Fluid,
-    private val emptyItem: Item
-) : Item(settings), FluidModificationItem {
+@ModItem(name = "fluid_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
+class FluidCellItem : Item(FabricItemSettings()), FluidModificationItem {
 
     override fun useOnBlock(context: ItemUsageContext): ActionResult {
         val world = context.world
         val pos = context.blockPos
         val player = context.player ?: return ActionResult.PASS
         val hand = context.hand
+        val stack = player.getStackInHand(hand)
         if (world.isClient) return ActionResult.SUCCESS
+
+        val fluid = stack.getFluidCellVariant()?.fluid ?: return ActionResult.PASS
 
         // 1. 先尝试 Fabric FluidStorage（储罐、地热发电机等）
         val storage = FluidStorage.SIDED.find(world, pos, context.side)
@@ -54,13 +104,12 @@ abstract class FluidCellItem(
             return ActionResult.SUCCESS
         }
 
-        // 2. 使用原版 FluidModificationItem 放置流体到世界
+        // 2. 放置流体到世界
         val hitResult = BlockHitResult(context.hitPos, context.side, pos, context.hitsInsideBlock())
         if (placeFluid(player, world, pos, hitResult)) {
-            val stack = player.getStackInHand(hand)
             if (!player.abilities.creativeMode) {
                 stack.decrement(1)
-                val empty = ItemStack(emptyItem)
+                val empty = ItemStack(emptyCell)
                 if (stack.isEmpty) {
                     player.setStackInHand(hand, empty)
                 } else if (!player.inventory.insertStack(empty)) {
@@ -80,6 +129,9 @@ abstract class FluidCellItem(
     ): Boolean {
         val state = world.getBlockState(pos)
         val block = state.block
+        val fluid = player?.getStackInHand(Hand.MAIN_HAND)?.getFluidCellVariant()?.fluid
+            ?: player?.getStackInHand(Hand.OFF_HAND)?.getFluidCellVariant()?.fluid
+            ?: return false
 
         // FluidFillable：如炼药锅等可注入液体的方块
         if (block is FluidFillable) {
@@ -112,8 +164,10 @@ abstract class FluidCellItem(
         return false
     }
 
-    override fun getRecipeRemainder(stack: ItemStack): ItemStack = ItemStack(emptyItem)
+    override fun getRecipeRemainder(stack: ItemStack): ItemStack = ItemStack(emptyCell)
 }
+
+private val emptyCell: Item get() = Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "empty_cell"))
 
 /**
  * 空单元：可从 FluidDrainable（水/岩浆方块）收集液体，也可与 FluidStorage 储罐交互。
@@ -146,20 +200,19 @@ abstract class EmptyCellItem(settings: FabricItemSettings) : Item(settings) {
             val drainable = state.block as FluidDrainable
             val drained = drainable.tryDrainFluid(world, pos, state)
             if (!drained.isEmpty) {
-                val filledCell = mapBucketToCell(drained) ?: return TypedActionResult.pass(stack)
+                val filled = mapBucketToFilledCell(drained) ?: return TypedActionResult.pass(stack)
                 drainable.getBucketFillSound().ifPresent { world.playSound(user, pos, it, SoundCategory.BLOCKS, 1f, 1f) }
                 world.emitGameEvent(user, GameEvent.FLUID_PICKUP, pos)
                 if (!user.abilities.creativeMode) {
                     stack.decrement(1)
-                    val filled = ItemStack(filledCell)
                     if (stack.isEmpty) {
                         user.setStackInHand(hand, filled)
                     } else if (!user.inventory.insertStack(filled)) {
                         user.dropItem(filled, false)
                     }
                 } else {
-                    if (!user.inventory.insertStack(ItemStack(filledCell))) {
-                        user.dropItem(ItemStack(filledCell), false)
+                    if (!user.inventory.insertStack(filled)) {
+                        user.dropItem(filled, false)
                     }
                 }
                 return TypedActionResult.success(user.getStackInHand(hand))
@@ -188,21 +241,20 @@ abstract class EmptyCellItem(settings: FabricItemSettings) : Item(settings) {
             val drainable = state.block as FluidDrainable
             val drained = drainable.tryDrainFluid(world, pos, state)
             if (!drained.isEmpty) {
-                val filledCell = mapBucketToCell(drained) ?: return ActionResult.PASS
+                val filled = mapBucketToFilledCell(drained) ?: return ActionResult.PASS
                 drainable.getBucketFillSound().ifPresent { world.playSound(player, pos, it, SoundCategory.BLOCKS, 1f, 1f) }
                 world.emitGameEvent(player, GameEvent.FLUID_PICKUP, pos)
                 val stack = player.getStackInHand(hand)
                 if (!player.abilities.creativeMode) {
                     stack.decrement(1)
-                    val filled = ItemStack(filledCell)
                     if (stack.isEmpty) {
                         player.setStackInHand(hand, filled)
                     } else if (!player.inventory.insertStack(filled)) {
                         player.dropItem(filled, false)
                     }
                 } else {
-                    if (!player.inventory.insertStack(ItemStack(filledCell))) {
-                        player.dropItem(ItemStack(filledCell), false)
+                    if (!player.inventory.insertStack(filled)) {
+                        player.dropItem(filled, false)
                     }
                 }
                 return ActionResult.SUCCESS
@@ -211,8 +263,8 @@ abstract class EmptyCellItem(settings: FabricItemSettings) : Item(settings) {
         return ActionResult.PASS
     }
 
-    /** 将桶物品映射为对应的满单元物品 */
-    protected abstract fun mapBucketToCell(bucketStack: ItemStack): Item?
+    /** 将桶物品映射为对应的满流体单元 ItemStack（带 NBT），无法映射则返回 null */
+    protected abstract fun mapBucketToFilledCell(bucketStack: ItemStack): ItemStack?
 }
 
 // ========== 容器类 - 单元 ==========
@@ -221,26 +273,8 @@ private fun cellItem(id: String): Item = Registries.ITEM.get(Identifier(Ic2_120.
 
 @ModItem(name = "empty_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
 class EmptyCell : EmptyCellItem(FabricItemSettings()) {
-    override fun mapBucketToCell(bucketStack: ItemStack): Item? = when (bucketStack.item) {
-        net.minecraft.item.Items.WATER_BUCKET -> cellItem("water_cell")
-        net.minecraft.item.Items.LAVA_BUCKET -> cellItem("lava_cell")
-        else -> null
-    }
+    override fun mapBucketToFilledCell(bucketStack: ItemStack): ItemStack? = bucketToFilledFluidCell(bucketStack)
 }
-
-@ModItem(name = "water_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
-class WaterCell : FluidCellItem(
-    FabricItemSettings(),
-    Fluids.WATER,
-    cellItem("empty_cell")
-)
-
-@ModItem(name = "lava_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
-class LavaCell : FluidCellItem(
-    FabricItemSettings(),
-    Fluids.LAVA,
-    cellItem("empty_cell")
-)
 
 @ModItem(name = "air_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
 class AirCell : Item(FabricItemSettings())
@@ -272,6 +306,63 @@ class ConstructFoamBucket : Item(FabricItemSettings())
 class CoolantBucket : Item(FabricItemSettings())
 
 /**
+ * 通用流体单元的 FluidStorage：空单元可装任意流体，满单元可倒出对应流体。
+ */
+private class FluidCellStorage(private val ctx: ContainerItemContext) : Storage<FluidVariant> {
+
+    private val fluidCell = Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "fluid_cell"))
+    private val emptyCell = Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "empty_cell"))
+
+    override fun supportsInsertion(): Boolean = true
+
+    override fun supportsExtraction(): Boolean = true
+
+    override fun insert(resource: FluidVariant, maxAmount: Long, transaction: TransactionContext): Long {
+        StoragePreconditions.notBlankNotNegative(resource, maxAmount)
+        if (maxAmount < FluidConstants.BUCKET) return 0
+
+        val current = ctx.itemVariant
+        if (current.item != emptyCell) return 0
+
+        val filledStack = ItemStack(fluidCell).apply { setFluidCellVariant(resource) }
+        val newVariant = ItemVariant.of(filledStack)
+        if (ctx.exchange(newVariant, 1, transaction) == 1L) return FluidConstants.BUCKET
+        return 0
+    }
+
+    override fun extract(resource: FluidVariant, maxAmount: Long, transaction: TransactionContext): Long {
+        StoragePreconditions.notBlankNotNegative(resource, maxAmount)
+        if (maxAmount < FluidConstants.BUCKET) return 0
+
+        val current = ctx.itemVariant
+        if (current.item != fluidCell) return 0
+
+        val stored = current.nbt?.getCompound(FLUID_CELL_NBT_KEY)?.let { FluidVariant.fromNbt(it) } ?: return 0
+        if (!resource.equals(stored)) return 0
+
+        val emptyStack = ItemStack(emptyCell)
+        val newVariant = ItemVariant.of(emptyStack)
+        if (ctx.exchange(newVariant, 1, transaction) == 1L) return FluidConstants.BUCKET
+        return 0
+    }
+
+    override fun iterator(): MutableIterator<StorageView<FluidVariant>> {
+        val current = ctx.itemVariant
+        if (current.item != fluidCell) return mutableListOf<StorageView<FluidVariant>>().iterator() as MutableIterator<StorageView<FluidVariant>>
+        val stored = current.nbt?.getCompound(FLUID_CELL_NBT_KEY)?.let { FluidVariant.fromNbt(it) } ?: return mutableListOf<StorageView<FluidVariant>>().iterator() as MutableIterator<StorageView<FluidVariant>>
+        if (stored.isBlank) return mutableListOf<StorageView<FluidVariant>>().iterator() as MutableIterator<StorageView<FluidVariant>>
+        return mutableListOf(object : StorageView<FluidVariant> {
+            override fun getResource(): FluidVariant = stored
+            override fun getAmount(): Long = FluidConstants.BUCKET
+            override fun getCapacity(): Long = FluidConstants.BUCKET
+            override fun extract(resource: FluidVariant, maxAmount: Long, transaction: TransactionContext): Long =
+                this@FluidCellStorage.extract(resource, maxAmount, transaction)
+            override fun isResourceBlank(): Boolean = stored.isBlank
+        }).iterator() as MutableIterator<StorageView<FluidVariant>>
+    }
+}
+
+/**
  * 注册单元与桶的 FluidStorage.ITEM，使其可与流体方块/储罐交互。
  * 单元等效 1 桶（1000 mB）。
  */
@@ -280,43 +371,14 @@ object CellAndBucketFluidRegistration {
     fun register() {
         val modId = Ic2_120.MOD_ID
         val emptyCell = Registries.ITEM.get(Identifier(modId, "empty_cell"))
-        val waterCell = Registries.ITEM.get(Identifier(modId, "water_cell"))
-        val lavaCell = Registries.ITEM.get(Identifier(modId, "lava_cell"))
+        val fluidCell = Registries.ITEM.get(Identifier(modId, "fluid_cell"))
 
-        // 水单元：可倒出 → 空单元
-        FluidStorage.combinedItemApiProvider(waterCell).register { ctx ->
-            net.fabricmc.fabric.api.transfer.v1.fluid.base.FullItemFluidStorage(
-                ctx, emptyCell,
-                net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant.of(net.minecraft.fluid.Fluids.WATER),
-                net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants.BUCKET
-            )
-        }
-
-        // 岩浆单元：可倒出 → 空单元
-        FluidStorage.combinedItemApiProvider(lavaCell).register { ctx ->
-            net.fabricmc.fabric.api.transfer.v1.fluid.base.FullItemFluidStorage(
-                ctx, emptyCell,
-                net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant.of(net.minecraft.fluid.Fluids.LAVA),
-                net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants.BUCKET
-            )
-        }
-
-        // 空单元：可装水 → 水单元
+        // 空单元 + 满流体单元：通用 FluidStorage（支持任意流体）
         FluidStorage.combinedItemApiProvider(emptyCell).register { ctx ->
-            net.fabricmc.fabric.api.transfer.v1.fluid.base.EmptyItemFluidStorage(
-                ctx, waterCell,
-                net.minecraft.fluid.Fluids.WATER,
-                net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants.BUCKET
-            )
+            FluidCellStorage(ctx)
         }
-
-        // 空单元：可装岩浆 → 岩浆单元
-        FluidStorage.combinedItemApiProvider(emptyCell).register { ctx ->
-            net.fabricmc.fabric.api.transfer.v1.fluid.base.EmptyItemFluidStorage(
-                ctx, lavaCell,
-                net.minecraft.fluid.Fluids.LAVA,
-                net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants.BUCKET
-            )
+        FluidStorage.combinedItemApiProvider(fluidCell).register { ctx ->
+            FluidCellStorage(ctx)
         }
 
         // UseBlockCallback：在默认交互前拦截，用 FluidHandling.ANY 射线检测流体方块
@@ -329,8 +391,8 @@ object CellAndBucketFluidRegistration {
 
             val start = player.eyePos
             val end = start.add(player.rotationVector.multiply(5.0))
-            val ctx = RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.ANY, player)
-            val hitResult = world.raycast(ctx)
+            val rayCtx = RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.ANY, player)
+            val hitResult = world.raycast(rayCtx)
             val pos = hitResult.blockPos
 
             // 1. FluidStorage（储罐等）
@@ -340,30 +402,25 @@ object CellAndBucketFluidRegistration {
                 return@register ActionResult.SUCCESS
             }
 
-            // 2. FluidDrainable（水、岩浆方块）
+            // 2. FluidDrainable（水、岩浆方块）- 需用 FluidHandling.ANY 射线才能命中
             val state = world.getBlockState(pos)
             if (state.block is FluidDrainable) {
                 val drainable = state.block as FluidDrainable
                 val drained = drainable.tryDrainFluid(world, pos, state)
                 if (!drained.isEmpty) {
-                    val filledCell = when (drained.item) {
-                        Items.WATER_BUCKET -> waterCell
-                        Items.LAVA_BUCKET -> lavaCell
-                        else -> return@register ActionResult.PASS
-                    }
+                    val filled = bucketToFilledFluidCell(drained) ?: return@register ActionResult.PASS
                     drainable.getBucketFillSound().ifPresent { world.playSound(player, pos, it, SoundCategory.BLOCKS, 1f, 1f) }
                     world.emitGameEvent(player, GameEvent.FLUID_PICKUP, pos)
                     if (!player.abilities.creativeMode) {
                         stack.decrement(1)
-                        val filled = ItemStack(filledCell)
                         if (stack.isEmpty) {
                             player.setStackInHand(hand, filled)
                         } else if (!player.inventory.insertStack(filled)) {
                             player.dropItem(filled, false)
                         }
                     } else {
-                        if (!player.inventory.insertStack(ItemStack(filledCell))) {
-                            player.dropItem(ItemStack(filledCell), false)
+                        if (!player.inventory.insertStack(filled)) {
+                            player.dropItem(filled, false)
                         }
                     }
                     return@register ActionResult.SUCCESS

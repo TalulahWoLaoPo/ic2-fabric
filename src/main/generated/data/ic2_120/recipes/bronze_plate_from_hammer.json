@@ -2,7 +2,9 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    [],
+    {
+      "item": "ic2_120:forge_hammer"
+    },
     {
       "item": "ic2_120:bronze_ingot"
     }
