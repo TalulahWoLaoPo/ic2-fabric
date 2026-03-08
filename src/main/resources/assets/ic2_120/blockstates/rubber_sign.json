@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "rotation=0": { "model": "ic2_120:block/resource/rubber/sign", "y": 0 },
+    "rotation=1": { "model": "ic2_120:block/resource/rubber/sign", "y": 22.5 },
+    "rotation=2": { "model": "ic2_120:block/resource/rubber/sign", "y": 45 },
+    "rotation=3": { "model": "ic2_120:block/resource/rubber/sign", "y": 67.5 },
+    "rotation=4": { "model": "ic2_120:block/resource/rubber/sign", "y": 90 },
+    "rotation=5": { "model": "ic2_120:block/resource/rubber/sign", "y": 112.5 },
+    "rotation=6": { "model": "ic2_120:block/resource/rubber/sign", "y": 135 },
+    "rotation=7": { "model": "ic2_120:block/resource/rubber/sign", "y": 157.5 },
+    "rotation=8": { "model": "ic2_120:block/resource/rubber/sign", "y": 180 },
+    "rotation=9": { "model": "ic2_120:block/resource/rubber/sign", "y": 202.5 },
+    "rotation=10": { "model": "ic2_120:block/resource/rubber/sign", "y": 225 },
+    "rotation=11": { "model": "ic2_120:block/resource/rubber/sign", "y": 247.5 },
+    "rotation=12": { "model": "ic2_120:block/resource/rubber/sign", "y": 270 },
+    "rotation=13": { "model": "ic2_120:block/resource/rubber/sign", "y": 292.5 },
+    "rotation=14": { "model": "ic2_120:block/resource/rubber/sign", "y": 315 },
+    "rotation=15": { "model": "ic2_120:block/resource/rubber/sign", "y": 337.5 }
+  }
+}

@@ -59,7 +59,7 @@
 | - [x] | block.ic2.rubber_fence | 橡胶木栅栏 |
 | - [x] | block.ic2.rubber_fence_gate | 橡胶木栅栏门 |
 | - [x] | block.ic2.rubber_pressure_plate | 橡胶木压力板 |
-| - [ ] | block.ic2.rubber_sign | 橡胶木告示牌 |
+| - [x] | block.ic2.rubber_sign | 橡胶木告示牌 |
 | - [x] | block.ic2.rubber_slab | 橡胶木台阶 |
 | - [x] | block.ic2.rubber_stairs | 橡胶木楼梯 |
 | - [x] | block.ic2.rubber_trapdoor | 橡胶木活板门 |

@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=east": { "model": "ic2_120:block/resource/rubber/wall_sign", "y": 90 },
+    "facing=north": { "model": "ic2_120:block/resource/rubber/wall_sign", "y": 0 },
+    "facing=south": { "model": "ic2_120:block/resource/rubber/wall_sign", "y": 180 },
+    "facing=west": { "model": "ic2_120:block/resource/rubber/wall_sign", "y": 270 }
+  }
+}
