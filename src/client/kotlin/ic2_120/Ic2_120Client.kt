@@ -5,6 +5,7 @@ import ic2_120.client.CableTooltip
 import ic2_120.client.ClientBlockRenderLayers
 import ic2_120.client.ClientEntityRenderers
 import ic2_120.client.ClientScreenRegistrar
+import ic2_120.client.StorageBoxColorProvider
 import net.fabricmc.api.ClientModInitializer
 
 object Ic2_120Client : ClientModInitializer {
@@ -14,5 +15,8 @@ object Ic2_120Client : ClientModInitializer {
 		ClientEntityRenderers.register()
 		ClientBlockRenderLayers.register()
 		BatteryModelPredicates.register() // 注册电池模型 predicate
+
+		// 注册储物箱着色器
+		StorageBoxColorProvider.register()
 	}
 }

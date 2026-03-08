@@ -247,10 +247,11 @@
 ### 机器 - 储物类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | block.ic2.wooden_storage_box | 木质储物箱 |
-| - [ ] | block.ic2.iron_storage_box | 铁质储物箱 |
-| - [ ] | block.ic2.bronze_storage_box | 青铜储物箱 |
-| - [ ] | block.ic2.steel_storage_box | 钢制储物箱 |
+| - [x] | block.ic2.wooden_storage_box | 木质储物箱 |
+| - [x] | block.ic2.iron_storage_box | 铁质储物箱 |
+| - [x] | block.ic2.bronze_storage_box | 青铜储物箱 |
+| - [x] | block.ic2.steel_storage_box | 钢制储物箱 |
+| - [x] | block.ic2.iridium_storage_box | 铱储物箱 |
 | - [ ] | block.ic2.bronze_tank | 青铜储罐 |
 | - [ ] | block.ic2.iridium_tank | 铱储罐 |
 
@@ -314,7 +315,6 @@
 | - [ ] | `bronze_tank.json` | 青铜储罐 |
 | - [ ] | `iridium_storage_box.json` | 铱储物箱 |
 | - [ ] | `iridium_tank.json` | 铱储罐 |
-| - [ ] | `iron_scaffold.json` | 铁质脚手架 |
 | - [ ] | `iron_storage_box.json` | 铁质储物箱 |
 | - [ ] | `iron_tank.json` | 铁储罐 |
 | - [ ] | `reinforced_door_bottom_left.json` | 防爆门下半左 |
@@ -326,9 +326,7 @@
 | - [ ] | `reinforced_door_top_right.json` | 防爆门上半右 |
 | - [ ] | `reinforced_door_top_right_open.json` | 防爆门上半右（打开） |
 | - [ ] | `reinforced_glass.json` | 防爆玻璃 |
-| - [ ] | `reinforced_iron_scaffold.json` | 强化铁质脚手架 |
 | - [ ] | `reinforced_stone.json` | 防爆石 |
-| - [ ] | `reinforced_wooden_scaffold.json` | 强化脚手架 |
 | - [ ] | `resin_sheet.json` | 树脂垫 |
 | - [ ] | `rubber_sheet.json` | 橡胶垫 |
 | - [ ] | `sheet_base.json` | 垫子基座（用于羊毛垫等） |
@@ -336,7 +334,6 @@
 | - [ ] | `steel_tank.json` | 钢储罐 |
 | - [ ] | `storage_box.json` | 储物箱基座 |
 | - [ ] | `tank.json` | 储罐基座 |
-| - [ ] | `wooden_scaffold.json` | 木质脚手架 |
 | - [ ] | `wooden_storage_box.json` | 木质储物箱 |
 | - [ ] | `wool_sheet.json` | 羊毛垫 |
 
