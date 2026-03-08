@@ -15,8 +15,20 @@ import net.minecraft.util.math.Direction
  * 简单的机器方块基类。
  * 可被子类扩展以支持 BlockEntity。
  * 放置时根据玩家朝向设置 HORIZONTAL_FACING（玩家面向的方向的相反方向为方块正面）。
+ *
+ * 所有机器都有能量等级，用于决定能接受什么等级的电池供电。
  */
-open class MachineBlock(settings: AbstractBlock.Settings) : BlockWithEntity(settings) {
+abstract class MachineBlock(settings: AbstractBlock.Settings) : BlockWithEntity(settings), ITieredMachine {
+
+    /**
+     * 机器的能量等级（1-4）
+     *
+     * 子类必须覆写此属性。
+     * 决定了：
+     * - 机器可以接受什么等级的电池供电
+     * - 机器可以给什么等级的设备充电
+     */
+    abstract override val tier: Int
 
     init {
         defaultState = stateManager.defaultState.with(Properties.HORIZONTAL_FACING, Direction.NORTH)

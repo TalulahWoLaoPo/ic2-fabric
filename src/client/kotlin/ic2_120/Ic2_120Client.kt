@@ -1,5 +1,6 @@
 package ic2_120
 
+import ic2_120.client.BatteryModelPredicates
 import ic2_120.client.CableTooltip
 import ic2_120.client.ClientBlockRenderLayers
 import ic2_120.client.ClientEntityRenderers
@@ -12,5 +13,6 @@ object Ic2_120Client : ClientModInitializer {
 		CableTooltip.register()
 		ClientEntityRenderers.register()
 		ClientBlockRenderLayers.register()
+		BatteryModelPredicates.register() // 注册电池模型 predicate
 	}
 }

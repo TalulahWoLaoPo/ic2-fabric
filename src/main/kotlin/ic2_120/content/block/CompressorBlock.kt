@@ -21,9 +21,12 @@ import net.minecraft.world.World
 
 /**
  * 压缩机方块。消耗电力将物品压缩（如 4 煤 -> 1 煤炭块）。
+ * 能量等级：1
  */
 @ModBlock(name = "compressor", registerItem = true, tab = CreativeTab.IC2_MACHINES)
 class CompressorBlock(settings: AbstractBlock.Settings = AbstractBlock.Settings.create().strength(3.5f)) : MachineBlock(settings) {
+
+    override val tier: Int = 1
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =
         CompressorBlockEntity(pos, state)

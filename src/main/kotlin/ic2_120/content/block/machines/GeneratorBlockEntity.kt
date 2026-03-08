@@ -3,6 +3,7 @@ package ic2_120.content.block.machines
 import ic2_120.content.sync.GeneratorSync
 import ic2_120.content.ModBlockEntities
 import ic2_120.content.block.GeneratorBlock
+import ic2_120.content.block.ITieredMachine
 import ic2_120.content.screen.GeneratorScreenHandler
 import ic2_120.content.syncs.SyncedData
 import ic2_120.registry.annotation.ModBlockEntity
@@ -20,21 +21,30 @@ import net.minecraft.network.PacketByteBuf
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.state.property.Properties
 import net.minecraft.text.Text
+import ic2_120.content.item.energy.IBatteryItem
 import net.minecraft.util.collection.DefaultedList
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 
 /**
  * 火力发电机方块实体。燃料槽燃烧产生 EU，能量可被相邻方块提取。
+ * 支持为电池充电，也可以使用电池为发电机供电。
  */
 @ModBlockEntity(block = GeneratorBlock::class)
 class GeneratorBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
+) : MachineBlockEntity(type, pos, state), Inventory, net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
 
-    private val inventory = DefaultedList.ofSize(1, ItemStack.EMPTY)  // 0: 燃料槽
+    companion object {
+        /** 发电机的能量等级（1级） */
+        const val GENERATOR_TIER = 1
+    }
+
+    override val tier: Int = GENERATOR_TIER
+
+    private val inventory = DefaultedList.ofSize(2, ItemStack.EMPTY)  // 0: 燃料槽, 1: 电池槽
 
     val syncedData = SyncedData(this)
     @RegisterEnergy
@@ -50,11 +60,10 @@ class GeneratorBlockEntity(
         state
     )
 
-    override fun size(): Int = 1
+    override fun size(): Int = 2
     override fun getStack(slot: Int): ItemStack = inventory.getOrElse(slot) { ItemStack.EMPTY }
     override fun setStack(slot: Int, stack: ItemStack) {
         inventory[slot] = stack
-        if (stack.count > maxCountPerStack) stack.count = maxCountPerStack
         markDirty()
     }
     override fun removeStack(slot: Int, amount: Int): ItemStack = Inventories.splitStack(inventory, slot, amount)
@@ -63,6 +72,31 @@ class GeneratorBlockEntity(
     override fun isEmpty(): Boolean = inventory.all { it.isEmpty }
     override fun markDirty() { super.markDirty() }
     override fun canPlayerUse(player: PlayerEntity): Boolean = Inventory.canPlayerUse(this, player)
+
+    /**
+     * 实现 MachineBlockEntity 的 getInventory 方法
+     */
+    override fun getInventory(): net.minecraft.inventory.Inventory = this
+
+    /**
+     * 检查物品是否可以放入指定槽位
+     * - 燃料槽：只允许燃料
+     * - 电池槽：只允许电池物品，且最多1个
+     */
+    fun canPlaceInSlot(slot: Int, stack: ItemStack): Boolean {
+        if (stack.isEmpty) return false
+        return when (slot) {
+            FUEL_SLOT -> {
+                // 燃料槽：检查是否是有效燃料
+                getFuelTime(stack) > 0
+            }
+            BATTERY_SLOT -> {
+                // 电池槽：只允许电池物品
+                stack.item is IBatteryItem
+            }
+            else -> false
+        }
+    }
 
     override fun writeScreenOpeningData(player: net.minecraft.server.network.ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)
@@ -100,26 +134,62 @@ class GeneratorBlockEntity(
 
         val fuelSlot = getStack(0)
         if (sync.burnTime <= 0 && !fuelSlot.isEmpty) {
-            val burnTicks = getFuelTime(fuelSlot)
-            if (burnTicks > 0) {
-                sync.totalBurnTime = burnTicks
-                sync.burnTime = burnTicks
-                val remainder = fuelSlot.item.getRecipeRemainder(fuelSlot)
-                fuelSlot.decrement(1)
-                if (fuelSlot.isEmpty && !remainder.isEmpty) setStack(0, remainder.copy())
-                else setStack(0, fuelSlot)
-                markDirty()
+            // 仅当至少能容纳 1 tick 发电量时才点燃新燃料，避免临界满电时整段空烧
+            val euToAdd = GeneratorSync.EU_PER_BURN_TICK.toLong().coerceAtLeast(1L)
+            val space = (GeneratorSync.ENERGY_CAPACITY - sync.amount).coerceAtLeast(0L)
+            if (space >= euToAdd) {
+                val burnTicks = getFuelTime(fuelSlot)
+                if (burnTicks > 0) {
+                    sync.totalBurnTime = burnTicks
+                    sync.burnTime = burnTicks
+                    val remainder = fuelSlot.item.getRecipeRemainder(fuelSlot)
+                    fuelSlot.decrement(1)
+                    if (fuelSlot.isEmpty && !remainder.isEmpty) setStack(0, remainder.copy())
+                    else setStack(0, fuelSlot)
+                    markDirty()
+                }
             }
         }
 
         if (sync.burnTime > 0) {
             val euToAdd = (GeneratorSync.EU_PER_BURN_TICK).toLong().coerceAtLeast(1L)
             val space = (GeneratorSync.ENERGY_CAPACITY - sync.amount).coerceAtLeast(0L)
-            if (space >= euToAdd) {
+            // 已点燃的燃料会持续燃烧；有剩余空间就写入能量，溢出则钳制到上限
+            if (space > 0L) {
                 sync.amount = (sync.amount + euToAdd).coerceAtMost(GeneratorSync.ENERGY_CAPACITY)
-                sync.burnTime = (sync.burnTime - 1).coerceAtLeast(0)
-                sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
-                markDirty()
+            }
+            sync.burnTime = (sync.burnTime - 1).coerceAtLeast(0)
+            sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
+            markDirty()
+        }
+
+        // 电池充电逻辑：只在燃烧燃料时充电
+        if (sync.burnTime > 0) {
+            val batterySlot = getStack(BATTERY_SLOT)
+            if (!batterySlot.isEmpty && batterySlot.item is IBatteryItem) {
+                val battery = batterySlot.item as IBatteryItem
+
+                // 检查能量等级：只能给等级 <= 自己的电池充电
+                if (battery.tier <= tier) {
+                    // 检查电池是否已充满
+                    if (!battery.isFullyCharged(batterySlot)) {
+                        // 计算可充入电量（考虑电池传输速度和发电机剩余能量）
+                        val canCharge = minOf(
+                            battery.transferSpeed.toLong(),           // 电池传输速度限制
+                            sync.amount,                              // 发电机剩余能量
+                            battery.maxCapacity - battery.getCurrentCharge(batterySlot) // 电池剩余空间
+                        )
+
+                        if (canCharge > 0) {
+                            // 执行充电
+                            val charged = battery.charge(batterySlot, canCharge)
+                            sync.amount -= charged
+                            sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
+                            setStack(BATTERY_SLOT, batterySlot)
+                            markDirty()
+                        }
+                    }
+                }
             }
         }
 

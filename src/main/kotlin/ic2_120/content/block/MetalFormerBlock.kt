@@ -21,9 +21,12 @@ import net.minecraft.world.World
 
 /**
  * 金属成型机方块。消耗电力将锭等压制成型（如锭 -> 粒/块）。
+ * 能量等级：1
  */
 @ModBlock(name = "metal_former", registerItem = true, tab = CreativeTab.IC2_MACHINES)
 class MetalFormerBlock(settings: AbstractBlock.Settings = AbstractBlock.Settings.create().strength(3.5f)) : MachineBlock(settings) {
+
+    override val tier: Int = 1
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =
         MetalFormerBlockEntity(pos, state)

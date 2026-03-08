@@ -666,6 +666,7 @@
 | - [ ] | item.ic2.quad_mox_fuel_rod | 四联燃料棒 (MOX) |
 | - [ ] | item.ic2.lithium_fuel_rod | 燃料棒 (锂) |
 | - [ ] | item.ic2.depleted_isotope_fuel_rod | 近衰变铀棒 |
+| - [ ] | item.ic2.heatpack | 加热元件 |
 
 ### 电路与机械部件
 |  | ID | 名称 |
@@ -812,12 +813,13 @@
 ### 电池类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | item.ic2.re_battery | 充电电池 |
-| - [ ] | item.ic2.advanced_re_battery | 高级充电电池 |
-| - [ ] | item.ic2.energy_crystal | 能量水晶 |
-| - [ ] | item.ic2.lapotron_crystal | 兰波顿水晶 |
-| - [ ] | item.ic2.single_use_battery | 一次性电池 |
-| - [ ] | item.ic2.heatpack | 加热元件 |
+| - [x] | item.ic2.re_battery | 充电电池 |
+| - [x] | item.ic2.charging_re_battery | 无线充电电池 |
+| - [x] | item.ic2.advanced_re_battery | 高级充电电池 |
+| - [x] | item.ic2.advanced_charging_re_battery | 高级无线充电电池 |
+| - [x] | item.ic2.energy_crystal | 能量水晶 |
+| - [x] | item.ic2.lapotron_crystal | 兰波顿水晶 |
+| - [x] | item.ic2.single_use_battery | 一次性电池 |
 
 ### 植物种子类
 |  | ID | 名称 |

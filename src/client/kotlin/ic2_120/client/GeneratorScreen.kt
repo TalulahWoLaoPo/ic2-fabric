@@ -6,6 +6,8 @@ import ic2_120.client.ui.GuiBackground
 import ic2_120.client.ui.ProgressBar
 import ic2_120.content.sync.GeneratorSync
 import ic2_120.content.block.GeneratorBlock
+import ic2_120.content.block.machines.GeneratorBlockEntity
+import ic2_120.content.block.machines.MachineBlockEntity
 import ic2_120.content.screen.GeneratorScreenHandler
 import ic2_120.registry.annotation.ModScreen
 import net.minecraft.client.gui.DrawContext
@@ -41,17 +43,23 @@ class GeneratorScreen(
         val borderColor = GuiBackground.BORDER_COLOR
         val slotSize = GeneratorScreenHandler.SLOT_SIZE
         val borderOffset = 1
-        val fuelSlot = handler.slots[0]
+
+        // 燃料槽边框
+        val fuelSlot = handler.slots[MachineBlockEntity.FUEL_SLOT]
         context.drawBorder(x + fuelSlot.x - borderOffset, y + fuelSlot.y - borderOffset, slotSize, slotSize, borderColor)
-        // 燃烧进度条
+
+        // 电池槽边框
+        val batterySlot = handler.slots[MachineBlockEntity.BATTERY_SLOT]
+        context.drawBorder(x + batterySlot.x - borderOffset, y + batterySlot.y - borderOffset, slotSize, slotSize, borderColor)
+        // 燃烧进度条：竖向渐变（红→蓝），表示燃料逐渐用尽
         val totalBurn = handler.sync.totalBurnTime.coerceAtLeast(1)
         val burnTime = handler.sync.burnTime.coerceIn(0, totalBurn)
-        val burnFrac = 1f - (burnTime.toFloat() / totalBurn).coerceIn(0f, 1f)
+        val burnFrac = (burnTime.toFloat() / totalBurn).coerceIn(0f, 1f)
         val barX = x + fuelSlot.x + slotSize + 2
-        val barW = 40
-        val barH = 8
-        val barY = y + fuelSlot.y + (slotSize - barH) / 2
-        ProgressBar.draw(context, barX, barY, barW, barH, burnFrac)
+        val barW = 6  // 竖向条宽度
+        val barH = slotSize  // 高度与槽位相同
+        val barY = y + fuelSlot.y
+        ProgressBar.drawVerticalFuelBar(context, barX, barY, barW, barH, burnFrac)
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
@@ -85,16 +93,18 @@ class GeneratorScreen(
                         modifier = Modifier.EMPTY.width(barW)
                     )
                 }
-                Text(
-                    "${formatEu(energy)} / ${formatEu(cap)} EU",
-                    color = 0xCCCCCC,
-                    shadow = false
-                )
-                Text(
-                    "输出 ${formatEu(outputRate.toLong())} EU/t",
-                    color = 0xAAAAAA,
-                    shadow = false
-                )
+                Row(spacing = 8) {
+                    Text(
+                        "${formatEu(energy)} / ${formatEu(cap)} EU",
+                        color = 0xCCCCCC,
+                        shadow = false
+                    )
+                    Text(
+                        "输出 ${formatEu(outputRate.toLong())} EU/t",
+                        color = 0xAAAAAA,
+                        shadow = false
+                    )
+                }
             }
         }
         drawMouseoverTooltip(context, mouseX, mouseY)

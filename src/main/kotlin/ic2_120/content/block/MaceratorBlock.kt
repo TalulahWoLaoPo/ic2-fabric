@@ -21,9 +21,12 @@ import net.minecraft.world.World
 
 /**
  * 粉碎机方块。消耗电力将矿石等粉碎为粉末/粉碎矿。
+ * 能量等级：1
  */
 @ModBlock(name = "macerator", registerItem = true, tab = CreativeTab.IC2_MACHINES)
 class MaceratorBlock(settings: AbstractBlock.Settings = AbstractBlock.Settings.create().strength(3.5f)) : MachineBlock(settings) {
+
+    override val tier: Int = 1
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =
         MaceratorBlockEntity(pos, state)
