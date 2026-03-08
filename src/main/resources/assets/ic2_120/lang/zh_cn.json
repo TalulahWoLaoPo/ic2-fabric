@@ -82,6 +82,8 @@
   "block.ic2_120.macerator": "粉碎机",
   "block.ic2_120.compressor": "压缩机",
   "block.ic2_120.metal_former": "金属成型机",
+  "block.ic2_120.machine": "基础机械外壳",
+  "block.ic2_120.advanced_machine": "高级机械外壳",
   "block.ic2_120.mfsu": "MFSU储电箱",
   "block.ic2_120.mfsu_full": "MFSU储电箱（满电）",
   "block.ic2_120.iron_fence": "铁栅栏",

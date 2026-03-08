@@ -1,5 +1,6 @@
 package ic2_120.content.block
 
+import ic2_120.Ic2_120
 import net.minecraft.block.AbstractBlock
 import net.minecraft.block.BlockRenderType
 import net.minecraft.block.BlockState
@@ -7,9 +8,12 @@ import net.minecraft.block.BlockWithEntity
 import net.minecraft.block.Blocks
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.inventory.Inventory
+import net.minecraft.item.Item
 import net.minecraft.item.ItemPlacementContext
+import net.minecraft.registry.Registries
 import net.minecraft.state.StateManager
 import net.minecraft.state.property.Properties
+import net.minecraft.util.Identifier
 import net.minecraft.util.ItemScatterer
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
@@ -41,6 +45,13 @@ abstract class MachineBlock(settings: AbstractBlock.Settings = defaultMachineSet
      * - 机器可以给什么等级的设备充电
      */
     abstract override val tier: Int
+
+    /**
+     * 非扳手拆卸时掉落的物品（默认基础机器外壳）。
+     * 子类可覆写以改为高级机器外壳或其他物品。
+     */
+    open fun getCasingDrop(): Item =
+        Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "machine"))
 
     init {
         defaultState = stateManager.defaultState.with(Properties.HORIZONTAL_FACING, Direction.NORTH)

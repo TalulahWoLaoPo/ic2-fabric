@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "ic2_120:cutter"
-    },
+    [],
     {
       "item": "minecraft:glass"
     }

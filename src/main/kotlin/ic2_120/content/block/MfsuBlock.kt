@@ -1,5 +1,6 @@
 package ic2_120.content.block
 
+import ic2_120.Ic2_120
 import ic2_120.content.sync.MfsuSync
 import ic2_120.content.block.machines.MfsuBlockEntity
 import ic2_120.content.ModBlockEntities
@@ -12,10 +13,13 @@ import net.minecraft.block.entity.BlockEntityTicker
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.BlockItem
+import net.minecraft.item.Item
 import net.minecraft.item.ItemPlacementContext
 import net.minecraft.item.ItemStack
+import net.minecraft.registry.Registries
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
+import net.minecraft.util.Identifier
 import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.state.StateManager
@@ -30,6 +34,10 @@ import net.minecraft.world.World
 class MfsuBlock : MachineBlock() {
 
     override val tier: Int = 4
+
+    /** MFSU 为高级机器，非扳手拆卸时掉高级机器外壳 */
+    override fun getCasingDrop(): Item =
+        Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "advanced_machine"))
 
     override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {
         super.appendProperties(builder)

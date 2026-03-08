@@ -194,8 +194,8 @@
 ### 机器 - 机械外壳类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | block.ic2.machine | 基础机械外壳 |
-| - [ ] | block.ic2.advanced_machine | 高级机械外壳 |
+| - [x] | block.ic2.machine | 基础机械外壳 |
+| - [x] | block.ic2.advanced_machine | 高级机械外壳 |
 | - [ ] | block.ic2.reactor_vessel | 核反应堆压力容器 |
 
 ### 机器 - 储能设备类
@@ -899,7 +899,7 @@
 ### 机器物品模型（作为物品展示）
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | item.ic2.advanced_machine | 高级机械外壳 |
+| - [x] | item.ic2.advanced_machine | 高级机械外壳 |
 | - [ ] | item.ic2.advanced_miner | 高级采矿机 |
 | - [ ] | item.ic2.batbox | 储电箱 |
 | - [ ] | item.ic2.batbox_chargepad | 充电座 (BatBox) |

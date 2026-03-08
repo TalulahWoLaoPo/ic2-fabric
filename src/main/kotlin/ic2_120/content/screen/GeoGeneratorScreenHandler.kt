@@ -10,6 +10,7 @@ import ic2_120.content.screen.slot.SlotTarget
 import ic2_120.content.sync.GeoGeneratorSync
 import ic2_120.content.syncs.SyncedDataView
 import ic2_120.content.item.LavaCell
+import ic2_120.content.item.energy.IElectricTool
 import ic2_120.content.item.energy.IBatteryItem
 import ic2_120.registry.annotation.ModScreenHandler
 import net.minecraft.item.Items
@@ -114,7 +115,7 @@ class GeoGeneratorScreenHandler(
         )
         private val BATTERY_SLOT_SPEC = SlotSpec(
             maxItemCount = 1,
-            canInsert = { stack -> stack.item is IBatteryItem }
+            canInsert = { stack -> stack.item is IBatteryItem || stack.item is IElectricTool }
         )
 
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): GeoGeneratorScreenHandler {

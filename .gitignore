@@ -33,6 +33,10 @@ bin/
 
 run/
 
+# data generator cache
+
+src/main/generated/.cache/
+
 # java
 
 hs_err_*.log

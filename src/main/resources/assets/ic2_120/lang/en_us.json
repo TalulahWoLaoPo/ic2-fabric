@@ -77,6 +77,8 @@
   "block.ic2_120.macerator": "Macerator",
   "block.ic2_120.compressor": "Compressor",
   "block.ic2_120.metal_former": "Metal Former",
+  "block.ic2_120.machine": "Machine Casing",
+  "block.ic2_120.advanced_machine": "Advanced Machine Casing",
   "block.ic2_120.mfsu": "MFSU",
   "block.ic2_120.mfsu_full": "MFSU (Full)",
   "block.ic2_120.iron_fence": "Iron Fence",

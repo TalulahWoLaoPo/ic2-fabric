@@ -71,11 +71,12 @@ object ProgressBar {
      * @param context DrawContext
      * @param x 左上角 X
      * @param y 左上角 Y
-     * @param width 宽度（建议 6～8）
+     * @param width 宽度（建议 6～12）
      * @param height 总高度
      * @param fraction 剩余比例 0f～1f（1=满，0=空）
      * @param gradient 是否渐变（true=红到蓝，false=纯色）
      * @param solidColor 非渐变时的填充色（仅 gradient=false 时生效）
+     * @param showTicks 是否绘制刻度线（25%、50%、75% 位置）
      */
     @JvmStatic
     fun drawVerticalFuelBar(
@@ -86,7 +87,8 @@ object ProgressBar {
         height: Int,
         fraction: Float,
         gradient: Boolean = true,
-        solidColor: Int = LAVA_SOLID_COLOR
+        solidColor: Int = LAVA_SOLID_COLOR,
+        showTicks: Boolean = false
     ) {
         val f = fraction.coerceIn(0f, 1f)
 
@@ -106,6 +108,14 @@ object ProgressBar {
                 }
             } else {
                 context.fill(x, y + height - filledH, x + width, y + height, solidColor)
+            }
+        }
+
+        // 刻度线：25%、50%、75% 位置（在边框内绘制）
+        if (showTicks) {
+            for (pct in 1..3) {
+                val tickY = y + (height * (4 - pct) / 4)
+                context.fill(x - 2, tickY, x, tickY + 1, BORDER_COLOR)
             }
         }
 

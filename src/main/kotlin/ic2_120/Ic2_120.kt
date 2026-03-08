@@ -1,5 +1,6 @@
 package ic2_120
 
+import ic2_120.content.WrenchHandler
 import ic2_120.content.block.energy.EnergyNetworkManager
 import ic2_120.content.block.MfsuBlock
 import ic2_120.content.block.cables.CableBlockEntity
@@ -44,6 +45,9 @@ object Ic2_120 : ModInitializer {
 
         // 特殊处理：导线 BlockEntity 需在所有方块注册后统一注册（一个 BE 类型关联多种导线方块）
         CableBlockEntity.register(MOD_ID)
+
+        // 扳手与机器方块交互（旋转、拆卸、掉落逻辑）
+        WrenchHandler.register()
 
         // 特殊处理：储物箱 BlockEntity 需在所有方块注册后统一注册（一个 BE 类型关联多种储物箱方块）
         StorageBoxBlockEntity.register(MOD_ID)

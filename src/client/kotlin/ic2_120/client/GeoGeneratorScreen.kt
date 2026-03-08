@@ -53,11 +53,11 @@ class GeoGeneratorScreen(
         val lavaMb = handler.sync.lavaAmountMb.coerceAtLeast(0)
         val lavaCapMb = 8 * 1000
         val lavaFrac = if (lavaCapMb > 0) (lavaMb.toFloat() / lavaCapMb).coerceIn(0f, 1f) else 0f
-        val barW = 6
+        val barW = 12
         val barX = x + backgroundWidth - barW - 8
         val barY = y + 8
         val barH = GeoGeneratorScreenHandler.BLOCK_SLOTS_Y + slotSize - 8
-        ProgressBar.drawVerticalFuelBar(context, barX, barY, barW, barH, lavaFrac, gradient = false)
+        ProgressBar.drawVerticalFuelBar(context, barX, barY, barW, barH, lavaFrac, gradient = false, showTicks = true)
 
         // 电池槽边框
         val batterySlot = handler.slots[GeoGeneratorBlockEntity.BATTERY_SLOT]
@@ -77,7 +77,7 @@ class GeoGeneratorScreen(
         val cap = GeoGeneratorSync.ENERGY_CAPACITY
         val energyFraction = if (cap > 0) (energy.toFloat() / cap).coerceIn(0f, 1f) else 0f
         // 左侧内容区宽度（右侧留出岩浆条空间）
-        val rightBarsWidth = 6 + 8
+        val rightBarsWidth = 12 + 8
         val contentW = (backgroundWidth - 16 - rightBarsWidth).coerceAtLeast(0)
         val barW = (contentW - 36).coerceAtLeast(0)
         ui.render(context, textRenderer, mouseX, mouseY) {

@@ -21,6 +21,7 @@ import net.minecraft.screen.PropertyDelegate
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
+import ic2_120.content.item.energy.IElectricTool
 import ic2_120.content.item.energy.IBatteryItem
 import net.fabricmc.fabric.api.registry.FuelRegistry
 
@@ -112,7 +113,7 @@ class GeneratorScreenHandler(
         )
         private val BATTERY_SLOT_SPEC = SlotSpec(
             maxItemCount = 1,
-            canInsert = { stack -> stack.item is IBatteryItem }
+            canInsert = { stack -> stack.item is IBatteryItem || stack.item is IElectricTool }
         )
 
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): GeneratorScreenHandler {
