@@ -207,5 +207,16 @@
   "item.ic2_120.pulling_upgrade": "抽入升级",
   "item.ic2_120.advanced_pulling_upgrade": "自动抽入升级",
   "item.ic2_120.fluid_ejector_upgrade": "流体弹出升级",
-  "item.ic2_120.fluid_pulling_upgrade": "流体抽入升级"
+  "item.ic2_120.fluid_pulling_upgrade": "流体抽入升级",
+  "item.ic2_120.fertilizer": "肥料",
+  "item.ic2_120.grin_powder": "蛤蛤粉",
+  "item.ic2_120.hops": "啤酒花",
+  "item.ic2_120.weed": "杂草",
+  "item.ic2_120.terra_wart": "大地疣",
+  "item.ic2_120.coffee_beans": "咖啡豆",
+  "item.ic2_120.coffee_powder": "咖啡粉",
+  "item.ic2_120.empty_mug": "石杯",
+  "item.ic2_120.coffee_mug": "咖啡",
+  "item.ic2_120.cold_coffee_mug": "冷咖啡",
+  "item.ic2_120.dark_coffee_mug": "黑咖啡"
 }

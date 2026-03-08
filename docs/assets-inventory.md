@@ -822,21 +822,21 @@
 ### 植物种子类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | item.ic2.fertilizer | 肥料 |
-| - [ ] | item.ic2.grin_powder | 蛤蛤粉 |
-| - [ ] | item.ic2.hops | 啤酒花 |
-| - [ ] | item.ic2.weed | 杂草 |
-| - [ ] | item.ic2.terra_wart | 大地疣 |
-| - [ ] | item.ic2.coffee_beans | 咖啡豆 |
-| - [ ] | item.ic2.coffee_powder | 咖啡粉 |
+| - [x] | item.ic2.fertilizer | 肥料 |
+| - [x] | item.ic2.grin_powder | 蛤蛤粉 |
+| - [x] | item.ic2.hops | 啤酒花 |
+| - [x] | item.ic2.weed | 杂草 |
+| - [x] | item.ic2.terra_wart | 大地疣 |
+| - [x] | item.ic2.coffee_beans | 咖啡豆 |
+| - [x] | item.ic2.coffee_powder | 咖啡粉 |
 
 ### 饮料杯类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | item.ic2.empty_mug | 石杯 |
-| - [ ] | item.ic2.coffee_mug | 咖啡 |
-| - [ ] | item.ic2.cold_coffee_mug | 冷咖啡 |
-| - [ ] | item.ic2.dark_coffee_mug | 黑咖啡 |
+| - [x] | item.ic2.empty_mug | 石杯 |
+| - [x] | item.ic2.coffee_mug | 咖啡 |
+| - [x] | item.ic2.cold_coffee_mug | 冷咖啡 |
+| - [x] | item.ic2.dark_coffee_mug | 黑咖啡 |
 
 ### 工具类
 |  | ID | 名称 |

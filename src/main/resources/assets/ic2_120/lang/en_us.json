@@ -202,5 +202,16 @@
   "item.ic2_120.pulling_upgrade": "Pulling Upgrade",
   "item.ic2_120.advanced_pulling_upgrade": "Advanced Pulling Upgrade",
   "item.ic2_120.fluid_ejector_upgrade": "Fluid Ejector Upgrade",
-  "item.ic2_120.fluid_pulling_upgrade": "Fluid Pulling Upgrade"
+  "item.ic2_120.fluid_pulling_upgrade": "Fluid Pulling Upgrade",
+  "item.ic2_120.fertilizer": "Fertilizer",
+  "item.ic2_120.grin_powder": "Grin Powder",
+  "item.ic2_120.hops": "Hops",
+  "item.ic2_120.weed": "Weed",
+  "item.ic2_120.terra_wart": "Terra Wart",
+  "item.ic2_120.coffee_beans": "Coffee Beans",
+  "item.ic2_120.coffee_powder": "Coffee Powder",
+  "item.ic2_120.empty_mug": "Stone Mug",
+  "item.ic2_120.coffee_mug": "Coffee",
+  "item.ic2_120.cold_coffee_mug": "Cold Coffee",
+  "item.ic2_120.dark_coffee_mug": "Dark Coffee"
 }
