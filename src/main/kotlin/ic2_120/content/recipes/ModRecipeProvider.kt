@@ -280,6 +280,18 @@ class ModRecipeProvider(output: FabricDataOutput) : FabricRecipeProvider(output)
                 .offerTo(recipeExporter, Identifier(Ic2_120.MOD_ID, "tesla_coil_steel"))
         }
 
+        // ==================== 太阳能发电机配方 ====================
+        // 煤粉 x3 + 玻璃 x3 + 电路板 x2 + 火力发电机 x1
+        val solarGenerator = item("ic2_120:solar_generator")
+        val coalDust = item("ic2_120:coal_dust")
+        if (solarGenerator != Items.AIR && generator != Items.AIR && coalDust != Items.AIR && circuit != Items.AIR) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, solarGenerator, 1)
+                .pattern("CGC").pattern("GTG").pattern("BB ")
+                .input('C', coalDust).input('G', Items.GLASS).input('T', generator).input('B', circuit)
+                .criterion(hasItem(generator), conditionsFromItem(generator))
+                .offerTo(recipeExporter, Identifier(Ic2_120.MOD_ID, "solar_generator"))
+        }
+
         // ==================== 日光灯配方 ====================
         // 绝缘铜质导线（上中）+ 锡质导线（中中）+ 5 玻璃 -> 8 日光灯
         val luminatorFlat = item("ic2_120:luminator_flat")

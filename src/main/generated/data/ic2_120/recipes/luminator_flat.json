@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "ic2_120:insulated_copper_cable"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "T": {
+      "item": "ic2_120:tin_cable"
+    }
+  },
+  "pattern": [
+    " C ",
+    "GTG",
+    "GGG"
+  ],
+  "result": {
+    "count": 8,
+    "item": "ic2_120:luminator_flat"
+  },
+  "show_notification": true
+}
