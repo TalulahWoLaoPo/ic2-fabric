@@ -169,6 +169,28 @@ class ModRecipeProvider(output: FabricDataOutput) : FabricRecipeProvider(output)
             .input('T', treetap).input('M', machine).input('C', circuit)
             .criterion(hasItem(machine), conditionsFromItem(machine))
             .offerTo(recipeExporter, Identifier(Ic2_120.MOD_ID, "extractor"))
+
+        // ==================== 特斯拉线圈配方 ====================
+        // 配方一：5 红石粉 + 1 中压变压器 + 2 铁质外壳 + 1 电路板
+        // 配方二：5 红石粉 + 1 中压变压器 + 2 钢锭 + 1 电路板
+        val mvTransformer = item("ic2_120:mv_transformer")
+        val teslaCoil = item("ic2_120:tesla_coil")
+        val redstone = Items.REDSTONE
+        val ironCasing = item("ic2_120:iron_casing")
+        val steelIngot = item("ic2_120:steel_ingot")
+        if (teslaCoil != Items.AIR) {
+            val centerItem = if (mvTransformer != Items.AIR) mvTransformer else machine
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, teslaCoil, 1)
+                .pattern("RRR").pattern("RTR").pattern("ICI")
+                .input('R', redstone).input('T', centerItem).input('I', ironCasing).input('C', circuit)
+                .criterion(hasItem(ironCasing), conditionsFromItem(ironCasing))
+                .offerTo(recipeExporter, Identifier(Ic2_120.MOD_ID, "tesla_coil_iron"))
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, teslaCoil, 1)
+                .pattern("RRR").pattern("RTR").pattern("SCS")
+                .input('R', redstone).input('T', centerItem).input('S', steelIngot).input('C', circuit)
+                .criterion(hasItem(steelIngot), conditionsFromItem(steelIngot))
+                .offerTo(recipeExporter, Identifier(Ic2_120.MOD_ID, "tesla_coil_steel"))
+        }
     }
 
     private fun createShapeless(

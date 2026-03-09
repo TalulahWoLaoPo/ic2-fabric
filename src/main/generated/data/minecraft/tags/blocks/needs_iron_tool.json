@@ -8,6 +8,7 @@
     "ic2_120:geo_generator",
     "ic2_120:macerator",
     "ic2_120:metal_former",
-    "ic2_120:mfsu"
+    "ic2_120:mfsu",
+    "ic2_120:tesla_coil"
   ]
 }

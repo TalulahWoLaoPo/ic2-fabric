@@ -181,7 +181,7 @@
 | - [ ] | block.ic2.sorting_machine | 电动分拣机 |
 | - [ ] | block.ic2.teleporter | 传送机 |
 | - [ ] | block.ic2.terraformer | 地形转换机 |
-| - [ ] | block.ic2.tesla_coil | 特斯拉线圈 |
+| - [x] | block.ic2.tesla_coil | 特斯拉线圈 |
 | - [ ] | block.ic2.canner | 流体/固体装罐机 |
 | - [ ] | block.ic2.solid_canner | 固体装罐机 |
 | - [ ] | block.ic2.energy_o_mat | 能源交易机 |
@@ -227,10 +227,10 @@
 | - [ ] | block.ic2.insulated_tin_cable | 绝缘锡质导线 |
 | - [ ] | block.ic2.detector_cable | EU 检测导线 |
 | - [ ] | block.ic2.splitter_cable | EU 分流导线 |
-| - [ ] | block.ic2.lv_transformer | 低压变压器 |
-| - [ ] | block.ic2.mv_transformer | 中压变压器 |
-| - [ ] | block.ic2.hv_transformer | 高压变压器 |
-| - [ ] | block.ic2.ev_transformer | 超高压变压器 |
+| - [x] | block.ic2.lv_transformer | 低压变压器 |
+| - [x] | block.ic2.mv_transformer | 中压变压器 |
+| - [x] | block.ic2.hv_transformer | 高压变压器 |
+| - [x] | block.ic2.ev_transformer | 超高压变压器 |
 | - [ ] | block.ic2.tank | 流体储存器 |
 
 ### 机器 - 特殊类

@@ -32,6 +32,12 @@ class ModBlockLootTableProvider(output: FabricDataOutput) : FabricBlockLootTable
         addDrop(Registries.BLOCK.get(Identifier(Ic2_120.MOD_ID, "machine")))
         addDrop(Registries.BLOCK.get(Identifier(Ic2_120.MOD_ID, "advanced_machine")))
 
+        // 变压器（仅合成材料，无 BlockEntity）：直接掉落自身
+        addDrop(Registries.BLOCK.get(Identifier(Ic2_120.MOD_ID, "lv_transformer")))
+        addDrop(Registries.BLOCK.get(Identifier(Ic2_120.MOD_ID, "mv_transformer")))
+        addDrop(Registries.BLOCK.get(Identifier(Ic2_120.MOD_ID, "hv_transformer")))
+        addDrop(Registries.BLOCK.get(Identifier(Ic2_120.MOD_ID, "ev_transformer")))
+
         // 机器方块：条件掉落
         for (block in Registries.BLOCK) {
             val id = Registries.BLOCK.getId(block)
