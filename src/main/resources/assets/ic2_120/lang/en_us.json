@@ -101,6 +101,7 @@
   "block.ic2_120.hv_transformer": "HV Transformer",
   "block.ic2_120.ev_transformer": "EV Transformer",
   "death.attack.tesla_coil": "%1$s was electrocuted until their bones were crispy.",
+  "death.attack.cable_shock": "%1$s was electrocuted by an uninsulated cable.",
   "block.ic2_120.iron_fence": "Iron Fence",
   "block.ic2_120.wooden_storage_box": "Wooden Storage Box",
   "block.ic2_120.iron_storage_box": "Iron Storage Box",

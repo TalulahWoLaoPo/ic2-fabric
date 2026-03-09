@@ -25,9 +25,6 @@ import net.minecraft.world.World
  */
 @ModBlock(name = "geo_generator", registerItem = true, tab = CreativeTab.IC2_MACHINES)
 class GeoGeneratorBlock : MachineBlock() {
-
-    override val tier: Int = GENERATOR_TIER
-
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =
         GeoGeneratorBlockEntity(pos, state)
 
@@ -76,7 +73,6 @@ class GeoGeneratorBlock : MachineBlock() {
     }
 
     companion object {
-        const val GENERATOR_TIER = 1
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")
     }
 }

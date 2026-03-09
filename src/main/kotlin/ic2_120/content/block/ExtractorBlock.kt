@@ -25,8 +25,6 @@ import net.minecraft.world.World
 @ModBlock(name = "extractor", registerItem = true, tab = CreativeTab.IC2_MACHINES)
 class ExtractorBlock : MachineBlock() {
 
-    override val tier: Int = 1
-
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =
         ExtractorBlockEntity(pos, state)
 

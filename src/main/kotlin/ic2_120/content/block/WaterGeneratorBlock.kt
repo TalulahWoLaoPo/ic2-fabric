@@ -27,8 +27,6 @@ import net.minecraft.world.World
 @ModBlock(name = "water_generator", registerItem = true, tab = CreativeTab.IC2_MACHINES)
 class WaterGeneratorBlock : MachineBlock() {
 
-    override val tier: Int = GENERATOR_TIER
-
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =
         WaterGeneratorBlockEntity(pos, state)
 
@@ -77,7 +75,6 @@ class WaterGeneratorBlock : MachineBlock() {
     }
 
     companion object {
-        const val GENERATOR_TIER = 1
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")
     }
 }

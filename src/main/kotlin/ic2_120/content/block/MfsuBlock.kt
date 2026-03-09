@@ -28,13 +28,9 @@ import net.minecraft.world.World
 
 /**
  * MFSU 储电箱方块。仅能量存储，无物品槽。正面允许输入，其余面仅输出。
- * 能量等级：4
  */
 @ModBlock(name = "mfsu", registerItem = true, tab = CreativeTab.IC2_MACHINES)
 class MfsuBlock : MachineBlock() {
-
-    override val tier: Int = 4
-
     /** MFSU 为高级机器，非扳手拆卸时掉高级机器外壳 */
     override fun getCasingDrop(): Item =
         Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "advanced_machine"))

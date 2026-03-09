@@ -25,8 +25,6 @@ import net.minecraft.world.World
 @ModBlock(name = "metal_former", registerItem = true, tab = CreativeTab.IC2_MACHINES)
 class MetalFormerBlock : MachineBlock() {
 
-    override val tier: Int = 1
-
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =
         MetalFormerBlockEntity(pos, state)
 

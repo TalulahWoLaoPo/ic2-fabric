@@ -25,8 +25,6 @@ import net.minecraft.world.World
 @ModBlock(name = "electric_furnace", registerItem = true, tab = CreativeTab.IC2_MACHINES)
 class ElectricFurnaceBlock : MachineBlock() {
 
-    override val tier: Int = 1
-
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =
         ElectricFurnaceBlockEntity(pos, state)
 

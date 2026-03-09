@@ -40,6 +40,7 @@ object EnergyNetworkManager {
         posToNetwork: MutableMap<Long, EnergyNetwork>
     ): EnergyNetwork {
         val network = EnergyNetwork()
+        network.damageTickOffset = world.random.nextBetween(0, 199) // 0–10 秒随机偏移，错开不同电网的伤害时机
         val visited = mutableSetOf<Long>()
         val queue = ArrayDeque<BlockPos>()
         val absorbedNetworks = mutableSetOf<EnergyNetwork>()

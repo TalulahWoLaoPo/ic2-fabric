@@ -20,13 +20,9 @@ import net.minecraft.world.World
 
 /**
  * 火力发电机方块。燃烧燃料产生 EU，支持 facing 与 active 状态。
- * 能量等级：1
  */
 @ModBlock(name = "generator", registerItem = true, tab = CreativeTab.IC2_MACHINES)
 class GeneratorBlock : MachineBlock() {
-
-    override val tier: Int = GENERATOR_TIER
-
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =
         GeneratorBlockEntity(pos, state)
 
@@ -68,9 +64,6 @@ class GeneratorBlock : MachineBlock() {
         super.getPlacementState(ctx)?.with(ACTIVE, false)
 
     companion object {
-        /** 发电机的能量等级（1级） */
-        const val GENERATOR_TIER = 1
-
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")
     }
 }

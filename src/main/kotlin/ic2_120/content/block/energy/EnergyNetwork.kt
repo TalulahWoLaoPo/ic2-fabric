@@ -1,10 +1,18 @@
 package ic2_120.content.block.energy
 
+import ic2_120.content.block.ITieredMachine
 import ic2_120.content.block.cables.BaseCableBlock
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant
+import net.minecraft.entity.LivingEntity
+import net.minecraft.entity.damage.DamageSource
+import net.minecraft.registry.RegistryKey
+import net.minecraft.registry.RegistryKeys
+import net.minecraft.server.world.ServerWorld
+import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Box
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 import team.reborn.energy.api.EnergyStorage
@@ -24,10 +32,17 @@ import java.util.PriorityQueue
  */
 class EnergyNetwork : SnapshotParticipant<Long>() {
 
+    /** 触电伤害间隔（tick）。10 秒 = 200 tick。 */
+    private val damageIntervalTicks = 200
+
     /** 所有成员导线位置（packed [BlockPos.asLong]）。 */
     val cables = mutableSetOf<Long>()
     var energy: Long = 0
     var capacity: Long = 0
+    /** 电网输出等级（1–5），由电网内输出等级最高的机器决定，决定所有导线的电压等级。 */
+    var outputLevel: Int = 1
+    /** 触电伤害触发 tick 偏移（0–199），用于错开不同电网的伤害时机。 */
+    var damageTickOffset: Int = 0
     /** 每根导线的损耗 (milliEU)。 */
     private val cableLossMilliEu = mutableMapOf<Long, Long>()
     /** 拓扑缓存：导线邻接、边界连接、每根导线速率。 */
@@ -79,6 +94,49 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
         if (lastTickTime == time) return
         lastTickTime = time
         pushToConsumers(world)
+        tryUninsulatedCableDamage(world)
+    }
+
+    /** 漏电导线触电伤害：绝缘等级 < 电网输出等级的导线会漏电。每 10 秒触发，范围与伤害量由电网输出等级决定。 */
+    private fun tryUninsulatedCableDamage(world: World) {
+        if (world.isClient) return
+        val serverWorld = world as? ServerWorld ?: return
+        if ((world.time + damageTickOffset) % damageIntervalTicks != 0L) return
+
+        val topology = topologyCache ?: buildTopology(world).also { topologyCache = it }
+        if (topology.cablesThatLeak.isEmpty() || outputLevel < 1) return
+
+        val damageSource = createCableShockDamageSource(serverWorld)
+        val range = outputLevel.toDouble()
+        val damageAmount = outputLevel * 2f // n 心 = n * 2 伤害
+
+        for (cablePosLong in topology.cablesThatLeak) {
+            val cablePos = BlockPos.fromLong(cablePosLong)
+            val box = Box(
+                cablePos.x - range, cablePos.y - range, cablePos.z - range,
+                cablePos.x + range + 1, cablePos.y + range + 1, cablePos.z + range + 1
+            )
+            for (entity in world.getEntitiesByClass(LivingEntity::class.java, box) { e ->
+                e.isAlive && !e.isSpectator && inCableDamageZone(e.blockPos, cablePos, outputLevel)
+            }) {
+                entity.damage(damageSource, damageAmount)
+            }
+        }
+    }
+
+    private fun inCableDamageZone(entityPos: BlockPos, cablePos: BlockPos, level: Int): Boolean {
+        val dx = kotlin.math.abs(entityPos.x - cablePos.x)
+        val dy = kotlin.math.abs(entityPos.y - cablePos.y)
+        val dz = kotlin.math.abs(entityPos.z - cablePos.z)
+        return dx <= level && dy <= level && dz <= level
+    }
+
+    private fun createCableShockDamageSource(world: ServerWorld): DamageSource {
+        val registry = world.registryManager.get(RegistryKeys.DAMAGE_TYPE)
+        val key = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Identifier("ic2_120", "cable_shock"))
+        val entry = registry.getEntry(key).orElse(null)
+            ?: registry.getEntry(RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Identifier("minecraft", "lightning"))).orElseThrow()
+        return DamageSource(entry)
     }
 
     private fun pushToConsumers(world: World) {
@@ -300,6 +358,7 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
         val cableRates = mutableMapOf<Long, Long>()
         val neighbors = mutableMapOf<Long, MutableList<Long>>()
         val boundaries = mutableListOf<BoundaryEdge>()
+        var maxLevel = 1
 
         for (cablePosLong in cables) {
             val cablePos = BlockPos.fromLong(cablePosLong)
@@ -315,14 +374,26 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
                     adjacent.add(neighborLong)
                 } else {
                     boundaries.add(BoundaryEdge(cablePosLong, neighborLong, dir.opposite))
+                    val neighborBe = world.getBlockEntity(neighborPos)
+                    if (neighborBe is ITieredMachine) {
+                        maxLevel = maxOf(maxLevel, neighborBe.tier)
+                    }
                 }
             }
+        }
+
+        outputLevel = maxLevel
+
+        val cablesThatLeak = cables.filter { cablePosLong ->
+            val block = world.getBlockState(BlockPos.fromLong(cablePosLong)).block as? BaseCableBlock ?: return@filter true
+            block.getInsulationLevel() < outputLevel
         }
 
         return TopologyCache(
             cableRates = cableRates,
             neighbors = neighbors.mapValues { it.value.toList() },
-            boundaries = boundaries
+            boundaries = boundaries,
+            cablesThatLeak = cablesThatLeak
         )
     }
 
@@ -359,7 +430,8 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
     private data class TopologyCache(
         val cableRates: Map<Long, Long>,
         val neighbors: Map<Long, List<Long>>,
-        val boundaries: List<BoundaryEdge>
+        val boundaries: List<BoundaryEdge>,
+        val cablesThatLeak: List<Long>
     )
 
     private data class DijkstraResult(

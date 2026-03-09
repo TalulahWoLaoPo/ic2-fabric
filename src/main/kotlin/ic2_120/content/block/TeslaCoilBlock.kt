@@ -26,9 +26,6 @@ import net.minecraft.world.World
  */
 @ModBlock(name = "tesla_coil", registerItem = true, tab = CreativeTab.IC2_MACHINES)
 class TeslaCoilBlock : MachineBlock() {
-
-    override val tier: Int = TESLA_COIL_TIER
-
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =
         TeslaCoilBlockEntity(pos, state)
 
@@ -89,7 +86,6 @@ class TeslaCoilBlock : MachineBlock() {
     }
 
     companion object {
-        const val TESLA_COIL_TIER = 2
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")
     }
 }

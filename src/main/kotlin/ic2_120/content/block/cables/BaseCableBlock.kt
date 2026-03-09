@@ -122,6 +122,15 @@ abstract class BaseCableBlock(settings: AbstractBlock.Settings = defaultSettings
     /** 每格导线的能量损耗（milliEU）。电网总损耗 = sum(各导线损耗) / 1000 EU。 */
     open fun getEnergyLoss(): Long = 200L
 
+    /** 导线是否绝缘。用 [IInsulatedCable] 接口判断。 */
+    open fun isInsulated(): Boolean = this is IInsulatedCable
+
+    /**
+     * 绝缘等级（0–5）。0 表示未绝缘；2–5 表示可安全承受的电网输出等级上限。
+     * 当电网 outputLevel > getInsulationLevel() 时会漏电。
+     */
+    open fun getInsulationLevel(): Int = if (this is IInsulatedCable) (this as IInsulatedCable).getInsulationLevel() else 0
+
     // ── 碰撞/轮廓形状 ──────────────────────────────────────────
 
     @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
@@ -181,6 +190,16 @@ abstract class BaseCableBlock(settings: AbstractBlock.Settings = defaultSettings
             Direction.WEST -> WEST
             Direction.UP -> UP
             Direction.DOWN -> DOWN
+        }
+
+        /** 传输速率（EU/t）到能量等级（1–5）的映射：32→1, 128→2, 512→3, 2048→4, 8192→5。 */
+        @JvmStatic
+        fun transferRateToTier(transferRate: Long): Int = when {
+            transferRate >= 8192 -> 5
+            transferRate >= 2048 -> 4
+            transferRate >= 512 -> 3
+            transferRate >= 128 -> 2
+            else -> 1
         }
     }
 }

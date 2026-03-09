@@ -101,6 +101,7 @@
   "block.ic2_120.hv_transformer": "高压变压器",
   "block.ic2_120.ev_transformer": "超高压变压器",
   "death.attack.tesla_coil": "%1$s被电得骨头酥脆。",
+  "death.attack.cable_shock": "%1$s触碰了未绝缘导线被电击。",
   "block.ic2_120.iron_fence": "铁栅栏",
   "block.ic2_120.wooden_storage_box": "木质储物箱",
   "block.ic2_120.iron_storage_box": "铁质储物箱",

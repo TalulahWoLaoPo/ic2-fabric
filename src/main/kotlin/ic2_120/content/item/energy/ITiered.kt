@@ -27,7 +27,7 @@ package ic2_120.content.item.energy
  */
 interface ITiered {
     /**
-     * 能量等级（1-4）
+     * 能量等级（1-
      *
      * 等级越高，容量和传输速度越大。
      * 具体数值取决于具体实现。
