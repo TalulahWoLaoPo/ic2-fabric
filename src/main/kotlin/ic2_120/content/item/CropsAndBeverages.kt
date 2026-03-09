@@ -28,6 +28,10 @@ class CoffeeBeans : Item(FabricItemSettings())
 @ModItem(name = "coffee_powder", tab = CreativeTab.IC2_MATERIALS, group = "crops")
 class CoffeePowder : Item(FabricItemSettings())
 
+/** 面粉（小麦提取） */
+@ModItem(name = "flour", tab = CreativeTab.IC2_MATERIALS, group = "crops")
+class Flour : Item(FabricItemSettings())
+
 // ========== 饮料杯类 ==========
 
 @ModItem(name = "empty_mug", tab = CreativeTab.IC2_MATERIALS, group = "mugs")

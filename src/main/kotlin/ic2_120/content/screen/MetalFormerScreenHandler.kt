@@ -3,8 +3,10 @@ package ic2_120.content.screen
 import ic2_120.content.sync.MetalFormerSync
 import ic2_120.content.block.MetalFormerBlock
 import ic2_120.content.block.machines.MetalFormerBlockEntity
+import ic2_120.content.item.IUpgradeItem
 import ic2_120.content.item.energy.IBatteryItem
 import ic2_120.content.screen.slot.PredicateSlot
+import ic2_120.content.screen.slot.UpgradeSlotLayout
 import ic2_120.content.screen.slot.SlotMoveHelper
 import ic2_120.content.screen.slot.SlotSpec
 import ic2_120.content.screen.slot.SlotTarget
@@ -33,6 +35,10 @@ class MetalFormerScreenHandler(
 
     val sync = MetalFormerSync(SyncedDataView(propertyDelegate))
 
+    private val upgradeSlotSpec: SlotSpec by lazy {
+        UpgradeSlotLayout.slotSpec { context.get({ world, pos -> world.getBlockEntity(pos) }, null) }
+    }
+
     /**
      * 服务端处理：收到客户端发来的按钮点击包后在此执行。
      * 客户端应发送 [ButtonClickC2SPacket] 指定 syncId 与 [BUTTON_ID_MODE_CYCLE]。
@@ -58,12 +64,6 @@ class MetalFormerScreenHandler(
     init {
         checkSize(blockInventory, MetalFormerBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
-        val upgradeSlotSpec = SlotSpec(
-            canInsert = { _ ->
-            //todo 存放升级元件的，现在还没实现
-                false
-            }
-        )
 
         // 机器槽位
         // 左上：输入槽
@@ -83,8 +83,29 @@ class MetalFormerScreenHandler(
         // 中间右侧：输出槽
         addSlot(PredicateSlot(blockInventory, MetalFormerBlockEntity.SLOT_OUTPUT, OUTPUT_SLOT_X, OUTPUT_SLOT_Y, OUTPUT_SLOT_SPEC))
 
-        // 最右侧：升级槽
-        addSlot(PredicateSlot(blockInventory, MetalFormerBlockEntity.SLOT_UPGRADE, UPGRADE_SLOT_X, UPGRADE_SLOT_Y, upgradeSlotSpec))
+        // 输入槽右侧：次级输入槽（挤压模式双输入配方）
+        addSlot(
+            PredicateSlot(
+                blockInventory,
+                MetalFormerBlockEntity.SLOT_SECONDARY_INPUT,
+                SECONDARY_INPUT_SLOT_X,
+                SECONDARY_INPUT_SLOT_Y,
+                SECONDARY_INPUT_SLOT_SPEC
+            )
+        )
+
+        // 最右侧：4 个升级槽（纵向排列，紧贴原版 UI 右侧）
+        for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
+            addSlot(
+                PredicateSlot(
+                    blockInventory,
+                    MetalFormerBlockEntity.SLOT_UPGRADE_INDICES[i],
+                    UpgradeSlotLayout.SLOT_X,
+                    UpgradeSlotLayout.slotY(i),
+                    upgradeSlotSpec
+                )
+            )
+        }
 
         // 玩家物品栏
         for (row in 0 until 3) {
@@ -116,20 +137,29 @@ class MetalFormerScreenHandler(
                     if (!insertItem(stackInSlot, PLAYER_INV_START, HOTBAR_END, true)) return ItemStack.EMPTY
                     slot.onQuickTransfer(stackInSlot, stack)
                 }
+                // 次级输入槽 -> 玩家物品栏
+                SLOT_SECONDARY_INPUT_INDEX -> {
+                    if (!insertItem(stackInSlot, PLAYER_INV_START, HOTBAR_END, true)) return ItemStack.EMPTY
+                    slot.onQuickTransfer(stackInSlot, stack)
+                }
                 // 升级槽 -> 玩家物品栏
-                SLOT_UPGRADE_INDEX -> {
+                in SLOT_UPGRADE_INDEX_START..SLOT_UPGRADE_INDEX_END -> {
                     if (!insertItem(stackInSlot, PLAYER_INV_START, HOTBAR_END, true)) return ItemStack.EMPTY
                     slot.onQuickTransfer(stackInSlot, stack)
                 }
                 else -> {
                     if (index in PLAYER_INV_START..HOTBAR_END) {
-                        // 玩家物品栏 -> 机器
+                        // 玩家物品栏 -> 机器（放电 -> 输入 -> 次级输入 -> 升级槽）
+                        val upgradeTargets = (SLOT_UPGRADE_INDEX_START..SLOT_UPGRADE_INDEX_END).map {
+                            SlotTarget(slots[it], upgradeSlotSpec)
+                        }
                         val moved = SlotMoveHelper.insertIntoTargets(
                             stackInSlot,
                             listOf(
                                 SlotTarget(slots[SLOT_DISCHARGING_INDEX], DISCHARGING_SLOT_SPEC),
-                                SlotTarget(slots[SLOT_INPUT_INDEX], INPUT_SLOT_SPEC)
-                            )
+                                SlotTarget(slots[SLOT_INPUT_INDEX], INPUT_SLOT_SPEC),
+                                SlotTarget(slots[SLOT_SECONDARY_INPUT_INDEX], SECONDARY_INPUT_SLOT_SPEC)
+                            ) + upgradeTargets
                         )
                         if (!moved) {
                             return ItemStack.EMPTY
@@ -165,8 +195,8 @@ class MetalFormerScreenHandler(
         const val OUTPUT_SLOT_X = 116
         const val OUTPUT_SLOT_Y = 47
 
-        const val UPGRADE_SLOT_X = 152
-        const val UPGRADE_SLOT_Y = 47
+        const val SECONDARY_INPUT_SLOT_X = 74
+        const val SECONDARY_INPUT_SLOT_Y = 35
 
         const val SLOT_SIZE = 18
         private val INPUT_SLOT_SPEC = SlotSpec(
@@ -181,6 +211,9 @@ class MetalFormerScreenHandler(
             canInsert = { false },
             canTake = { true }
         )
+        private val SECONDARY_INPUT_SLOT_SPEC = SlotSpec(
+            canInsert = { stack -> stack.item !is IBatteryItem && stack.item !is IUpgradeItem }
+        )
 
         // 玩家物品栏位置
         const val PLAYER_INV_X = 8
@@ -191,9 +224,11 @@ class MetalFormerScreenHandler(
         const val SLOT_INPUT_INDEX = 0
         const val SLOT_DISCHARGING_INDEX = 1
         const val SLOT_OUTPUT_INDEX = 2
-        const val SLOT_UPGRADE_INDEX = 3
-        const val PLAYER_INV_START = 4
-        const val HOTBAR_END = 40
+        const val SLOT_SECONDARY_INPUT_INDEX = 3
+        const val SLOT_UPGRADE_INDEX_START = 4
+        const val SLOT_UPGRADE_INDEX_END = 7
+        const val PLAYER_INV_START = 8
+        const val HOTBAR_END = 44
 
         /** 客户端发送按钮点击时使用此 id，服务端在 [onButtonClick] 中处理 */
         const val BUTTON_ID_MODE_CYCLE = 0

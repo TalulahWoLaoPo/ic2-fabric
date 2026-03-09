@@ -7,6 +7,7 @@ import ic2_120.client.ui.ProgressBar
 import ic2_120.content.sync.MetalFormerSync
 import ic2_120.content.block.MetalFormerBlock
 import ic2_120.content.screen.MetalFormerScreenHandler
+import ic2_120.content.screen.slot.UpgradeSlotLayout
 import ic2_120.registry.annotation.ModScreen
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.ingame.HandledScreen
@@ -47,12 +48,17 @@ class MetalFormerScreen(
         val inputSlot = handler.slots[MetalFormerScreenHandler.SLOT_INPUT_INDEX]
         val dischargingSlot = handler.slots[MetalFormerScreenHandler.SLOT_DISCHARGING_INDEX]
         val outputSlot = handler.slots[MetalFormerScreenHandler.SLOT_OUTPUT_INDEX]
-        val upgradeSlot = handler.slots[MetalFormerScreenHandler.SLOT_UPGRADE_INDEX]
+        val secondaryInputSlot = handler.slots[MetalFormerScreenHandler.SLOT_SECONDARY_INPUT_INDEX]
 
         context.drawBorder(x + inputSlot.x - borderOffset, y + inputSlot.y - borderOffset, slotSize, slotSize, borderColor)
         context.drawBorder(x + dischargingSlot.x - borderOffset, y + dischargingSlot.y - borderOffset, slotSize, slotSize, borderColor)
         context.drawBorder(x + outputSlot.x - borderOffset, y + outputSlot.y - borderOffset, slotSize, slotSize, borderColor)
-        context.drawBorder(x + upgradeSlot.x - borderOffset, y + upgradeSlot.y - borderOffset, slotSize, slotSize, borderColor)
+        context.drawBorder(x + secondaryInputSlot.x - borderOffset, y + secondaryInputSlot.y - borderOffset, slotSize, slotSize, borderColor)
+
+        for (i in MetalFormerScreenHandler.SLOT_UPGRADE_INDEX_START..MetalFormerScreenHandler.SLOT_UPGRADE_INDEX_END) {
+            val slot = handler.slots[i]
+            context.drawBorder(x + slot.x - borderOffset, y + slot.y - borderOffset, slotSize, slotSize, borderColor)
+        }
 
         // 绘制3个进度条（工具盒轮廓图案），分段显示总进度
         val progress = handler.sync.progress.coerceIn(0, MetalFormerSync.PROGRESS_MAX)
@@ -102,7 +108,7 @@ class MetalFormerScreen(
         val top = y
         val contentW = (backgroundWidth - 16).coerceAtLeast(0)
         val energy = handler.sync.energy.toLong().coerceAtLeast(0)
-        val cap = MetalFormerSync.ENERGY_CAPACITY
+        val cap = handler.sync.energyCapacity.toLong().coerceAtLeast(1)
         val energyFraction = if (cap > 0) (energy.toFloat() / cap).coerceIn(0f, 1f) else 0f
         val currentMode = handler.sync.getMode()
         val modeText = when (currentMode) {
@@ -155,7 +161,8 @@ class MetalFormerScreen(
     }
 
     companion object {
-        private const val PANEL_WIDTH = 176
+        /** 原版 UI 宽度 + 升级槽列宽度 */
+        private val PANEL_WIDTH = UpgradeSlotLayout.VANILLA_UI_WIDTH + UpgradeSlotLayout.SLOT_SPACING
         private const val PANEL_HEIGHT = 184
     }
 }

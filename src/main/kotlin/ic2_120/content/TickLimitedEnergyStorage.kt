@@ -59,12 +59,14 @@ private fun simulateInsertion(receiver: EnergyStorage, maxAmount: Long): Long {
  * - 真实存储仍由 [SimpleEnergyStorage] 处理；
  * - 通过 [currentTickProvider] 识别 tick 边界并累计本 tick 已输入量；
  * - 使用额外快照参与事务，确保模拟插入/回滚不会污染本 tick 计数。
+ * - [maxInsertPerTickProvider] 可选，提供时每 tick 使用其返回值作为上限（如高压升级）。
  */
 open class TickLimitedEnergyStorage(
     capacity: Long,
     private val maxInsertPerTick: Long,
     maxExtract: Long,
-    private val currentTickProvider: () -> Long? = { null }
+    private val currentTickProvider: () -> Long? = { null },
+    private val maxInsertPerTickProvider: (() -> Long)? = null
 ) : SimpleEnergyStorage(capacity, maxInsertPerTick, maxExtract) {
 
     private var insertTrackedTick: Long = Long.MIN_VALUE
@@ -77,17 +79,21 @@ open class TickLimitedEnergyStorage(
         }
     }
 
+    /** 当前 tick 有效的 maxInsert 上限（用于高压升级等），子类可覆盖以加入容量限制 */
+    protected open fun getEffectiveMaxInsertPerTick(): Long =
+        maxInsertPerTickProvider?.invoke() ?: maxInsertPerTick
+
     override fun insert(maxAmount: Long, transaction: TransactionContext): Long {
+        val effectiveMax = getEffectiveMaxInsertPerTick()
         val currentTick = currentTickProvider()
         if (currentTick == null) {
-            // 无可用世界时间时（例如客户端仅用于 GUI 同步），退化为单次调用限流。
-            return super.insert(minOf(maxAmount, maxInsertPerTick), transaction)
+            return super.insert(minOf(maxAmount, effectiveMax), transaction)
         }
         if (insertTrackedTick != currentTick) {
             insertTrackedTick = currentTick
             insertedThisTick = 0L
         }
-        val remainingThisTick = (maxInsertPerTick - insertedThisTick).coerceAtLeast(0L)
+        val remainingThisTick = (effectiveMax - insertedThisTick).coerceAtLeast(0L)
         if (remainingThisTick <= 0L) return 0L
 
         val inserted = super.insert(minOf(maxAmount, remainingThisTick), transaction)
@@ -96,5 +102,45 @@ open class TickLimitedEnergyStorage(
             insertedThisTick += inserted
         }
         return inserted
+    }
+}
+
+/**
+ * 支持储能升级、高压升级的动态存储。
+ * - [capacityBonusProvider]：储能升级带来的额外容量
+ * - [maxInsertPerTickProvider]：高压升级带来的每 tick 输入上限（如 32/128/512 EU/t）
+ */
+open class UpgradeableTickLimitedEnergyStorage(
+    private val baseCapacity: Long,
+    private val capacityBonusProvider: () -> Long,
+    maxInsertPerTick: Long,
+    maxExtract: Long,
+    currentTickProvider: () -> Long? = { null },
+    maxInsertPerTickProvider: (() -> Long)? = null
+) : TickLimitedEnergyStorage(
+    baseCapacity + 256 * 10_000L,  // 父类容量需足够大以容纳最大升级数
+    maxInsertPerTick,
+    maxExtract,
+    currentTickProvider,
+    maxInsertPerTickProvider
+) {
+
+    /** 当前有效容量（基础 + 升级加成） */
+    fun getEffectiveCapacity(): Long = baseCapacity + capacityBonusProvider().coerceAtLeast(0L)
+
+    /**
+     * 高压升级不可使输入超过容量限制。
+     * 有效输入上限 = min(高压增益, 剩余容量)。
+     */
+    override fun getEffectiveMaxInsertPerTick(): Long {
+        val transformerMax = super.getEffectiveMaxInsertPerTick()
+        val space = (getEffectiveCapacity() - amount).coerceAtLeast(0L)
+        return minOf(transformerMax, space)
+    }
+
+    override fun insert(maxAmount: Long, transaction: TransactionContext): Long {
+        val effective = getEffectiveCapacity()
+        val space = (effective - amount).coerceAtLeast(0L)
+        return super.insert(minOf(maxAmount, space), transaction)
     }
 }

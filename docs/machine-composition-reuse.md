@@ -64,6 +64,28 @@
   - `PredicateSlot` 依据 `SlotSpec` 实现通用槽位
   - `SlotMoveHelper` 复用 `quickMove` 的目标槽位插入顺序
 
+### 2.5 升级槽位布局
+
+- 文件：`src/main/kotlin/ic2_120/content/screen/slot/UpgradeSlotLayout.kt`
+- 作用：可复用的升级槽位布局与规则。每个机器有 4 个升级槽位，紧贴原版 UI（176 宽）右侧纵向排列。
+- 规则：仅允许放入 `IUpgradeItem` 实现类的物品，最大堆叠 1。
+- 接入：在 `ScreenHandler` 中循环添加 4 个 `PredicateSlot`，使用 `UpgradeSlotLayout.SLOT_SPEC` 与 `slotY(i)`；在 `BlockEntity` 中预留 4 个库存槽位。
+- 各升级的实际效果由机器在 tick 中自行读取并应用，`UpgradeSlotLayout` 不定义效果逻辑。
+
+### 2.6 升级物品接口
+
+- 文件：`src/main/kotlin/ic2_120/content/item/Upgrades.kt`
+- 接口：`IUpgradeItem`，所有升级类（OverclockerUpgrade、TransformerUpgrade 等）实现此接口。
+- 用途：供 `UpgradeSlotLayout.SLOT_SPEC` 判断物品是否可放入升级槽。
+
+### 2.7 升级支持接口与处理组件
+
+- **机器接口**（`src/main/kotlin/ic2_120/content/upgrade/`）：每个升级对应一个接口，机器选择性实现。
+  - `IOverclockerUpgradeSupport`：暴露 `speedMultiplier`、`energyMultiplier`，供加速升级写入。
+  - `ITransformerUpgradeSupport`、`IEnergyStorageUpgradeSupport` 等：占位，效果待实现。
+- **升级处理组件**：识别升级槽中对应升级数量，累乘计算倍率，写入实现接口的机器。
+  - `OverclockerUpgradeComponent`：统计 OverclockerUpgrade 数量，按 2^n 计算速度与耗能倍率，调用 `apply(inventory, upgradeSlotIndices, machine)`。
+
 ## 3. 当前接入点
 
 - `GeneratorBlockEntity`：
@@ -74,7 +96,8 @@
 - `MetalFormerScreenHandler`：
   - 放电槽改为 `PredicateSlot`，规则为“仅允许电池（`IBatteryItem`）+ 最大堆叠 1”（电动工具不可放电）。
   - 输入槽改为 `SlotSpec` 规则，避免电池误入输入槽。
-  - 玩家物品栏 `quickMove` 改为 `SlotMoveHelper` 路由（放电槽 -> 输入槽）。
+  - 玩家物品栏 `quickMove` 改为 `SlotMoveHelper` 路由（放电槽 -> 输入槽 -> 次级输入槽 -> 4 个升级槽）。
+  - 使用 `UpgradeSlotLayout` 添加 4 个升级槽，紧贴原版 UI 右侧纵向排列。
 - `MetalFormerBlockEntity`：
   - 放电槽接入 `BatteryDischargerComponent`，并限制单堆叠。
 - `GeneratorBlockEntity`：

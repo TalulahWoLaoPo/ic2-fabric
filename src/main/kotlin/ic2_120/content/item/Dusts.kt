@@ -87,6 +87,10 @@ class HydratedTinDust : Item(FabricItemSettings())
 @ModItem(name = "netherrack_dust", tab = CreativeTab.IC2_MATERIALS, group = "dusts")
 class NetherrackDust : Item(FabricItemSettings())
 
+/** 末影珍珠粉 */
+@ModItem(name = "ender_pearl_dust", tab = CreativeTab.IC2_MATERIALS, group = "dusts")
+class EnderPearlDust : Item(FabricItemSettings())
+
 // ========== 小撮粉尘类 ==========
 
 /** 小撮青铜粉 */

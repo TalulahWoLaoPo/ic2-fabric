@@ -4,12 +4,19 @@ import ic2_120.content.recipes.MetalFormerRecipes
 import ic2_120.content.sync.MetalFormerSync
 import ic2_120.content.ModBlockEntities
 import ic2_120.content.energy.charge.BatteryDischargerComponent
+import ic2_120.content.upgrade.EnergyStorageUpgradeComponent
+import ic2_120.content.upgrade.IEnergyStorageUpgradeSupport
+import ic2_120.content.upgrade.IOverclockerUpgradeSupport
+import ic2_120.content.upgrade.OverclockerUpgradeComponent
+import ic2_120.content.upgrade.ITransformerUpgradeSupport
+import ic2_120.content.upgrade.TransformerUpgradeComponent
 import ic2_120.content.pullEnergyFromNeighbors
 import ic2_120.content.block.MetalFormerBlock
 import ic2_120.content.screen.MetalFormerScreenHandler
 import ic2_120.content.syncs.SyncedData
 import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.annotation.RegisterEnergy
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.entity.player.PlayerEntity
@@ -30,27 +37,42 @@ class MetalFormerBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
+) : BlockEntity(type, pos, state), Inventory, IOverclockerUpgradeSupport, IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, ExtendedScreenHandlerFactory {
+
+    override var speedMultiplier: Float = 1f
+    override var energyMultiplier: Float = 1f
+    override var capacityBonus: Long = 0L
+    override var voltageTierBonus: Int = 0
 
     companion object {
         const val METAL_FORMER_TIER = 1
         const val SLOT_INPUT = 0
         const val SLOT_OUTPUT = 1
         const val SLOT_DISCHARGING = 2
-        const val SLOT_UPGRADE = 3
-        const val INVENTORY_SIZE = 4
+        const val SLOT_SECONDARY_INPUT = 3  // 挤压模式双输入配方的次要输入
+        const val SLOT_UPGRADE_0 = 4
+        const val SLOT_UPGRADE_1 = 5
+        const val SLOT_UPGRADE_2 = 6
+        const val SLOT_UPGRADE_3 = 7
+        val SLOT_UPGRADE_INDICES = intArrayOf(SLOT_UPGRADE_0, SLOT_UPGRADE_1, SLOT_UPGRADE_2, SLOT_UPGRADE_3)
+        const val INVENTORY_SIZE = 8
     }
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
 
     val syncedData = SyncedData(this)
     @RegisterEnergy
-    val sync = MetalFormerSync(syncedData) { world?.time }
+    val sync = MetalFormerSync(
+        syncedData,
+        { world?.time },
+        { capacityBonus },
+        { TransformerUpgradeComponent.maxInsertForTier(METAL_FORMER_TIER + voltageTierBonus) }
+    )
     private val batteryDischarger = BatteryDischargerComponent(
         inventory = this,
         batterySlot = SLOT_DISCHARGING,
         machineTierProvider = { METAL_FORMER_TIER },
-        canDischargeNow = { sync.amount < MetalFormerSync.ENERGY_CAPACITY }
+        canDischargeNow = { sync.amount < sync.getEffectiveCapacity() }
     )
 
     constructor(pos: BlockPos, state: BlockState) : this(
@@ -116,8 +138,15 @@ class MetalFormerBlockEntity(
         if (world.isClient) return
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
 
-        // 从相邻方块或物品栏电池提取能量
-        pullEnergyFromNeighbors(world, pos, sync, MetalFormerSync.MAX_INSERT)
+        // 应用升级效果（加速、储能、高压等）
+        OverclockerUpgradeComponent.apply(this, SLOT_UPGRADE_INDICES, this)
+        EnergyStorageUpgradeComponent.apply(this, SLOT_UPGRADE_INDICES, this)
+        TransformerUpgradeComponent.apply(this, SLOT_UPGRADE_INDICES, this)
+        sync.energyCapacity = sync.getEffectiveCapacity().toInt().coerceIn(0, Int.MAX_VALUE)
+
+        // 从相邻方块或导线提取能量（maxPull 随高压升级提高）
+        val maxPull = sync.getMaxInsertPerTick()
+        pullEnergyFromNeighbors(world, pos, sync, maxPull)
 
         // 从放电槽提取能量
         extractFromDischargingSlot()
@@ -132,7 +161,7 @@ class MetalFormerBlockEntity(
         val currentMode = sync.getMode()
 
         // 检查配方（支持双输入配方）
-        val secondaryInput = if (needsSecondaryInput(currentMode)) getStack(SLOT_UPGRADE) else null
+        val secondaryInput = if (needsSecondaryInput(currentMode)) getStack(SLOT_SECONDARY_INPUT) else null
         val result = MetalFormerRecipes.getOutput(currentMode, input, secondaryInput) ?: run {
             if (sync.progress != 0) sync.progress = 0
             setActiveState(world, pos, state, false)
@@ -150,6 +179,7 @@ class MetalFormerBlockEntity(
             return
         }
 
+        val progressIncrement = speedMultiplier.toInt().coerceAtLeast(1)
         if (sync.progress >= MetalFormerSync.PROGRESS_MAX) {
             // 消耗输入物品
             input.decrement(1)
@@ -169,11 +199,11 @@ class MetalFormerBlockEntity(
             return
         }
 
-        val need = MetalFormerSync.ENERGY_PER_TICK
+        val need = (MetalFormerSync.ENERGY_PER_TICK * energyMultiplier).toLong().coerceAtLeast(1L)
         if (sync.amount >= need) {
             sync.amount = (sync.amount - need).coerceAtLeast(0L)
             sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
-            sync.progress += 1
+            sync.progress += progressIncrement
             markDirty()
             setActiveState(world, pos, state, true)
         } else {
@@ -182,7 +212,7 @@ class MetalFormerBlockEntity(
     }
 
     /**
-     * 检查当前模式是否需要次要输入（升级槽）
+     * 检查当前模式是否需要次要输入（次级输入槽）
      * 某些挤压模式配方需要两个输入
      */
     private fun needsSecondaryInput(mode: MetalFormerSync.Mode): Boolean {
@@ -193,14 +223,14 @@ class MetalFormerBlockEntity(
      * 从放电槽提取能量（如果需要）
      */
     private fun extractFromDischargingSlot() {
-        val space = (MetalFormerSync.ENERGY_CAPACITY - sync.amount).coerceAtLeast(0L)
+        val space = (sync.getEffectiveCapacity() - sync.amount).coerceAtLeast(0L)
         if (space <= 0L) return
 
-        val request = minOf(space, MetalFormerSync.MAX_INSERT)
+        val request = minOf(space, sync.getMaxInsertPerTick())
         val extracted = batteryDischarger.tick(request)
         if (extracted <= 0L) return
 
-        sync.amount = (sync.amount + extracted).coerceAtMost(MetalFormerSync.ENERGY_CAPACITY)
+        sync.amount = (sync.amount + extracted).coerceAtMost(sync.getEffectiveCapacity())
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
         markDirty()
     }
