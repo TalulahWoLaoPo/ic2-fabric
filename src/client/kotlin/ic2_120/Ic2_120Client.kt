@@ -7,6 +7,7 @@ import ic2_120.client.ClientBlockRenderLayers
 import ic2_120.client.ClientEntityRenderers
 import ic2_120.client.ClientScreenRegistrar
 import ic2_120.client.FluidCellColorProvider
+import ic2_120.client.RubberLeavesColorProvider
 import ic2_120.client.StorageBoxColorProvider
 import net.fabricmc.api.ClientModInitializer
 
@@ -23,5 +24,7 @@ object Ic2_120Client : ClientModInitializer {
 		StorageBoxColorProvider.register()
 		// 注册通用流体单元着色器（流体颜色渲染到中心）
 		FluidCellColorProvider.register()
+		// 注册橡胶树叶生物群系着色器
+		RubberLeavesColorProvider.register()
 	}
 }

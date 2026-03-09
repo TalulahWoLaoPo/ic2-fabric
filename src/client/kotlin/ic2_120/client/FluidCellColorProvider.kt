@@ -29,7 +29,9 @@ object FluidCellColorProvider {
                 else -> {
                     val handler = FluidRenderHandlerRegistry.INSTANCE.get(fluid)
                         ?: return@register -1
-                    handler.getFluidColor(null, null, fluid.defaultState)
+                    val color = handler.getFluidColor(client.world, client.player?.blockPos ?: BlockPos.ORIGIN, fluid.defaultState)
+                    println("$fluid: $color")
+                    color
                 }
             }
         }, fluidCell)
