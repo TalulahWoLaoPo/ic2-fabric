@@ -13,5 +13,5 @@ package ic2_120.content.block.cables
  */
 interface IInsulatedCable {
     /** 绝缘等级（2–5）。等级 ≥ 电网输出等级时不会漏电。 */
-    fun getInsulationLevel(): Int
+    val insulationLevel: Int
 }

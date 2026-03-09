@@ -2,6 +2,7 @@ package ic2_120.content.block.machines
 
 import ic2_120.content.ModBlockEntities
 import ic2_120.content.block.ExtractorBlock
+import ic2_120.content.block.ITieredMachine
 import ic2_120.content.pullEnergyFromNeighbors
 import ic2_120.content.recipes.ExtractorRecipes
 import ic2_120.content.screen.ExtractorScreenHandler
@@ -36,7 +37,9 @@ class ExtractorBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, IOverclockerUpgradeSupport, IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, ExtendedScreenHandlerFactory {
+) : BlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport, IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, ExtendedScreenHandlerFactory {
+
+    override val tier: Int = EXTRACTOR_TIER
 
     override var speedMultiplier: Float = 1f
     override var energyMultiplier: Float = 1f

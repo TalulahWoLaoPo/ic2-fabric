@@ -127,9 +127,9 @@ abstract class BaseCableBlock(settings: AbstractBlock.Settings = defaultSettings
 
     /**
      * 绝缘等级（0–5）。0 表示未绝缘；2–5 表示可安全承受的电网输出等级上限。
-     * 当电网 outputLevel > getInsulationLevel() 时会漏电。
+     * 当电网 outputLevel > insulationLevel 时会漏电。
      */
-    open fun getInsulationLevel(): Int = if (this is IInsulatedCable) (this as IInsulatedCable).getInsulationLevel() else 0
+    open val insulationLevel: Int get() = if (this is IInsulatedCable) this.insulationLevel else 0
 
     // ── 碰撞/轮廓形状 ──────────────────────────────────────────
 

@@ -12,6 +12,7 @@ import ic2_120.content.upgrade.ITransformerUpgradeSupport
 import ic2_120.content.upgrade.TransformerUpgradeComponent
 import ic2_120.content.pullEnergyFromNeighbors
 import ic2_120.content.block.MetalFormerBlock
+import ic2_120.content.block.ITieredMachine
 import ic2_120.content.screen.MetalFormerScreenHandler
 import ic2_120.content.syncs.SyncedData
 import ic2_120.registry.annotation.ModBlockEntity
@@ -37,7 +38,9 @@ class MetalFormerBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, IOverclockerUpgradeSupport, IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, ExtendedScreenHandlerFactory {
+) : BlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport, IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, ExtendedScreenHandlerFactory {
+
+    override val tier: Int = METAL_FORMER_TIER
 
     override var speedMultiplier: Float = 1f
     override var energyMultiplier: Float = 1f

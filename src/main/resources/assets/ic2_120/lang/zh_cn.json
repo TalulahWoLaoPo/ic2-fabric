@@ -322,6 +322,7 @@
   "item.ic2_120.energy_debug_stick": "能量调试棒",
   "message.ic2_120.energy_debug_stick.no_energy": "该方块无能量存储",
   "message.ic2_120.energy_debug_stick.info": "%s / %s EU (%s%%) | 输入:%s 输出:%s | 单次可入 %s / 可出 %s EU",
+  "message.ic2_120.energy_debug_stick.network": "电网等级 %s | 导线数 %s",
   "item.ic2_120.re_battery": "充电电池",
   "item.ic2_120.advanced_re_battery": "高级充电电池",
   "item.ic2_120.energy_crystal": "能量水晶",

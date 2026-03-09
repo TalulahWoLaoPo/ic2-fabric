@@ -3,6 +3,7 @@ package ic2_120.content.block.machines
 import ic2_120.content.sync.GeneratorSync
 import ic2_120.content.ModBlockEntities
 import ic2_120.content.block.GeneratorBlock
+import ic2_120.content.block.IGenerator
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.energy.charge.BatteryChargerComponent
 import ic2_120.content.screen.GeneratorScreenHandler
@@ -37,7 +38,7 @@ class GeneratorBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : MachineBlockEntity(type, pos, state), Inventory, net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
+) : MachineBlockEntity(type, pos, state), Inventory, IGenerator, net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
 
     companion object {
         /** 发电机的能量等级（1级） */

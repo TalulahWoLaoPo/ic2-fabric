@@ -4,6 +4,7 @@ import ic2_120.content.sync.ElectricFurnaceSync
 import ic2_120.content.ModBlockEntities
 import ic2_120.content.pullEnergyFromNeighbors
 import ic2_120.content.block.ElectricFurnaceBlock
+import ic2_120.content.block.ITieredMachine
 import ic2_120.content.screen.ElectricFurnaceScreenHandler
 import ic2_120.content.syncs.SyncedData
 import ic2_120.registry.annotation.ModBlockEntity
@@ -35,7 +36,9 @@ class ElectricFurnaceBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, ExtendedScreenHandlerFactory {
+) : BlockEntity(type, pos, state), Inventory, ITieredMachine, ExtendedScreenHandlerFactory {
+
+    override val tier: Int = 1
 
     private val inventory = DefaultedList.ofSize(2, ItemStack.EMPTY)  // 0: 输入, 1: 输出
 

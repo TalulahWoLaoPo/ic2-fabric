@@ -1,5 +1,7 @@
 package ic2_120.content.item
 
+import ic2_120.content.block.cables.BaseCableBlock
+import ic2_120.content.block.energy.EnergyNetworkManager
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.annotation.ModItem
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction
@@ -73,6 +75,17 @@ class EnergyDebugStickItem : Item(FabricItemSettings()) {
             maxExtractOnce
         ).formatted(Formatting.GREEN)
         player.sendMessage(msg, true)
+
+        // 点击导线时额外显示电网等级与导线数
+        if (world.getBlockState(pos).block is BaseCableBlock) {
+            val network = EnergyNetworkManager.getOrCreateNetwork(world, pos)
+            val networkMsg = net.minecraft.text.Text.translatable(
+                "message.ic2_120.energy_debug_stick.network",
+                network.outputLevel,
+                network.cables.size
+            ).formatted(Formatting.AQUA)
+            player.sendMessage(networkMsg, true)
+        }
         return ActionResult.SUCCESS
     }
 }

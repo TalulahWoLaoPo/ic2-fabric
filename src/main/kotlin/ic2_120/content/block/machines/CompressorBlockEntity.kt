@@ -5,6 +5,7 @@ import ic2_120.content.sync.CompressorSync
 import ic2_120.content.ModBlockEntities
 import ic2_120.content.pullEnergyFromNeighbors
 import ic2_120.content.block.CompressorBlock
+import ic2_120.content.block.ITieredMachine
 import ic2_120.content.screen.CompressorScreenHandler
 import ic2_120.content.syncs.SyncedData
 import ic2_120.content.upgrade.EnergyStorageUpgradeComponent
@@ -35,7 +36,9 @@ class CompressorBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, IOverclockerUpgradeSupport, IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
+) : BlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport, IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
+
+    override val tier: Int = COMPRESSOR_TIER
 
     override var speedMultiplier: Float = 1f
     override var energyMultiplier: Float = 1f

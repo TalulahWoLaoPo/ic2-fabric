@@ -2,6 +2,7 @@ package ic2_120.content.block.machines
 
 import ic2_120.content.ModBlockEntities
 import ic2_120.content.block.TeslaCoilBlock
+import ic2_120.content.block.ITieredMachine
 import ic2_120.content.pullEnergyFromNeighbors
 import ic2_120.content.screen.TeslaCoilScreenHandler
 import ic2_120.content.sync.TeslaCoilSync
@@ -42,7 +43,9 @@ class TeslaCoilBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), ExtendedScreenHandlerFactory {
+) : BlockEntity(type, pos, state), ITieredMachine, ExtendedScreenHandlerFactory {
+
+    override val tier: Int = 2
 
     val syncedData = SyncedData(this)
     @RegisterEnergy

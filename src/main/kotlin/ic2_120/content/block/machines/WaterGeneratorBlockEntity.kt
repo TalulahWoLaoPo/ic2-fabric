@@ -3,6 +3,7 @@ package ic2_120.content.block.machines
 import ic2_120.Ic2_120
 import ic2_120.content.ModBlockEntities
 import ic2_120.content.block.WaterGeneratorBlock
+import ic2_120.content.block.IGenerator
 import ic2_120.content.energy.charge.BatteryChargerComponent
 import ic2_120.content.item.getFluidCellVariant
 import ic2_120.content.item.energy.IElectricTool
@@ -53,7 +54,7 @@ class WaterGeneratorBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : MachineBlockEntity(type, pos, state), Inventory,
+) : MachineBlockEntity(type, pos, state), Inventory, IGenerator,
     net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
 
     companion object {

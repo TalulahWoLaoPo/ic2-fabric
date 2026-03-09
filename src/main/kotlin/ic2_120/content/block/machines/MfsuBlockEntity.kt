@@ -2,6 +2,7 @@ package ic2_120.content.block.machines
 
 import ic2_120.content.sync.MfsuSync
 import ic2_120.content.ModBlockEntities
+import ic2_120.content.block.ITieredMachine
 import ic2_120.content.block.MfsuBlock
 import ic2_120.content.screen.MfsuScreenHandler
 import ic2_120.content.syncs.SyncedData
@@ -29,14 +30,17 @@ class MfsuBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), ExtendedScreenHandlerFactory {
+) : BlockEntity(type, pos, state), ExtendedScreenHandlerFactory, ITieredMachine {
+
+    override val tier: Int = 4
 
     val syncedData = SyncedData(this)
     @RegisterEnergy
     val sync = MfsuSync(
         syncedData,
         { world?.getBlockState(pos)?.get(Properties.HORIZONTAL_FACING) ?: Direction.NORTH },
-        { world?.time }
+        { world?.time },
+        tier = tier
     )
 
     constructor(pos: BlockPos, state: BlockState) : this(

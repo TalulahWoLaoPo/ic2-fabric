@@ -6,6 +6,7 @@ import ic2_120.content.ModBlockEntities
 import ic2_120.content.pullEnergyFromNeighbors
 import ic2_120.content.energy.charge.BatteryDischargerComponent
 import ic2_120.content.block.MaceratorBlock
+import ic2_120.content.block.ITieredMachine
 import ic2_120.content.screen.MaceratorScreenHandler
 import ic2_120.content.syncs.SyncedData
 import ic2_120.content.item.energy.IBatteryItem
@@ -32,7 +33,9 @@ class MaceratorBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
+) : BlockEntity(type, pos, state), Inventory, ITieredMachine, net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
+
+    override val tier: Int = MACERATOR_TIER
 
     companion object {
         const val MACERATOR_TIER = 1

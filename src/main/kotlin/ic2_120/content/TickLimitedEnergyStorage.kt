@@ -128,6 +128,9 @@ open class UpgradeableTickLimitedEnergyStorage(
     /** 当前有效容量（基础 + 升级加成） */
     fun getEffectiveCapacity(): Long = baseCapacity + capacityBonusProvider().coerceAtLeast(0L)
 
+    /** 对外暴露动态容量，供 Energy API 查询及外部模组识别。 */
+    override fun getCapacity(): Long = getEffectiveCapacity()
+
     /**
      * 高压升级不可使输入超过容量限制。
      * 有效输入上限 = min(高压增益, 剩余容量)。

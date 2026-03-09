@@ -1,294 +1,187 @@
-# 导线与电网系统（路径拉取 + 缓存版）
+# 导线与电网系统（与当前实现一致）
 
-基于 TechReborn Energy API（`EnergyStorage.SIDED`）实现 IC2 风格导线网络。  
-相连导线形成一个电网，由电网在每 tick 统一执行能量路由，避免方块实体 tick 顺序造成吞吐偏差。
+本文档对应以下实现：
+- `src/main/kotlin/ic2_120/content/block/energy/EnergyNetworkManager.kt`
+- `src/main/kotlin/ic2_120/content/block/energy/EnergyNetwork.kt`
 
-源码：`src/main/kotlin/ic2_120/content/block/` 下的
-- `BaseCableBlock.kt`
-- `CableBlockEntity.kt`
-- `EnergyNetwork.kt`
-- `EnergyNetworkManager.kt`
+目标：说明当前代码的真实行为，而不是理想设计。
 
----
+## 1. 数据模型
 
-## 核心模型
+`EnergyNetwork` 表示一个连通导线集合共享的能量池：
+- `cables: MutableSet<Long>`：成员导线坐标（`BlockPos.asLong`）。
+- `energy: Long`：共享池能量。
+- `capacity: Long`：所有成员导线 `transferRate` 之和。
+- `outputLevel: Int`：电网输出等级，初始为 `1`，由拓扑扫描时“可向电网该面输出能量（`supportsExtraction()`）”的邻接 `ITieredMachine.tier` 最大值决定。
+- `cableLossMilliEu`：每根导线的路径损耗权重（milliEU）。
 
-- 所有连通导线共享一个 `EnergyNetwork`。
-- 每根导线提供：
-  - `transferRate`（EU/t，每 tick 可通过容量）
-  - `energyLoss`（milliEU/格，路径损耗权重）
-- 电网每 tick 仅执行一次（`lastTickTime` 去重）。
-- 真实写入通过 Fabric 事务，失败自动回滚。
+`EnergyNetworkManager` 维护按维度分组的索引：
+- `RegistryKey<World> -> (posLong -> EnergyNetwork)`。
 
----
+## 2. 生命周期
 
-## 电网输出等级与触电伤害
+### 2.1 惰性构建
 
-### 输出等级
+`getOrCreateNetwork(world, pos)`：
+1. 若 `pos` 已在索引中，直接返回已有网络。
+2. 否则从 `startPos` 做 BFS，仅沿导线连接属性为 `true` 的方向扩展。
+3. 对每根访问到的导线：
+   - `addCable()` 累加容量并记录损耗。
+   - 将该位置映射到新网络。
+   - 把 `CableBlockEntity.localEnergy` 并入网络并清零。
+   - 把 `be.network` 指向新网络。
+4. 若 BFS 过程中碰到旧网络成员，会把旧网络能量吸收到新网络。
+5. 新网络 `damageTickOffset` 取 `world.random.nextBetween(0, 199)`。
+6. 构建结束后执行 `energy = min(energy, capacity)`。
 
-电网输出等级（1–5）由**电网内输出等级最高的机器**（`ITieredMachine.tier`）决定，与导线材质无关。该等级决定漏电导线的触电伤害范围与伤害量。
+### 2.2 失效/拆分
 
-### 漏电与触电伤害
+`invalidateAt(world, pos)`：
+1. 找到 `pos` 所在网络。
+2. 将网络总能量按成员 BE 数量均分回 `localEnergy`（余数从前几个 BE +1）。
+3. 清理该网络所有成员位置索引。
+4. 清空成员 `be.network`。
 
-- **绝缘等级**：`IInsulatedCable.getInsulationLevel()` 返回 2–5。1 倍绝缘=2（≤128），2 倍=3（≤512），3 倍=4（≤2048），玻纤=5（绝不漏电）。
-- **漏电判定**：当 `getInsulationLevel() < 电网 outputLevel` 时导线漏电；未绝缘导线等级为 0。
-- **伤害规则**：漏电导线附近 n 格（n=电网等级，切比雪夫距离 ≤ n）为伤害区域，每次造成 n 心伤害。
-- **触发间隔**：每 10 秒（200 tick）触发一次。
-- **错峰机制**：电网构建时分配 0–200 tick 的随机偏移，使不同电网在不同 tick 触发伤害，避免大电网同时遍历。
+之后剩余导线会在下一次 `getOrCreateNetwork` 时惰性重建。
 
----
+### 2.3 连接缓存失效
 
-## 电网生命周期
+`invalidateConnectionCachesAt(world, pos)` 只做：
+- `network.invalidateConnectionCaches()`，即清空拓扑/路径缓存。
+- 不会拆网，不会修改 `energy`。
 
-### 惰性构建
+### 2.4 世界卸载
 
-`CableBlockEntity.tick()` 发现 `network == null` 时调用 `EnergyNetworkManager.getOrCreateNetwork(world, pos)`：
+`onWorldUnload(world)` 仅移除该维度缓存，不影响其他维度。
 
-1. BFS 收集连通导线；
-2. 汇总导线容量到 `capacity`；
-3. 记录每根导线损耗；
-4. 汇总成员 `localEnergy` 到共享池；
-5. 吸收接触到的旧网能量并完成合并。
+## 3. 每 tick 执行流程
 
-### 拆分
+`tickIfNeeded(world)` 保证同一网络每个游戏 tick 只执行一次：
+1. `pushToConsumers(world)`：执行能量传输。
+2. `tryUninsulatedCableDamage(world)`：执行漏电伤害判定。
 
-导线被替换时 `BaseCableBlock.onStateReplaced()` 调 `EnergyNetworkManager.invalidateAt(world, pos)`：
+## 4. 传输规则（pushToConsumers）
 
-- 共享池能量均分回成员导线 `localEnergy`；
-- 清理成员 `be.network`；
-- 从索引移除该网成员；
-- 剩余导线下次 tick 自动重建。
+### 4.1 边界端点识别
 
-### 世界卸载
+基于拓扑缓存的 `boundaries`，查找边界相邻方块的 `EnergyStorage.SIDED`：
+- `supportsInsertion()` => 记为消费者。
+- `supportsExtraction()` => 记为供电者。
+- 同一端点可能同时是消费者和供电者。
 
-`EnergyNetworkManager` 按维度缓存：`RegistryKey<World> -> MutableMap<Long, EnergyNetwork>`。  
-`ServerWorldEvents.UNLOAD` 仅清理当前卸载维度。
+### 4.2 每 tick 临时线缆容量
 
----
+`remainingCableCapacity[cable] = transferRate`。后续每次成功传输都会扣减，避免同 tick 叠加超载。
 
-## 传输算法（当前实现）
+### 4.3 执行顺序
 
-每 tick 在 `EnergyNetwork.pushToConsumers()` 中执行：
+1. 先让消费者从网络缓冲池 `energy` 取电（`pullFromBufferedEnergyByPath`）。
+2. 再让消费者从供电者取电（`pullFromProvidersByPath`）。
 
-1. 扫描边界端点：
-   - 消费者：`supportsInsertion == true`
-   - 供电者：`supportsExtraction == true`
-2. 初始化导线临时容量：`remainingCableCapacity[cable] = transferRate`；
-3. 先从 `network.energy` 给消费者供电（走完整路径规则）；
-4. 再从真实供电者向消费者供电。
+### 4.4 路径与损耗
 
-### 路径选择
+对单个消费者，以其 `entryCables` 作为 Dijkstra 多源起点：
+- 邻接图来自当前拓扑缓存。
+- 边权使用“到达下一根导线的损耗” `cableLossMilliEu[next]`。
+- 起点初始距离为该起点导线自身损耗。
 
-对每个消费者：
+候选路径按 `pathLossMilliEu` 升序尝试。
 
-- 用“与该消费者相邻的导线集合”作为 Dijkstra 多源起点；
-- 边权为目标导线 `energyLoss`（milliEU）；
-- 得到到导线/供电入口的最小损耗路径；
-- 按损耗从小到大依次尝试拉取。
+### 4.5 单路径可传输上限
 
-### 单路径传输上限
-
-候选路径上限：
-
-- `pathCapacity = min(路径导线 remainingCableCapacity)`
-- `pathLossEu = pathLossMilliEu / 1000`
+对一条候选路径：
+- `pathCapacity = min(路径上各导线 remainingCableCapacity)`
+- `pathLossEu = pathLossMilliEu / 1000`（整数除法）
 - `maxDeliverable = max(pathCapacity - pathLossEu, 0)`
 
-实际传输还受：
+实际成功量还受消费者插入量、供电者提取量、网络池余量限制。
 
-- 消费者实时可接收量（事务模拟插入）；
-- 供电者实时可提取量（真实 `extract`）；
-- 缓冲池可用量（`network.energy`）。
+### 4.6 扣减规则
 
-### 防止导线超载
-
-路径传输成功后，路径上每根导线都扣减相同通过量（含损耗）：
-
+一次成功传输后，对路径上每根导线统一扣减 `moved`（包含损耗）：
 - `remainingCableCapacity[cable] -= moved`
 
-确保同一 tick 内任意导线不会被多路径叠加超过 `transferRate`。
+缓冲池路径会额外：
+- `energy -= moved`
 
----
+供电者路径不改 `energy`，能量从 provider 到 consumer 直接完成事务。
 
-## 缓冲池一致性
+## 5. 拓扑缓存与路径缓存
 
-push 型发电机注入导线后，能量进入 `network.energy`。  
-消费者从缓冲池取电时同样走“最小损耗路径 + 路径最小容量 + 全路径扣减”，与真实供电者一致。
+`EnergyNetwork` 有三类缓存：
+1. `topologyCache`：
+   - `cableRates`
+   - `neighbors`
+   - `boundaries`
+   - `cablesThatLeak`（绝缘等级 &lt; outputLevel，用于漏电伤害）
+   - `cablesThatCanBurn`（导线电压等级 &lt; outputLevel，用于低耐压烧毁）
+2. `dijkstraCacheByEntries`：按消费者入口集合缓存最短路结果。
+3. `bufferedCandidatesCacheByEntries`：按消费者入口集合缓存“从缓冲池出发可用的导线路径候选”。
 
----
+失效时机：
+- `addCable()` -> 清空所有缓存。
+- `invalidateConnectionCaches()` -> 清空所有缓存。
 
-## 缓存策略
+缓存上限保护：
+- 任一路径缓存 map 条目数 `> 512` 时整表清空。
 
-`EnergyNetwork` 使用两层缓存：
+## 6. 漏电伤害
 
-1. 拓扑缓存：导线邻接、边界连接、导线速率；
-2. 最短路缓存：按“消费者入口导线集合”缓存 Dijkstra 结果与候选路径。
+触发条件（全部满足才执行）：
+- 服务端世界。
+- `(world.time + damageTickOffset) % 200 == 0`。
+- `outputLevel >= 1`。
+- 存在漏电导线：`block.insulationLevel < outputLevel`。
 
-有缓存上限保护（过多时清空），防止极端场景内存增长。
+伤害规则：
+- 目标：漏电导线附近 `Chebyshev` 距离 `<= outputLevel` 的 `LivingEntity`（排除 spectator/dead）。
+- 伤害源：`ic2_120:cable_shock`，若不存在回退 `minecraft:lightning`。
+- 伤害值：`outputLevel * 2f`（即 `outputLevel` 颗心）。
 
----
+## 7. 低耐压导线烧毁
 
-## NBT 持久化
+当电网中存在**输出等级高于部分导线电压等级**的情况（例如锡线接入含 MFSU 的玻璃纤维电网）时，低耐压导线会随机烧毁，而非一次性全部消失。
 
-- 键：`CableEnergy`
-- 读取：`readNbt -> localEnergy`
-- 写入：
-  - 有网络：`network.getEnergySharePerCable()`
-  - 无网络：`localEnergy`
+触发条件（全部满足才执行）：
+- 服务端世界。
+- 与漏电伤害同一周期：`(world.time + damageTickOffset) % 200 == 0`。
+- `outputLevel >= 1`。
+- 存在“可烧毁”导线：导线实现 [ITiered](../src/main/kotlin/ic2_120/content/item/energy/ITiered.kt)，且 `block.tier < outputLevel`（**只烧电压等级低于电网输出等级的导线**，同等级或更高不烧，例如玻璃纤维不烧）。
 
-用于区块卸载/重载时保留能量并在重建网络时回收。
-# 导线与电网系统（路径拉取 + 缓存版）
+烧毁规则：
+- **损坏比例**：常量 `underTierCableBurnRatio`（默认 0.1，即 10%）。每次检查时，在所有“可烧毁”导线中**随机**选出该比例的导线进行烧毁。
+- **示例**：10 根锡线接入一个全为玻璃纤维且存在 MFSU（4 级输出）的电网，电网 `outputLevel` 为 4，锡线 tier=1，属于可烧毁；每次检查随机烧毁约 10% 的锡线，玻璃纤维（tier=5）不会被烧。
+- **效果**：被选中的导线方块被破坏（`breakBlock(pos, false)`，不掉落），并在该位置生成烟雾与火焰粒子（`LARGE_SMOKE`、`FLAME`）表示烧毁。
+- 烧毁后电网会因导线消失而触发 `invalidateAt`，拓扑在下次 tick 重建。
 
-基于 TechReborn Energy API（`EnergyStorage.SIDED`）实现 IC2 风格导线网络。  
-相连导线形成一个电网，由电网统一在每 tick 执行能量路由，避免方块实体 tick 顺序造成吞吐偏差。
+## 8. 机器耐压检测与过压爆炸
 
-源码：`src/main/kotlin/ic2_120/content/block/` 下的
-- `BaseCableBlock.kt`
-- `CableBlockEntity.kt`
-- `EnergyNetwork.kt`
-- `EnergyNetworkManager.kt`
+与电网相连的机器若**有效耐压等级**低于电网 `outputLevel`，会在同一检查周期内**直接爆炸**（不按比例随机，电压等级不对就炸）。
 
----
+**有效耐压等级**：
+- 基础为机器的 [ITieredMachine.tier](../src/main/kotlin/ic2_120/content/block/ITieredMachine.kt)。
+- 若机器实现了 [ITransformerUpgradeSupport](../src/main/kotlin/ic2_120/content/upgrade/ITransformerUpgradeSupport.kt)（高压升级），则有效耐压 = `tier + voltageTierBonus`（每插入一个高压升级 +1）。
+- 由 [ITieredMachine.effectiveVoltageTier()](../src/main/kotlin/ic2_120/content/block/ITieredMachine.kt) 统一计算。
 
-## 核心模型
+触发条件（全部满足才执行）：
+- 服务端世界。
+- 与漏电/导线烧毁同一周期：`(world.time + damageTickOffset) % 200 == 0`。
+- `outputLevel >= 1`。
+- 边界上存在 [ITieredMachine](../src/main/kotlin/ic2_120/content/block/ITieredMachine.kt)，且 `outputLevel > effectiveVoltageTier`。
 
-- 所有连通导线共享一个 `EnergyNetwork`。
-- 每根导线提供：
-  - `transferRate`（EU/t，作为每 tick 可通过容量）
-  - `energyLoss`（milliEU/格，作为路径损耗权重）
-- 电网每 tick 只执行一次（`lastTickTime` 去重）。
-- 真实能量写入通过 Fabric 事务执行，失败自动回滚。
+爆炸规则：
+- 实现 [IGenerator](../src/main/kotlin/ic2_120/content/block/IGenerator.kt) 的发电机不参与过压检测，**不会爆炸**。
+- 对每个与电网相邻的非发电机机器，若 `outputLevel > effectiveVoltageTier`，先清空该方块的物品栏（不生成掉落物），再移除方块（不掉落机器本身），最后在该位置创建爆炸，不生成火焰。
+- **不掉落任何物品**：机器本身和槽位内所有物品均不掉落，全部消失。
+- **爆炸伤害**按电网电压等级：等级 4 对应 10 颗心伤害（爆炸威力 2），电压每提高 1 级伤害翻倍（威力 = 2 × 2^(outputLevel-4)）。
 
----
+## 9. 与旧文档不一致处（已修正）
 
-## 电网输出等级与触电伤害
+- 删除了重复章节，避免同一内容出现两版表述。
+- 明确 `damageTickOffset` 实际范围是 `0..199`，不是 `0..200`。
+- 明确 `outputLevel` 在代码里没有硬性上限截断，来源是“该面可提取（`supportsExtraction()`）”的边界机器的**有效耐压等级**（[ITieredMachine.effectiveVoltageTier()](../src/main/kotlin/ic2_120/content/block/ITieredMachine.kt)，含高压升级）最大值（初始 1）。
+- 明确“连接缓存失效”只清缓存，不拆网。
+- 明确 Dijkstra 起点距离包含起点导线自身损耗。
+- 明确缓存清理阈值条件是 `> 512`。
 
-### 输出等级
 
-电网输出等级由电网内最高等级机器决定。绝缘等级不足的导线漏电：n 级电网附近 n 格为伤害区域，每次 n 心伤害，每 10 秒触发。绝缘等级见 `IInsulatedCable.getInsulationLevel()`。电网构建时分配 0–200 tick 随机偏移以错峰。
-
----
-
-## 电网生命周期
-
-### 惰性构建
-
-`CableBlockEntity.tick()` 发现 `network == null` 时调用 `EnergyNetworkManager.getOrCreateNetwork(world, pos)`：
-
-1. BFS 收集连通导线；
-2. 累加导线 `transferRate` 得到 `capacity`；
-3. 记录每根导线 `energyLoss`；
-4. 汇总成员 `localEnergy` 到共享池；
-5. 若遇旧网成员则吸收旧网能量并合并。
-
-### 拆分
-
-导线被替换时 `BaseCableBlock.onStateReplaced()` 调 `EnergyNetworkManager.invalidateAt(world, pos)`：
-
-- 将共享池能量均分回成员导线 `localEnergy`；
-- 清理成员 `be.network`；
-- 从索引移除该网成员；
-- 剩余导线下次 tick 自动重建新网。
-
-### 世界卸载
-
-`EnergyNetworkManager` 按维度维护缓存：`RegistryKey<World> -> MutableMap<Long, EnergyNetwork>`。  
-`ServerWorldEvents.UNLOAD` 仅清理当前卸载维度，不影响其他维度。
-
----
-
-## 传输算法（当前实现）
-
-每 tick 在 `EnergyNetwork.pushToConsumers()` 中执行：
-
-1. 基于导线拓扑识别边界端点：
-   - 消费者：`supportsInsertion == true`
-   - 供电者：`supportsExtraction == true`
-2. 初始化导线本 tick 临时容量：
-   - `remainingCableCapacity[cable] = transferRate`
-3. 先从缓冲池 `network.energy` 给消费者供电（路径规则与供电者一致）；
-4. 再从真实供电者向消费者供电。
-
-### 路径选择
-
-对每个消费者：
-
-- 用“与该消费者相邻的导线集合”作为 Dijkstra 多源起点；
-- 边权使用目标导线 `energyLoss`（milliEU）；
-- 得到到导线/供电入口的最小损耗路径；
-- 按路径损耗从小到大依次尝试拉取。
-
-### 单路径最大传输量
-
-对候选路径：
-
-- `pathCapacity = min(路径上每根导线的 remainingCableCapacity)`
-- `pathLossEu = pathLossMilliEu / 1000`
-- `maxDeliverable = max(pathCapacity - pathLossEu, 0)`
-
-实际传输还受以下约束：
-
-- 消费者实时可接收量（事务模拟插入）
-- 供电者实时可提取量（真实 `extract`）
-- 缓冲池实时可用量（`network.energy`）
-
-### 防止导线超载
-
-路径传输成功后，路径上每根导线都扣减同样的通过总量（含损耗）：
-
-- `remainingCableCapacity[cable] -= moved`
-
-这样可避免单根导线在同一 tick 被多条路径叠加超过自身 `transferRate`。
-
----
-
-## 缓冲池与路径一致性
-
-push 型发电机把能量注入导线时，能量进入 `network.energy`。  
-消费者从缓冲池取电时也走完整路径计算（最小损耗 + 路径最小容量 + 全路径扣减），与真实供电者一致。
-
----
-
-## 缓存策略
-
-`EnergyNetwork` 内包含两层缓存：
-
-1. **拓扑缓存（跨 tick）**
-   - 缓存导线邻接、边界连接、导线速率；
-   - 减少每 tick 重扫导线状态的成本。
-
-2. **最短路缓存（跨 tick）**
-   - 按“消费者入口导线集合”缓存 Dijkstra 结果；
-   - 缓存该入口集合对应的候选路径列表（按损耗升序）。
-
-并有上限保护（缓存条目过多时清空），防止极端场景无限增长。
-
----
-
-## NBT 持久化
-
-- 字段：`CableEnergy`
-- 读：`readNbt -> localEnergy`
-- 写：
-  - 有网络：写 `network.getEnergySharePerCable()`
-  - 无网络：写 `localEnergy`
-
-用于区块卸载/重载时保留能量并在重建网络时回收。
-
----
-
-## 注册机制
-
-导线使用统一 `BlockEntityType<CableBlockEntity>`：
-
-1. 扫描所有 `BaseCableBlock`；
-2. 注册 `ic2_120:cable`；
-3. `EnergyStorage.SIDED.registerForBlockEntity` 暴露导线能量接口。
-
----
-
-## 已知权衡
-
-- 采用“每轮每供电者最优路径”迭代，不枚举全量简单路径（避免组合爆炸）。
-- `milliEU / 1000` 会做整数 EU 结算，极小损耗可能在单次传输中截断。
-- 保留共享缓冲池以兼容 push 设备，但其放电已纳入路径限流。

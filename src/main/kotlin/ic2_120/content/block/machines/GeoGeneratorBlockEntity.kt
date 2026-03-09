@@ -2,6 +2,7 @@ package ic2_120.content.block.machines
 
 import ic2_120.content.ModBlockEntities
 import ic2_120.content.block.GeoGeneratorBlock
+import ic2_120.content.block.IGenerator
 import ic2_120.content.energy.charge.BatteryChargerComponent
 import ic2_120.content.item.EmptyCell
 import ic2_120.content.item.getFluidCellVariant
@@ -52,7 +53,7 @@ class GeoGeneratorBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : MachineBlockEntity(type, pos, state), Inventory,
+) : MachineBlockEntity(type, pos, state), Inventory, IGenerator,
     net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
 
     companion object {

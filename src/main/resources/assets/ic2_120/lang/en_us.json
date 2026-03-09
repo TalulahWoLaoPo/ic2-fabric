@@ -322,6 +322,7 @@
   "item.ic2_120.energy_debug_stick": "Energy Debug Stick",
   "message.ic2_120.energy_debug_stick.no_energy": "No energy storage on this block",
   "message.ic2_120.energy_debug_stick.info": "%s / %s EU (%s%%) | In:%s Out:%s | Once: +%s / -%s EU",
+  "message.ic2_120.energy_debug_stick.network": "Network tier %s | Cables %s",
   "item.ic2_120.re_battery": "Re-Battery",
   "item.ic2_120.advanced_re_battery": "Advanced Re-Battery",
   "item.ic2_120.energy_crystal": "Energy Crystal",
