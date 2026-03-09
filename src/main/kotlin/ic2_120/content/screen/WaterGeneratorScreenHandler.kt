@@ -10,7 +10,6 @@ import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventory
 import net.minecraft.inventory.SimpleInventory
 import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.screen.ArrayPropertyDelegate
 import net.minecraft.screen.PropertyDelegate
@@ -21,13 +20,9 @@ import ic2_120.content.screen.slot.PredicateSlot
 import ic2_120.content.screen.slot.SlotMoveHelper
 import ic2_120.content.screen.slot.SlotSpec
 import ic2_120.content.screen.slot.SlotTarget
-import ic2_120.Ic2_120
-import ic2_120.content.item.getFluidCellVariant
+import ic2_120.content.item.isWaterFuel
 import ic2_120.content.sync.WaterGeneratorSync
 import ic2_120.content.syncs.SyncedDataView
-import net.minecraft.fluid.Fluids
-import net.minecraft.registry.Registries
-import net.minecraft.util.Identifier
 
 @ModScreenHandler(block = WaterGeneratorBlock::class)
 class WaterGeneratorScreenHandler(
@@ -109,10 +104,7 @@ class WaterGeneratorScreenHandler(
         const val SLOT_SIZE = 18
         private val FUEL_SLOT_SPEC = SlotSpec(
             maxItemCount = 64,
-            canInsert = { stack ->
-                stack.item == Items.WATER_BUCKET ||
-                    (stack.item == Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "fluid_cell")) && stack.getFluidCellVariant()?.fluid == Fluids.WATER)
-            }
+            canInsert = { stack -> stack.isWaterFuel() }
         )
         private val EMPTY_CONTAINER_SLOT_SPEC = SlotSpec(
             maxItemCount = 64,

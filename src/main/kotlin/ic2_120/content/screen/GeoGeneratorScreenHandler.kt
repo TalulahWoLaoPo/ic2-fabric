@@ -9,15 +9,10 @@ import ic2_120.content.screen.slot.SlotSpec
 import ic2_120.content.screen.slot.SlotTarget
 import ic2_120.content.sync.GeoGeneratorSync
 import ic2_120.content.syncs.SyncedDataView
-import ic2_120.content.item.getFluidCellVariant
-import net.minecraft.registry.Registries
-import net.minecraft.util.Identifier
-import ic2_120.Ic2_120
-import net.minecraft.fluid.Fluids
+import ic2_120.content.item.isLavaFuel
 import ic2_120.content.item.energy.IElectricTool
 import ic2_120.content.item.energy.IBatteryItem
 import ic2_120.registry.annotation.ModScreenHandler
-import net.minecraft.item.Items
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventory
@@ -111,9 +106,7 @@ class GeoGeneratorScreenHandler(
         const val SLOT_SIZE = 18
         private val FUEL_SLOT_SPEC = SlotSpec(
             maxItemCount = 64,
-            canInsert = { stack ->
-                stack.item == Items.LAVA_BUCKET || (stack.item == Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "fluid_cell")) && stack.getFluidCellVariant()?.fluid == Fluids.LAVA)
-            }
+            canInsert = { stack -> stack.isLavaFuel() }
         )
         private val EMPTY_CONTAINER_SLOT_SPEC = SlotSpec(
             maxItemCount = 64,

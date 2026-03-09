@@ -69,12 +69,26 @@ object ModFluids {
     lateinit var PAHOEHOE_LAVA_BLOCK: Block
     lateinit var PAHOEHOE_LAVA_BUCKET: Item
 
+    // Biofuel - 生物燃料
+    val BIOFUEL_STILL: FlowableFluid by lazy { Registries.FLUID.get(Identifier(Ic2_120.MOD_ID, "biofuel")) as FlowableFluid }
+    val BIOFUEL_FLOWING: FlowableFluid by lazy { Registries.FLUID.get(Identifier(Ic2_120.MOD_ID, "flowing_biofuel")) as FlowableFluid }
+    lateinit var BIOFUEL_BLOCK: Block
+    lateinit var BIOFUEL_BUCKET: Item
+
+    // Biomass - 生物质
+    val BIOMASS_STILL: FlowableFluid by lazy { Registries.FLUID.get(Identifier(Ic2_120.MOD_ID, "biomass")) as FlowableFluid }
+    val BIOMASS_FLOWING: FlowableFluid by lazy { Registries.FLUID.get(Identifier(Ic2_120.MOD_ID, "flowing_biomass")) as FlowableFluid }
+    lateinit var BIOMASS_BLOCK: Block
+    lateinit var BIOMASS_BUCKET: Item
+
     fun register() {
         registerFluid("coolant", "coolant", "coolant")
         registerFluid("hot_coolant", "hot_coolant", "hot_coolant")
         registerFluid("uu_matter", "uu_matter", "uu_matter")
         registerFluid("weed_ex", "weed_ex", "weed_ex")  // 仅 still，flow 用 still
         registerFluid("pahoehoe_lava", "pahoehoe_lava", "pahoehoe_lava")  // 仅 still，flow 用 still
+        registerFluid("biofuel", "biofuel", "biofuel")
+        registerFluid("biomass", "biomass", "biomass")
     }
 
     private fun registerFluid(name: String, stillTex: String, flowTex: String) {
@@ -127,6 +141,14 @@ object ModFluids {
             "pahoehoe_lava" -> {
                 PAHOEHOE_LAVA_BLOCK = block
                 PAHOEHOE_LAVA_BUCKET = bucket
+            }
+            "biofuel" -> {
+                BIOFUEL_BLOCK = block
+                BIOFUEL_BUCKET = bucket
+            }
+            "biomass" -> {
+                BIOMASS_BLOCK = block
+                BIOMASS_BUCKET = bucket
             }
         }
 
@@ -185,6 +207,8 @@ object ModFluids {
                 "uu_matter" -> UU_MATTER_STILL
                 "weed_ex" -> WEED_EX_STILL
                 "pahoehoe_lava" -> PAHOEHOE_LAVA_STILL
+                "biofuel" -> BIOFUEL_STILL
+                "biomass" -> BIOMASS_STILL
                 else -> throw IllegalStateException("Unknown fluid: $name")
             }
             override fun getFlowingFluid(): Fluid = when (name) {
@@ -193,6 +217,8 @@ object ModFluids {
                 "uu_matter" -> UU_MATTER_FLOWING
                 "weed_ex" -> WEED_EX_FLOWING
                 "pahoehoe_lava" -> PAHOEHOE_LAVA_FLOWING
+                "biofuel" -> BIOFUEL_FLOWING
+                "biomass" -> BIOMASS_FLOWING
                 else -> throw IllegalStateException("Unknown fluid: $name")
             }
             override fun getBlock(): Block = when (name) {
@@ -201,6 +227,8 @@ object ModFluids {
                 "uu_matter" -> UU_MATTER_BLOCK
                 "weed_ex" -> WEED_EX_BLOCK
                 "pahoehoe_lava" -> PAHOEHOE_LAVA_BLOCK
+                "biofuel" -> BIOFUEL_BLOCK
+                "biomass" -> BIOMASS_BLOCK
                 else -> throw IllegalStateException("Unknown fluid: $name")
             }
             override fun getBucket(): Item = when (name) {
@@ -209,6 +237,8 @@ object ModFluids {
                 "uu_matter" -> UU_MATTER_BUCKET
                 "weed_ex" -> WEED_EX_BUCKET
                 "pahoehoe_lava" -> PAHOEHOE_LAVA_BUCKET
+                "biofuel" -> BIOFUEL_BUCKET
+                "biomass" -> BIOMASS_BUCKET
                 else -> throw IllegalStateException("Unknown fluid: $name")
             }
         }
@@ -226,6 +256,8 @@ object ModFluids {
                 "uu_matter" -> UU_MATTER_STILL
                 "weed_ex" -> WEED_EX_STILL
                 "pahoehoe_lava" -> PAHOEHOE_LAVA_STILL
+                "biofuel" -> BIOFUEL_STILL
+                "biomass" -> BIOMASS_STILL
                 else -> throw IllegalStateException("Unknown fluid: $name")
             }
             override fun getFlowingFluid(): Fluid = when (name) {
@@ -234,6 +266,8 @@ object ModFluids {
                 "uu_matter" -> UU_MATTER_FLOWING
                 "weed_ex" -> WEED_EX_FLOWING
                 "pahoehoe_lava" -> PAHOEHOE_LAVA_FLOWING
+                "biofuel" -> BIOFUEL_FLOWING
+                "biomass" -> BIOMASS_FLOWING
                 else -> throw IllegalStateException("Unknown fluid: $name")
             }
             override fun getBlock(): Block = when (name) {
@@ -242,6 +276,8 @@ object ModFluids {
                 "uu_matter" -> UU_MATTER_BLOCK
                 "weed_ex" -> WEED_EX_BLOCK
                 "pahoehoe_lava" -> PAHOEHOE_LAVA_BLOCK
+                "biofuel" -> BIOFUEL_BLOCK
+                "biomass" -> BIOMASS_BLOCK
                 else -> throw IllegalStateException("Unknown fluid: $name")
             }
             override fun getBucket(): Item = when (name) {
@@ -250,6 +286,8 @@ object ModFluids {
                 "uu_matter" -> UU_MATTER_BUCKET
                 "weed_ex" -> WEED_EX_BUCKET
                 "pahoehoe_lava" -> PAHOEHOE_LAVA_BUCKET
+                "biofuel" -> BIOFUEL_BUCKET
+                "biomass" -> BIOMASS_BUCKET
                 else -> throw IllegalStateException("Unknown fluid: $name")
             }
         }

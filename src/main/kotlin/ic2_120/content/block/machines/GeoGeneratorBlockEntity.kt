@@ -5,7 +5,7 @@ import ic2_120.content.block.GeoGeneratorBlock
 import ic2_120.content.block.IGenerator
 import ic2_120.content.energy.charge.BatteryChargerComponent
 import ic2_120.content.item.EmptyCell
-import ic2_120.content.item.getFluidCellVariant
+import ic2_120.content.item.isLavaFuel
 import ic2_120.content.item.energy.IElectricTool
 import ic2_120.content.item.energy.IBatteryItem
 import ic2_120.Ic2_120
@@ -191,7 +191,7 @@ class GeoGeneratorBlockEntity(
     fun canPlaceInSlot(slot: Int, stack: ItemStack): Boolean {
         if (stack.isEmpty) return false
         return when (slot) {
-            FUEL_SLOT -> stack.item == Items.LAVA_BUCKET || (stack.item == Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "fluid_cell")) && stack.getFluidCellVariant()?.fluid == Fluids.LAVA)
+            FUEL_SLOT -> stack.isLavaFuel()
             EMPTY_CONTAINER_SLOT -> false  // 仅机器输出，玩家不可放入
             BATTERY_SLOT -> stack.item is IBatteryItem || stack.item is IElectricTool
             else -> false
@@ -254,7 +254,7 @@ class GeoGeneratorBlockEntity(
 
         sync.energy = sync.amount.toInt().coerceAtLeast(0)
 
-        // 燃料槽位：岩浆桶或岩浆单元倒入储罐，空容器放入 EMPTY_CONTAINER_SLOT
+        // 燃料槽位：岩浆桶、岩浆单元、通用流体单元（NBT 为岩浆）倒入储罐，空容器放入 EMPTY_CONTAINER_SLOT
         val fuelStack = getStack(FUEL_SLOT)
         when {
             fuelStack.item == Items.LAVA_BUCKET -> {
@@ -268,8 +268,8 @@ class GeoGeneratorBlockEntity(
                     }
                 }
             }
-            fuelStack.item == Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "fluid_cell")) && fuelStack.getFluidCellVariant()?.fluid == Fluids.LAVA -> {
-                // 岩浆单元 = 1 桶 = 1000 mB
+            fuelStack.isLavaFuel() -> {
+                // 岩浆单元 / 通用流体单元（NBT 为岩浆）= 1 桶 = 1000 mB
                 val inserted = lavaTankInternal.tryInsertLava(FluidConstants.BUCKET)
                 if (inserted >= FluidConstants.BUCKET) {
                     val emptyCell = ItemStack(Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "empty_cell")))

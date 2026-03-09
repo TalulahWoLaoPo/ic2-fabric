@@ -1,6 +1,7 @@
 package ic2_120.content.item
 
 import ic2_120.Ic2_120
+import ic2_120.content.fluid.ModFluids
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.annotation.ModItem
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
@@ -62,6 +63,56 @@ fun ItemStack.setFluidCellVariant(variant: FluidVariant) {
 /** 判断流体单元是否为空 */
 fun ItemStack.isFluidCellEmpty(): Boolean = getFluidCellVariant() == null || getFluidCellVariant() == FluidVariant.blank()
 
+/** 判断物品是否为地热发电机的岩浆燃料：岩浆桶、岩浆单元、通用流体单元（NBT 为岩浆） */
+fun ItemStack.isLavaFuel(): Boolean {
+    return when (item) {
+        Items.LAVA_BUCKET -> true
+        Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "lava_cell")) -> true
+        Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "fluid_cell")) -> {
+            val fluid = getFluidCellVariant()?.fluid ?: return false
+            fluid == Fluids.LAVA || fluid == Fluids.FLOWING_LAVA
+        }
+        else -> false
+    }
+}
+
+/** 判断物品是否为水力发电机的水燃料：水桶、水单元、通用流体单元（NBT 为水） */
+fun ItemStack.isWaterFuel(): Boolean {
+    return when (item) {
+        Items.WATER_BUCKET -> true
+        Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "water_cell")) -> true
+        Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "fluid_cell")) -> {
+            val fluid = getFluidCellVariant()?.fluid ?: return false
+            fluid == Fluids.WATER || fluid == Fluids.FLOWING_WATER
+        }
+        else -> false
+    }
+}
+
+/**
+ * 根据流体返回满流体单元 ItemStack。
+ * 若存在注册的专用单元（如 water_cell、coolant_cell），则返回该物品；否则使用 fluid_cell + NBT。
+ */
+internal fun fluidToFilledCellStack(fluid: Fluid): ItemStack {
+    val cellId = when (fluid) {
+        Fluids.WATER, Fluids.FLOWING_WATER -> "water_cell"
+        Fluids.LAVA, Fluids.FLOWING_LAVA -> "lava_cell"
+        ModFluids.COOLANT_STILL, ModFluids.COOLANT_FLOWING -> "coolant_cell"
+        ModFluids.HOT_COOLANT_STILL, ModFluids.HOT_COOLANT_FLOWING -> "hot_coolant_cell"
+        ModFluids.UU_MATTER_STILL, ModFluids.UU_MATTER_FLOWING -> "uu_matter_cell"
+        ModFluids.WEED_EX_STILL, ModFluids.WEED_EX_FLOWING -> "weed_ex_cell"
+        ModFluids.PAHOEHOE_LAVA_STILL, ModFluids.PAHOEHOE_LAVA_FLOWING -> "pahoehoe_lava_cell"
+        ModFluids.BIOFUEL_STILL, ModFluids.BIOFUEL_FLOWING -> "biofuel_cell"
+        ModFluids.BIOMASS_STILL, ModFluids.BIOMASS_FLOWING -> "biomass_cell"
+        else -> null
+    }
+    return if (cellId != null) {
+        ItemStack(cellItem(cellId))
+    } else {
+        ItemStack(cellItem("fluid_cell")).apply { setFluidCellVariant(FluidVariant.of(fluid)) }
+    }
+}
+
 /** 将桶物品转为满流体单元 ItemStack（供 UseBlockCallback 等使用） */
 internal fun bucketToFilledFluidCell(bucketStack: ItemStack): ItemStack? {
     val fluid = when (bucketStack.item) {
@@ -80,13 +131,13 @@ internal fun bucketToFilledFluidCell(bucketStack: ItemStack): ItemStack? {
             found ?: return null
         }
     }
-    return ItemStack(Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "fluid_cell"))).apply {
-        setFluidCellVariant(FluidVariant.of(fluid))
-    }
+    return fluidToFilledCellStack(fluid)
 }
 
 /**
  * 通用流体单元：在 NBT 中存储 FluidVariant，支持任意流体。
+ * **仅用于其他 mod 的流体**，本模组的流体请使用 ModFluidCell 子类。
+ *
  * 使用 Fabric Fluid API 获取流体颜色并渲染到物品中心（客户端 FluidCellColorProvider）。
  */
 @ModItem(name = "fluid_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
@@ -114,7 +165,7 @@ class FluidCellItem : Item(FabricItemSettings()), FluidModificationItem {
         if (placeFluid(player, world, pos, hitResult)) {
             if (!player.abilities.creativeMode) {
                 stack.decrement(1)
-                val empty = ItemStack(emptyCell)
+                val empty = ItemStack(cellItem("empty_cell"))
                 if (stack.isEmpty) {
                     player.setStackInHand(hand, empty)
                 } else if (!player.inventory.insertStack(empty)) {
@@ -169,7 +220,7 @@ class FluidCellItem : Item(FabricItemSettings()), FluidModificationItem {
         return false
     }
 
-    override fun getRecipeRemainder(stack: ItemStack): ItemStack = ItemStack(emptyCell)
+    override fun getRecipeRemainder(stack: ItemStack): ItemStack = ItemStack(cellItem("empty_cell"))
 
     override fun getName(stack: ItemStack): Text {
         val variant = stack.getFluidCellVariant()
@@ -182,7 +233,10 @@ class FluidCellItem : Item(FabricItemSettings()), FluidModificationItem {
     }
 }
 
-private val emptyCell: Item get() = Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "empty_cell"))
+
+// ========== 容器类 - 单元 ==========
+
+private fun cellItem(id: String): Item = Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, id))
 
 /**
  * 空单元：可从 FluidDrainable（水/岩浆方块）收集液体，也可与 FluidStorage 储罐交互。
@@ -282,43 +336,205 @@ abstract class EmptyCellItem(settings: FabricItemSettings) : Item(settings) {
     protected abstract fun mapBucketToFilledCell(bucketStack: ItemStack): ItemStack?
 }
 
-// ========== 容器类 - 单元 ==========
+// ========== 本模组流体单元基类 ==========
 
-private fun cellItem(id: String): Item = Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, id))
+/**
+ * 本模组流体单元基类。
+ * 每个流体单元对应一个特定流体，可直接用于合成表。
+ *
+ * 子类只需实现 getFluid() 方法，其他功能（右键放置、与储罐交互）由基类提供。
+ */
+abstract class ModFluidCell(settings: FabricItemSettings) : Item(settings), FluidModificationItem {
+
+    /** 子类实现：返回对应的流体 */
+    internal abstract fun getFluid(): Fluid
+
+    /** 子类实现：返回对应的空单元物品（用于配方剩余物） */
+    internal abstract fun getEmptyCell(): Item
+
+    override fun useOnBlock(context: ItemUsageContext): ActionResult {
+        val world = context.world
+        val pos = context.blockPos
+        val player = context.player ?: return ActionResult.PASS
+        val hand = context.hand
+        val stack = player.getStackInHand(hand)
+        if (world.isClient) return ActionResult.SUCCESS
+
+        // 1. 先尝试 Fabric FluidStorage（储罐、地热发电机等）
+        val storage = FluidStorage.SIDED.find(world, pos, context.side)
+            ?: FluidStorage.SIDED.find(world, pos, null)
+        if (storage != null && FluidStorageUtil.interactWithFluidStorage(storage, player, hand)) {
+            return ActionResult.SUCCESS
+        }
+
+        // 2. 放置流体到世界
+        val hitResult = BlockHitResult(context.hitPos, context.side, pos, context.hitsInsideBlock())
+        if (placeFluid(player, world, pos, hitResult)) {
+            if (!player.abilities.creativeMode) {
+                stack.decrement(1)
+                val empty = ItemStack(getEmptyCell())
+                if (stack.isEmpty) {
+                    player.setStackInHand(hand, empty)
+                } else if (!player.inventory.insertStack(empty)) {
+                    player.dropItem(empty, false)
+                }
+            }
+            return ActionResult.SUCCESS
+        }
+        return ActionResult.PASS
+    }
+
+    override fun placeFluid(
+        player: net.minecraft.entity.player.PlayerEntity?,
+        world: World,
+        pos: BlockPos,
+        hitResult: BlockHitResult?
+    ): Boolean {
+        val fluid = getFluid()
+        val state = world.getBlockState(pos)
+        val block = state.block
+
+        // FluidFillable：如炼药锅等可注入液体的方块
+        if (block is FluidFillable) {
+            if (block.canFillWithFluid(world, pos, state, fluid)) {
+                block.tryFillWithFluid(world, pos, state, fluid.defaultState)
+                fluid.getBucketFillSound().ifPresent { world.playSound(player, pos, it, SoundCategory.BLOCKS, 1f, 1f) }
+                world.emitGameEvent(player, GameEvent.FLUID_PLACE, pos)
+                return true
+            }
+        }
+
+        // 普通方块：在点击位置放置流体（需可替换，如空气、流体本身）
+        if (state.isReplaceable || state.fluidState.isStill) {
+            if (world.setBlockState(pos, fluid.defaultState.blockState)) {
+                fluid.getBucketFillSound().ifPresent { world.playSound(player, pos, it, SoundCategory.BLOCKS, 1f, 1f) }
+                world.emitGameEvent(player, GameEvent.FLUID_PLACE, pos)
+                return true
+            }
+        }
+        // 固体方块：在点击面朝向的相邻格放置（如点击泥土顶部 → 在上方空气格放水）
+        val adjacentPos = hitResult?.side?.let { pos.offset(it) } ?: pos.up()
+        val adjacentState = world.getBlockState(adjacentPos)
+        if (adjacentState.isReplaceable || adjacentState.fluidState.isStill) {
+            if (world.setBlockState(adjacentPos, fluid.defaultState.blockState)) {
+                fluid.getBucketFillSound().ifPresent { world.playSound(player, adjacentPos, it, SoundCategory.BLOCKS, 1f, 1f) }
+                world.emitGameEvent(player, GameEvent.FLUID_PLACE, adjacentPos)
+                return true
+            }
+        }
+        return false
+    }
+
+    override fun getRecipeRemainder(stack: ItemStack): ItemStack = ItemStack(getEmptyCell())
+}
+
+// ========== 空单元 ==========
 
 @ModItem(name = "empty_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
 class EmptyCell : EmptyCellItem(FabricItemSettings()) {
-    override fun mapBucketToFilledCell(bucketStack: ItemStack): ItemStack? = bucketToFilledFluidCell(bucketStack)
+    override fun mapBucketToFilledCell(bucketStack: ItemStack): ItemStack? {
+        // 优先映射到本模组流体单元
+        return when (bucketStack.item) {
+            Items.WATER_BUCKET -> ItemStack(cellItem("water_cell"))
+            Items.LAVA_BUCKET -> ItemStack(cellItem("lava_cell"))
+            ModFluids.COOLANT_BUCKET -> ItemStack(cellItem("coolant_cell"))
+            ModFluids.HOT_COOLANT_BUCKET -> ItemStack(cellItem("hot_coolant_cell"))
+            ModFluids.UU_MATTER_BUCKET -> ItemStack(cellItem("uu_matter_cell"))
+            ModFluids.WEED_EX_BUCKET -> ItemStack(cellItem("weed_ex_cell"))
+            ModFluids.PAHOEHOE_LAVA_BUCKET -> ItemStack(cellItem("pahoehoe_lava_cell"))
+            ModFluids.BIOFUEL_BUCKET -> ItemStack(cellItem("biofuel_cell"))
+            ModFluids.BIOMASS_BUCKET -> ItemStack(cellItem("biomass_cell"))
+            else -> {
+                // 其他mod流体使用通用fluid_cell
+                bucketToFilledFluidCell(bucketStack)
+            }
+        }
+    }
 }
+
+// ========== 本模组流体单元实现 ==========
+
+/** 水单元 */
+@ModItem(name = "water_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
+class WaterCell : ModFluidCell(FabricItemSettings()) {
+    override fun getFluid(): Fluid = Fluids.WATER
+    override fun getEmptyCell(): Item = cellItem("empty_cell")
+}
+
+/** 岩浆单元 */
+@ModItem(name = "lava_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
+class LavaCell : ModFluidCell(FabricItemSettings()) {
+    override fun getFluid(): Fluid = Fluids.LAVA
+    override fun getEmptyCell(): Item = cellItem("empty_cell")
+}
+
+/** 冷却液单元 */
+@ModItem(name = "coolant_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
+class CoolantCell : ModFluidCell(FabricItemSettings()) {
+    override fun getFluid(): Fluid = ModFluids.COOLANT_STILL
+    override fun getEmptyCell(): Item = cellItem("empty_cell")
+}
+
+/** 热冷却液单元 */
+@ModItem(name = "hot_coolant_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
+class HotCoolantCell : ModFluidCell(FabricItemSettings()) {
+    override fun getFluid(): Fluid = ModFluids.HOT_COOLANT_STILL
+    override fun getEmptyCell(): Item = cellItem("empty_cell")
+}
+
+/** UU物质单元 */
+@ModItem(name = "uu_matter_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
+class UuMatterCell : ModFluidCell(FabricItemSettings()) {
+    override fun getFluid(): Fluid = ModFluids.UU_MATTER_STILL
+    override fun getEmptyCell(): Item = cellItem("empty_cell")
+}
+
+/** 除草剂单元 */
+@ModItem(name = "weed_ex_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
+class WeedExCell : ModFluidCell(FabricItemSettings()) {
+    override fun getFluid(): Fluid = ModFluids.WEED_EX_STILL
+    override fun getEmptyCell(): Item = cellItem("empty_cell")
+}
+
+/** 熔岩岩浆单元 */
+@ModItem(name = "pahoehoe_lava_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
+class PahoehoeLavaCell : ModFluidCell(FabricItemSettings()) {
+    override fun getFluid(): Fluid = ModFluids.PAHOEHOE_LAVA_STILL
+    override fun getEmptyCell(): Item = cellItem("empty_cell")
+}
+
+/** 生物燃料单元 */
+@ModItem(name = "biofuel_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
+class BiofuelCell : ModFluidCell(FabricItemSettings()) {
+    override fun getFluid(): Fluid = ModFluids.BIOFUEL_STILL
+    override fun getEmptyCell(): Item = cellItem("empty_cell")
+}
+
+/** 生物质单元 */
+@ModItem(name = "biomass_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
+class BiomassCell : ModFluidCell(FabricItemSettings()) {
+    override fun getFluid(): Fluid = ModFluids.BIOMASS_STILL
+    override fun getEmptyCell(): Item = cellItem("empty_cell")
+}
+
+// ========== 特殊单元（非流体） ==========
 
 @ModItem(name = "air_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
 class AirCell : Item(FabricItemSettings())
 
-@ModItem(name = "biofuel_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
-class BiofuelCell : Item(FabricItemSettings())
-
 @ModItem(name = "bio_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
 class BioCell : Item(FabricItemSettings())
-
-@ModItem(name = "weed_ex_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
-class WeedExCell : Item(FabricItemSettings())
 
 // ========== 容器类 - 桶 ==========
 
 @ModItem(name = "construction_foam_bucket", tab = CreativeTab.IC2_MATERIALS, group = "buckets")
 class ConstructionFoamBucket : Item(FabricItemSettings())
 
-@ModItem(name = "biofuel_bucket", tab = CreativeTab.IC2_MATERIALS, group = "buckets")
-class BiofuelBucket : Item(FabricItemSettings())
-
-@ModItem(name = "biomass_bucket", tab = CreativeTab.IC2_MATERIALS, group = "buckets")
-class BiomassBucket : Item(FabricItemSettings())
-
 @ModItem(name = "construct_foam_bucket", tab = CreativeTab.IC2_MATERIALS, group = "buckets")
 class ConstructFoamBucket : Item(FabricItemSettings())
 
-// coolant_bucket、hot_coolant_bucket、uu_matter_bucket、weed_ex_bucket、pahoehoe_lava_bucket
-// 由 ModFluids 注册为 BucketItem，此处不再重复注册
+// coolant_bucket, hot_coolant_bucket, uu_matter_bucket, weed_ex_bucket, pahoehoe_lava_bucket,
+// biofuel_bucket, biomass_bucket 由 ModFluids 注册为 BucketItem，此处不再重复注册
 
 // ========== 建筑泡沫类 ==========
 
@@ -327,6 +543,48 @@ class CfPowder : Item(FabricItemSettings())
 
 @ModItem(name = "pellet", tab = CreativeTab.IC2_MATERIALS, group = "construction_foam")
 class Pellet : Item(FabricItemSettings())
+
+/**
+ * ModFluidCell 的 FluidStorage：满单元可倒出 1 桶对应流体，倒出后变为空单元。
+ * 用于右键储罐等容器时，Fabric Transfer API 能识别并执行流体转移。
+ */
+private class ModFluidCellStorage(
+    private val ctx: ContainerItemContext,
+    private val modCell: ModFluidCell
+) : Storage<FluidVariant> {
+
+    private val fluid = modCell.getFluid()
+    private val emptyCell = modCell.getEmptyCell()
+
+    override fun supportsInsertion(): Boolean = false
+
+    override fun supportsExtraction(): Boolean = true
+
+    override fun insert(resource: FluidVariant, maxAmount: Long, transaction: TransactionContext): Long = 0
+
+    override fun extract(resource: FluidVariant, maxAmount: Long, transaction: TransactionContext): Long {
+        StoragePreconditions.notBlankNotNegative(resource, maxAmount)
+        if (maxAmount < FluidConstants.BUCKET) return 0
+        if (resource.fluid != fluid) return 0
+
+        val emptyStack = ItemStack(emptyCell)
+        val newVariant = ItemVariant.of(emptyStack)
+        if (ctx.exchange(newVariant, 1, transaction) == 1L) return FluidConstants.BUCKET
+        return 0
+    }
+
+    override fun iterator(): MutableIterator<StorageView<FluidVariant>> {
+        val variant = FluidVariant.of(fluid)
+        return mutableListOf(object : StorageView<FluidVariant> {
+            override fun getResource(): FluidVariant = variant
+            override fun getAmount(): Long = FluidConstants.BUCKET
+            override fun getCapacity(): Long = FluidConstants.BUCKET
+            override fun extract(resource: FluidVariant, maxAmount: Long, transaction: TransactionContext): Long =
+                this@ModFluidCellStorage.extract(resource, maxAmount, transaction)
+            override fun isResourceBlank(): Boolean = false
+        }).iterator() as MutableIterator<StorageView<FluidVariant>>
+    }
+}
 
 /**
  * 通用流体单元的 FluidStorage：空单元可装任意流体，满单元可倒出对应流体。
@@ -347,7 +605,7 @@ private class FluidCellStorage(private val ctx: ContainerItemContext) : Storage<
         val current = ctx.itemVariant
         if (current.item != emptyCell) return 0
 
-        val filledStack = ItemStack(fluidCell).apply { setFluidCellVariant(resource) }
+        val filledStack = fluidToFilledCellStack(resource.fluid)
         val newVariant = ItemVariant.of(filledStack)
         if (ctx.exchange(newVariant, 1, transaction) == 1L) return FluidConstants.BUCKET
         return 0
@@ -406,6 +664,20 @@ object CellAndBucketFluidRegistration {
             FluidCellStorage(ctx)
         }
 
+        // ModFluidCell 子类：专用流体单元，需注册 FluidStorage 才能右键储罐添加流体
+        val modFluidCellIds = listOf(
+            "water_cell", "lava_cell", "coolant_cell", "hot_coolant_cell",
+            "uu_matter_cell", "weed_ex_cell", "pahoehoe_lava_cell", "biofuel_cell", "biomass_cell"
+        )
+        for (id in modFluidCellIds) {
+            val item = Registries.ITEM.get(Identifier(modId, id))
+            if (item is ModFluidCell) {
+                FluidStorage.combinedItemApiProvider(item).register { ctx ->
+                    ModFluidCellStorage(ctx, item)
+                }
+            }
+        }
+
         // UseBlockCallback：在默认交互前拦截，用 FluidHandling.ANY 射线检测流体方块
         // （默认 useOnBlock 的射线会穿透水/岩浆，导致无法收集）
         UseBlockCallback.EVENT.register { player, world, hand, _ ->
@@ -455,14 +727,30 @@ object CellAndBucketFluidRegistration {
         }
 
         // 遍历所有流体，将满流体单元注册到创造模式物品栏（IC2 材料）
+        // 排除已有独立单元类的本mod流体
+        val modFluidCells = setOf(
+            Fluids.WATER,
+            Fluids.LAVA,
+            ModFluids.COOLANT_STILL,
+            ModFluids.HOT_COOLANT_STILL,
+            ModFluids.UU_MATTER_STILL,
+            ModFluids.WEED_EX_STILL,
+            ModFluids.PAHOEHOE_LAVA_STILL,
+            ModFluids.BIOFUEL_STILL,
+            ModFluids.BIOMASS_STILL
+        )
+
         val ic2MaterialsKey = RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier(modId, CreativeTab.IC2_MATERIALS.id))
         ItemGroupEvents.modifyEntriesEvent(ic2MaterialsKey).register { entries ->
             val fluids = Registries.FLUID.filter { fluid ->
-                fluid != Fluids.EMPTY && fluid != Fluids.FLOWING_LAVA && fluid != Fluids.FLOWING_WATER
+                fluid != Fluids.EMPTY &&
+                fluid != Fluids.FLOWING_LAVA &&
+                fluid != Fluids.FLOWING_WATER &&
+                fluid !in modFluidCells  // 排除已有独立单元类的流体
             }.sortedBy { Registries.FLUID.getId(it).toString() }
             for (fluid in fluids) {
                 val fluidId = Registries.FLUID.getId(fluid)
-                logger.info("注册流体单元到创造模式物品栏: {}", fluidId)
+                logger.info("注册通用流体单元到创造模式物品栏: {}", fluidId)
                 val stack = ItemStack(fluidCell).apply { setFluidCellVariant(FluidVariant.of(fluid)) }
                 entries.addAfter(fluidCell, stack)
             }
