@@ -41,7 +41,6 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.random.Random
 import net.minecraft.world.World
-import org.slf4j.LoggerFactory
 
 /**
  * 水力发电机方块实体。
@@ -59,7 +58,6 @@ class WaterGeneratorBlockEntity(
     net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
 
     companion object {
-        private val logger = LoggerFactory.getLogger("ic2_120/WaterGenerator")
         const val GENERATOR_TIER = 1
         private const val NBT_WATER_AMOUNT = "WaterAmount"
         private const val NBT_WATER_ENV_ACCUM = "WaterEnvAccum"
@@ -276,47 +274,7 @@ class WaterGeneratorBlockEntity(
 
         sync.energy = sync.amount.toInt().coerceAtLeast(0)
 
-        // 燃料槽：水桶、水单元、通用流体单元（NBT 为水）倒入水罐
-        val fuelStack = getStack(FUEL_SLOT)
-        val emptyCell = Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "empty_cell"))
-        when {
-            fuelStack.item == Items.WATER_BUCKET -> {
-                val inserted = waterTankInternal.tryInsertWater(FluidConstants.BUCKET)
-                logger.debug("[燃料] 水桶 inserted={} tankAmount={} tankCap={}", inserted, waterTankInternal.amount, FluidConstants.BUCKET)
-                if (inserted >= FluidConstants.BUCKET) {
-                    val emptyBucket = ItemStack(Items.BUCKET)
-                    val containerOk = tryInsertEmptyContainer(emptyBucket)
-                    logger.debug("[燃料] 水桶 tryInsertEmptyContainer={} emptySlot={}", containerOk, getStack(EMPTY_CONTAINER_SLOT))
-                    if (containerOk) {
-                        fuelStack.decrement(1)
-                        if (fuelStack.isEmpty) setStack(FUEL_SLOT, ItemStack.EMPTY)
-                        markDirty()
-                    }
-                }
-            }
-            fuelStack.isWaterFuel() -> {
-                val inserted = waterTankInternal.tryInsertWater(FluidConstants.BUCKET)
-                logger.debug("[燃料] 水单元 count={} inserted={} tankAmount={} tankCap={}", fuelStack.count, inserted, waterTankInternal.amount, FluidConstants.BUCKET)
-                if (inserted >= FluidConstants.BUCKET) {
-                    val emptyCellStack = ItemStack(emptyCell)
-                    val containerOk = tryInsertEmptyContainer(emptyCellStack)
-                    val emptySlot = getStack(EMPTY_CONTAINER_SLOT)
-                    logger.debug("[燃料] 水单元 tryInsertEmptyContainer={} emptySlot={} emptySlotCount={}", containerOk, emptySlot.item, emptySlot.count)
-                    if (!containerOk) {
-                        logger.info("[燃料] 水单元插入成功但空单元槽无法放入: emptySlot={} count={} maxCount={}", emptySlot.item, emptySlot.count, emptySlot.maxCount)
-                    }
-                    if (containerOk) {
-                        fuelStack.decrement(1)
-                        if (fuelStack.isEmpty) setStack(FUEL_SLOT, ItemStack.EMPTY)
-                        markDirty()
-                    }
-                } else if (fuelStack.count > 0) {
-                    logger.debug("[燃料] 水单元无法插入: inserted={} tankSpace={}", inserted, FluidConstants.BUCKET - waterTankInternal.amount)
-                }
-            }
-        }
-
-        // 发电：水罐 1 EU/t + 周围水方块 0.01 EU/t 每块
+        // 发电：水罐 1 EU/t + 周围水方块 0.01 EU/t 每块（必须在燃料处理之前，否则插入逻辑会干扰发电）
         val space = (WaterGeneratorSync.ENERGY_CAPACITY - sync.amount).coerceAtLeast(0L)
         if (space > 0L) {
             var euToAdd = 0L
@@ -329,9 +287,6 @@ class WaterGeneratorBlockEntity(
                 if (consumed > 0L) {
                     euToAdd += consumed * WaterGeneratorSync.EU_PER_BURN_TICK / consumePerTick
                 }
-                logger.debug("[发电] 水罐 amount={} consumePerTick={} toConsume={} consumed={} euToAdd={}", waterTankInternal.amount, consumePerTick, toConsume, consumed, euToAdd)
-            } else {
-                logger.debug("[发电] 水罐跳过 amount={} variant={}", waterTankInternal.amount, waterTankInternal.variant.fluid)
             }
 
             // 周围 3x3x3 水方块：每块 0.01 EU/t，每 20 tick 检测一次（带随机偏移分散负载）
@@ -352,6 +307,36 @@ class WaterGeneratorBlockEntity(
         }
 
         batteryCharger.tick()
+
+        // 燃料槽：水桶、水单元、通用流体单元（NBT 为水）倒入水罐（必须在发电之后处理，否则会干扰发电）
+        // 水罐仅 1 桶容量，必须等水罐空才能倒入整桶
+        val fuelStack = getStack(FUEL_SLOT)
+        val emptyCell = Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "empty_cell"))
+        val canAcceptFullBucket = waterTankInternal.amount <= 0L
+        when {
+            fuelStack.item == Items.WATER_BUCKET && canAcceptFullBucket -> {
+                val inserted = waterTankInternal.tryInsertWater(FluidConstants.BUCKET)
+                if (inserted >= FluidConstants.BUCKET) {
+                    val emptyBucket = ItemStack(Items.BUCKET)
+                    if (tryInsertEmptyContainer(emptyBucket)) {
+                        fuelStack.decrement(1)
+                        if (fuelStack.isEmpty) setStack(FUEL_SLOT, ItemStack.EMPTY)
+                        markDirty()
+                    }
+                }
+            }
+            fuelStack.isWaterFuel() && canAcceptFullBucket -> {
+                val inserted = waterTankInternal.tryInsertWater(FluidConstants.BUCKET)
+                if (inserted >= FluidConstants.BUCKET) {
+                    val emptyCellStack = ItemStack(emptyCell)
+                    if (tryInsertEmptyContainer(emptyCellStack)) {
+                        fuelStack.decrement(1)
+                        if (fuelStack.isEmpty) setStack(FUEL_SLOT, ItemStack.EMPTY)
+                        markDirty()
+                    }
+                }
+            }
+        }
 
         val active = waterTankInternal.amount > 0L && waterTankInternal.variant.fluid == Fluids.WATER ||
             waterEnvAccum >= 100 || cachedWaterCount > 0

@@ -153,7 +153,7 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
         }) {
             if (hasLeakingCableNearby(entity.blockPos, leakingCables, rangeInt)) {
                 entity.damage(damageSource, damageAmount)
-                println("触电伤害：${entity.name}，电压等级：$outputLevel")
+                // println("触电伤害：${entity.name}，电压等级：$outputLevel")
             }
         }
     }
