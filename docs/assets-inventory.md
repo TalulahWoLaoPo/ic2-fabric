@@ -634,36 +634,36 @@
 ### 反应堆核心部件
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | item.ic2.reactor_coolant_cell | 10k 冷却单元 |
-| - [ ] | item.ic2.triple_reactor_coolant_cell | 30k 冷却单元 |
-| - [ ] | item.ic2.sextuple_reactor_coolant_cell | 60k 冷却单元 |
-| - [ ] | item.ic2.reactor_plating | 反应堆隔板 |
-| - [ ] | item.ic2.reactor_heat_plating | 高热容反应堆隔板 |
-| - [ ] | item.ic2.containment_reactor_plating | 密封反应堆隔热板 |
-| - [ ] | item.ic2.heat_exchanger | 热交换器 |
-| - [ ] | item.ic2.reactor_heat_exchanger | 反应堆热交换器 |
-| - [ ] | item.ic2.component_heat_exchanger | 元件热交换器 |
-| - [ ] | item.ic2.advanced_heat_exchanger | 高级热交换器 |
-| - [ ] | item.ic2.heat_vent | 散热片 |
-| - [ ] | item.ic2.reactor_heat_vent | 反应堆散热片 |
-| - [ ] | item.ic2.overclocked_heat_vent | 超频散热片 |
-| - [ ] | item.ic2.component_heat_vent | 元件散热片 |
-| - [ ] | item.ic2.advanced_heat_vent | 高级散热片 |
-| - [ ] | item.ic2.neutron_reflector | 中子反射板 |
-| - [ ] | item.ic2.thick_neutron_reflector | 加厚中子反射板 |
-| - [ ] | item.ic2.iridium_neutron_reflector | 铱中子反射板 |
-| - [ ] | item.ic2.rsh_condensator | 红石冷凝模块 |
-| - [ ] | item.ic2.lzh_condensator | 青金石冷凝模块 |
+| - [x] | item.ic2.reactor_coolant_cell | 10k 冷却单元 |
+| - [x] | item.ic2.triple_reactor_coolant_cell | 30k 冷却单元 |
+| - [x] | item.ic2.sextuple_reactor_coolant_cell | 60k 冷却单元 |
+| - [x] | item.ic2.reactor_plating | 反应堆隔板 |
+| - [x] | item.ic2.reactor_heat_plating | 高热容反应堆隔板 |
+| - [x] | item.ic2.containment_reactor_plating | 密封反应堆隔热板 |
+| - [x] | item.ic2.heat_exchanger | 热交换器 |
+| - [x] | item.ic2.reactor_heat_exchanger | 反应堆热交换器 |
+| - [x] | item.ic2.component_heat_exchanger | 元件热交换器 |
+| - [x] | item.ic2.advanced_heat_exchanger | 高级热交换器 |
+| - [x] | item.ic2.heat_vent | 散热片 |
+| - [x] | item.ic2.reactor_heat_vent | 反应堆散热片 |
+| - [x] | item.ic2.overclocked_heat_vent | 超频散热片 |
+| - [x] | item.ic2.component_heat_vent | 元件散热片 |
+| - [x] | item.ic2.advanced_heat_vent | 高级散热片 |
+| - [x] | item.ic2.neutron_reflector | 中子反射板 |
+| - [x] | item.ic2.thick_neutron_reflector | 加厚中子反射板 |
+| - [x] | item.ic2.iridium_neutron_reflector | 铱中子反射板 |
+| - [x] | item.ic2.rsh_condensator | 红石冷凝模块 |
+| - [x] | item.ic2.lzh_condensator | 青金石冷凝模块 |
 | - [x] | item.ic2.fuel_rod | 燃料棒 (空) |
-| - [ ] | item.ic2.uranium_fuel_rod | 燃料棒 (铀) |
-| - [ ] | item.ic2.dual_uranium_fuel_rod | 双联燃料棒 (铀) |
-| - [ ] | item.ic2.quad_uranium_fuel_rod | 四联燃料棒 (铀) |
-| - [ ] | item.ic2.mox_fuel_rod | 燃料棒 (MOX) |
-| - [ ] | item.ic2.dual_mox_fuel_rod | 双联燃料棒 (MOX) |
-| - [ ] | item.ic2.quad_mox_fuel_rod | 四联燃料棒 (MOX) |
-| - [ ] | item.ic2.lithium_fuel_rod | 燃料棒 (锂) |
-| - [ ] | item.ic2.depleted_isotope_fuel_rod | 近衰变铀棒 |
-| - [ ] | item.ic2.heatpack | 加热元件 |
+| - [x] | item.ic2.uranium_fuel_rod | 燃料棒 (铀) |
+| - [x] | item.ic2.dual_uranium_fuel_rod | 双联燃料棒 (铀) |
+| - [x] | item.ic2.quad_uranium_fuel_rod | 四联燃料棒 (铀) |
+| - [x] | item.ic2.mox_fuel_rod | 燃料棒 (MOX) |
+| - [x] | item.ic2.dual_mox_fuel_rod | 双联燃料棒 (MOX) |
+| - [x] | item.ic2.quad_mox_fuel_rod | 四联燃料棒 (MOX) |
+| - [x] | item.ic2.lithium_fuel_rod | 燃料棒 (锂) |
+| - [x] | item.ic2.depleted_isotope_fuel_rod | 近衰变铀棒 |
+| - [x] | item.ic2.heatpack | 加热元件 |
 
 ### 电路与机械部件
 |  | ID | 名称 |
