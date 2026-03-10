@@ -27,7 +27,10 @@ object FluidCellColorProvider {
     private val logger = LoggerFactory.getLogger("ic2_120/FluidCellColorProvider")
 
     private val spriteImageField = run {
-        SpriteContents::class.java.getDeclaredField("image").apply { isAccessible = true }
+        SpriteContents::class.java.declaredFields
+            .firstOrNull { it.type == NativeImage::class.java }
+            ?.apply { isAccessible = true }
+            ?: throw NoSuchFieldException("SpriteContents has no NativeImage field (mapping may differ)")
     }
 
     fun register() {
