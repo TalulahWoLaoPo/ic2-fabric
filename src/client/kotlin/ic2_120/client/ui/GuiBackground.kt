@@ -44,6 +44,7 @@ object GuiBackground {
     /**
      * 绘制玩家背包所有槽位的边框（3 行主背包 + 1 行快捷栏）。
      * [screenX]、[screenY] 为 GUI 面板左上角坐标；[playerInvY]、[hotbarY] 为背包区域与快捷栏的 Y 偏移；[slotSize] 为槽尺寸（通常 18）。
+     * [playerInvX] 为背包区域 X 偏移（默认 8，核反应堆等固定框界面可传入居中值）。
      */
     @JvmStatic
     fun drawPlayerInventorySlotBorders(
@@ -53,13 +54,14 @@ object GuiBackground {
         playerInvY: Int,
         hotbarY: Int,
         slotSize: Int,
-        borderColor: Int = BORDER_COLOR
+        borderColor: Int = BORDER_COLOR,
+        playerInvX: Int = PLAYER_INV_START_X
     ) {
         val w = slotSize
         // 主背包 3 行 x 9 列
         for (row in 0 until PLAYER_INV_MAIN_ROWS) {
             for (col in 0 until PLAYER_INV_COLS) {
-                val slotX = PLAYER_INV_START_X + col * slotSize
+                val slotX = playerInvX + col * slotSize
                 val slotY = playerInvY + row * slotSize
                 context.drawBorder(
                     screenX + slotX - BORDER_OFFSET,
@@ -72,7 +74,7 @@ object GuiBackground {
         }
         // 快捷栏 1 行 x 9 列
         for (col in 0 until PLAYER_INV_COLS) {
-            val slotX = PLAYER_INV_START_X + col * slotSize
+            val slotX = playerInvX + col * slotSize
             context.drawBorder(
                 screenX + slotX - BORDER_OFFSET,
                 screenY + hotbarY - BORDER_OFFSET,
