@@ -61,6 +61,32 @@ class RubberLogBlockEntity(
             val block = state.block
             if (block !is RubberLogBlock) return
 
+            // Fallback：当 onBlockAdded 未被调用时（世界生成、创造放置）在首次 tick 时初始化橡胶孔
+            if (state.get(RubberLogBlock.RUBBER_NORTH) == RubberFaceState.NONE &&
+                state.get(RubberLogBlock.RUBBER_SOUTH) == RubberFaceState.NONE &&
+                state.get(RubberLogBlock.RUBBER_EAST) == RubberFaceState.NONE &&
+                state.get(RubberLogBlock.RUBBER_WEST) == RubberFaceState.NONE
+            ) {
+                val faces = listOf(Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST)
+                val r = world.random.nextInt(14)
+                val count = when {
+                    r < 11 -> 0
+                    r < 13 -> 1
+                    else -> 2
+                }
+                val indices = (0..3).toMutableList()
+                for (i in 0 until count) {
+                    val j = i + world.random.nextInt(4 - i)
+                    indices[i] = indices[j].also { indices[j] = indices[i] }
+                }
+                var newState = state
+                for (i in 0 until count) {
+                    newState = newState.with(RubberLogBlock.propFor(faces[indices[i]]), RubberFaceState.WET)
+                }
+                world.setBlockState(pos, newState)
+                return
+            }
+
             var newState = state
             var changed = false
             for (i in 0..3) {
