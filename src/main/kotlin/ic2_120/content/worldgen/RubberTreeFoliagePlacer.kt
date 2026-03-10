@@ -77,7 +77,7 @@ class RubberTreeFoliagePlacer(
             }
         }
 
-        logger.info(
+        logger.debug(
             "RubberTreeFoliagePlacer: center={}, trunkHeight={}, foliageHeight={}, radius={}, offset={}, topYs={}, total={}, placed={}, filtered={}, forced={}",
             center,
             trunkHeight,

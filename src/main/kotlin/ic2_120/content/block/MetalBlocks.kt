@@ -34,14 +34,6 @@ class BronzeBlock : Block(
     AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(5.0f, 6.0f)
 )
 
-/**
- * 橡胶原木。
- */
-@ModBlock(name = "rubber_wood", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "wood")
-class RubberWood : PillarBlock(
-    AbstractBlock.Settings.copy(Blocks.OAK_LOG).strength(2.0f)
-)
-
 // ========== 粗金属块（raw） ==========
 
 @ModBlock(name = "raw_lead_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "raw_blocks")

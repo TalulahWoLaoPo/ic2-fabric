@@ -8,6 +8,7 @@ import ic2_120.client.ClientEntityRenderers
 import ic2_120.client.ClientScreenRegistrar
 import ic2_120.client.FluidCellColorProvider
 import ic2_120.client.RubberLeavesColorProvider
+import ic2_120.client.RubberLogModelPlugin
 import ic2_120.client.StorageBoxColorProvider
 import net.fabricmc.api.ClientModInitializer
 
@@ -26,5 +27,7 @@ object Ic2_120Client : ClientModInitializer {
 		FluidCellColorProvider.register()
 		// 注册橡胶树叶生物群系着色器
 		RubberLeavesColorProvider.register()
+		// 橡胶树原木动态模型（替代 243 个 blockstate 变体）
+		RubberLogModelPlugin.register()
 	}
 }

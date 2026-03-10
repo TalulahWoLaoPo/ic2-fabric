@@ -1,5 +1,6 @@
 package ic2_120
 
+import ic2_120.content.RubberTreetapHandler
 import ic2_120.content.WrenchHandler
 import ic2_120.content.block.energy.EnergyNetworkManager
 import ic2_120.content.fluid.ModFluids
@@ -58,6 +59,9 @@ object Ic2_120 : ModInitializer {
 
         // 扳手与机器方块交互（旋转、拆卸、掉落逻辑）
         WrenchHandler.register()
+
+        // 木龙头/电动树脂提取器与橡胶树原木交互（提取粘性树脂）
+        RubberTreetapHandler.register()
 
         // 特殊处理：储物箱 BlockEntity 需在所有方块注册后统一注册（一个 BE 类型关联多种储物箱方块）
         StorageBoxBlockEntity.register(MOD_ID)

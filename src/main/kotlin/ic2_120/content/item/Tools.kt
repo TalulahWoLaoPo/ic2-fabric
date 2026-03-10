@@ -89,9 +89,9 @@ class ToolBox : Item(FabricItemSettings().maxCount(1))
 @ModItem(name = "meter", tab = CreativeTab.IC2_TOOLS, group = "tools")
 class Meter : Item(FabricItemSettings().maxCount(1))
 
-/** 木龙头 - 从橡胶木提取树脂 */
+/** 木龙头 - 从橡胶树原木湿面提取粘性树脂，寿命 10 次 */
 @ModItem(name = "treetap", tab = CreativeTab.IC2_TOOLS, group = "tools")
-class Treetap : Item(FabricItemSettings().maxDamage(64)) {
+class Treetap : Item(FabricItemSettings().maxDamage(10)) {
     override fun getRecipeRemainder(stack: ItemStack): ItemStack {
         val result = stack.copy()
         if (result.damage < result.maxDamage - 1) {
