@@ -2,6 +2,8 @@ package ic2_120
 
 import ic2_120.content.RubberTreetapHandler
 import ic2_120.content.WrenchHandler
+import ic2_120.content.block.ReactorChamberBlock
+import ic2_120.content.block.ReactorChamberEnergyProvider
 import ic2_120.content.block.energy.EnergyNetworkManager
 import ic2_120.content.fluid.ModFluids
 import ic2_120.content.worldgen.OreGeneration
@@ -10,14 +12,24 @@ import ic2_120.content.item.CellAndBucketFluidRegistration
 import ic2_120.content.block.MfsuBlock
 import ic2_120.content.block.cables.CableBlockEntity
 import ic2_120.content.block.machines.GeoGeneratorBlockEntity
+import ic2_120.content.block.machines.ReactorChamberBlockEntity
 import ic2_120.content.block.machines.WaterGeneratorBlockEntity
 import ic2_120.content.block.storage.StorageBoxBlockEntity
 import ic2_120.content.entity.ModEntities
+import ic2_120.content.ModBlockEntities
 import ic2_120.registry.ClassScanner
 import ic2_120.registry.CreativeTab
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents
+import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage
+import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
+import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant
+import net.minecraft.block.entity.BlockEntity
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import com.mojang.serialization.Lifecycle
@@ -25,8 +37,10 @@ import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.SimpleRegistry
+import net.minecraft.util.math.Direction
 import net.minecraft.util.Identifier
 import org.slf4j.LoggerFactory
+import team.reborn.energy.api.EnergyStorage
 
 object Ic2_120 : ModInitializer {
 
@@ -72,6 +86,13 @@ object Ic2_120 : ModInitializer {
         // 地热/水力发电机流体能力注册（Fabric Transfer API）
         GeoGeneratorBlockEntity.registerFluidStorageLookup()
         WaterGeneratorBlockEntity.registerFluidStorageLookup()
+        
+        // 核反应仓能量能力注册（Fabric Transfer API）
+        val reactorChamberType = ModBlockEntities.getType(ReactorChamberBlockEntity::class)
+        team.reborn.energy.api.EnergyStorage.SIDED.registerForBlockEntity(
+            { be, side -> ReactorChamberEnergyProvider.getEnergyStorage(be as ReactorChamberBlockEntity, side) },
+            reactorChamberType
+        )
 
         // 单元与桶的流体交互（右键放置/收集液体，等效桶）
         CellAndBucketFluidRegistration.register()

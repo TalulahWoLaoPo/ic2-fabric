@@ -37,8 +37,8 @@ class NuclearReactorScreen(
         GuiBackground.draw(context, x, y, backgroundWidth, backgroundHeight)
         GuiBackground.drawPlayerInventorySlotBorders(
             context, x, y,
-            handler.playerInvY,
-            handler.hotbarY,
+            handler.playerInvY -4,
+            handler.hotbarY -4 ,
             NuclearReactorScreenHandler.SLOT_SIZE,
             playerInvX = NuclearReactorScreenHandler.PLAYER_INV_X
         )
@@ -92,8 +92,8 @@ class NuclearReactorScreen(
     }
 
     private fun drawVerticalTemperatureBar(context: DrawContext, barX: Int, barY: Int, w: Int, h: Int) {
-        val temp = handler.sync.temperature.coerceIn(0, 100)
-        val fraction = temp / 100f
+        val temp = handler.sync.temperature.coerceIn(0, NuclearReactorSync.HEAT_CAPACITY)
+        val fraction = temp.toFloat() / NuclearReactorSync.HEAT_CAPACITY
 
         context.fill(barX, barY, barX + w, barY + h, 0xFF333333.toInt())
         val filledH = (fraction * h).toInt()
@@ -135,7 +135,8 @@ class NuclearReactorScreen(
         val top = y + guiOffsetY  // 内容下移避免顶部溢出
         val energy = handler.sync.energy.toLong().coerceAtLeast(0)
         val cap = NuclearReactorSync.ENERGY_CAPACITY
-        val temp = handler.sync.temperature.coerceIn(0, 100)
+        val temp = handler.sync.temperature.coerceIn(0, NuclearReactorSync.HEAT_CAPACITY)
+        val outputRate = handler.sync.outputRate.toLong()
         val slotSize = NuclearReactorScreenHandler.SLOT_SIZE
         val barH = 9 * slotSize
 
@@ -151,15 +152,15 @@ class NuclearReactorScreen(
         //     }
         // }
 
-        // 能量数值竖排叠加在能量条上（条与 drawBackground 同位置）
+        // 能量数值与输出速率竖排叠加在能量条上（条与 drawBackground 同位置）
         val energyBarX = left + 9
         val energyBarY = y + NuclearReactorScreenHandler.SLOT_GRID_Y
-        drawVerticalTextOnBar(context, energyBarX, energyBarY, barWidth, barH, listOf(formatEu(energy), formatEu(cap), "EU"))
+        drawVerticalTextOnBar(context, energyBarX, energyBarY, barWidth, barH, listOf(formatEu(energy), formatEu(cap), "EU", "${formatEu(outputRate)} EU/t"))
 
         // 温度数值竖排叠加在温度条上
         val tempBarX = left + NuclearReactorScreenHandler.SLOT_GRID_X + 9 * slotSize + 4
         val tempBarY = y + NuclearReactorScreenHandler.SLOT_GRID_Y
-        drawVerticalTextOnBar(context, tempBarX, tempBarY, barWidth, barH, listOf("${temp}%", "温度"))
+        drawVerticalTextOnBar(context, tempBarX, tempBarY, barWidth, barH, listOf("$temp", "堆温"))
 
         drawMouseoverTooltip(context, mouseX, mouseY)
     }

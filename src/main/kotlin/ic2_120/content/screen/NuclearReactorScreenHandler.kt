@@ -2,8 +2,11 @@ package ic2_120.content.screen
 
 import ic2_120.content.block.NuclearReactorBlock
 import ic2_120.content.block.machines.NuclearReactorBlockEntity
+import ic2_120.content.reactor.IBaseReactorComponent
 import ic2_120.content.screen.slot.PredicateSlot
+import ic2_120.content.screen.slot.SlotMoveHelper
 import ic2_120.content.screen.slot.SlotSpec
+import ic2_120.content.screen.slot.SlotTarget
 import ic2_120.content.sync.NuclearReactorSync
 import ic2_120.content.syncs.SyncedDataView
 import ic2_120.registry.annotation.ModScreenHandler
@@ -56,8 +59,8 @@ class NuclearReactorScreenHandler(
         }
 
         val gridHeight = GRID_ROWS * SLOT_SIZE
-        val playerInvY = SLOT_GRID_Y + gridHeight + 14
-        val hotbarY = playerInvY + 58
+        val playerInvY = SLOT_GRID_Y + gridHeight + 10
+        val hotbarY = playerInvY + 54
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
@@ -76,8 +79,19 @@ class NuclearReactorScreenHandler(
             val stackInSlot = slot.stack
             stack = stackInSlot.copy()
             when {
-                index < reactorSlotCount -> if (!insertItem(stackInSlot, reactorSlotCount, slots.size, true)) return ItemStack.EMPTY
-                else -> if (!insertItem(stackInSlot, 0, reactorSlotCount, false)) return ItemStack.EMPTY
+                index < reactorSlotCount -> {
+                    if (!insertItem(stackInSlot, reactorSlotCount, slots.size, true)) return ItemStack.EMPTY
+                    slot.onQuickTransfer(stackInSlot, stack)
+                }
+                else -> {
+                    val reactorTargets = (0 until reactorSlotCount).map {
+                        SlotTarget(slots[it], REACTOR_SLOT_SPEC)
+                    }
+                    val moved = SlotMoveHelper.insertIntoTargets(stackInSlot, reactorTargets)
+                    if (!moved) {
+                        return ItemStack.EMPTY
+                    }
+                }
             }
             if (stackInSlot.isEmpty) slot.stack = ItemStack.EMPTY
             else slot.markDirty()
@@ -98,7 +112,7 @@ class NuclearReactorScreenHandler(
     val reactorCols: Int get() = (reactorSlotCount + 8) / 9
 
     /** 玩家背包 Y 偏移（用于 Screen 绘制） */
-    val playerInvY: Int get() = SLOT_GRID_Y + GRID_ROWS * SLOT_SIZE + 14
+    val playerInvY: Int get() = SLOT_GRID_Y + GRID_ROWS * SLOT_SIZE + 16
 
     /** 快捷栏 Y 偏移 */
     val hotbarY: Int get() = playerInvY + 58
@@ -112,10 +126,11 @@ class NuclearReactorScreenHandler(
         /** 固定界面框宽度（不随容量变化） */
         const val FRAME_WIDTH = 220
         /** 玩家背包 X 偏移（居中于 FRAME_WIDTH） */
-        val PLAYER_INV_X = (FRAME_WIDTH - 9 * SLOT_SIZE) / 2
+        val PLAYER_INV_X = (FRAME_WIDTH - 9 * SLOT_SIZE) / 2 
 
         private val REACTOR_SLOT_SPEC = SlotSpec(
-            canInsert = { stack -> NuclearReactorBlockEntity.isReactorComponent(stack) }
+            maxItemCount = 1,
+            canInsert = { stack -> !stack.isEmpty && stack.item is IBaseReactorComponent }
         )
 
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): NuclearReactorScreenHandler {
