@@ -1,8 +1,7 @@
 package ic2_120.client
 
-import ic2_120.client.ui.FilteredValue
-import ic2_120.client.ui.GuiBackground
 import ic2_120.client.compose.*
+import ic2_120.client.ui.GuiBackground
 import ic2_120.client.ui.EnergyBar
 import ic2_120.content.sync.MfsuSync
 import ic2_120.content.block.MfsuBlock
@@ -21,8 +20,6 @@ class MfsuScreen(
 ) : HandledScreen<MfsuScreenHandler>(handler, playerInventory, title) {
 
     private val ui = ComposeUI()
-    private var filteredInputRate by FilteredValue()
-    private var filteredOutputRate by FilteredValue()
 
     init {
         backgroundWidth = PANEL_WIDTH
@@ -44,9 +41,9 @@ class MfsuScreen(
 
         ui.render(context, textRenderer, mouseX, mouseY) {
             val energy = handler.sync.energy.toLong().coerceAtLeast(0)
-            // 更新滤波值：使用后端同步的真实输入/输出电流
-            filteredInputRate = handler.sync.getSyncedInsertedAmount()
-            filteredOutputRate = handler.sync.getSyncedExtractedAmount()
+            // 直接使用后端滤波后的值
+            val inputRate = handler.sync.getSyncedInsertedAmount()
+            val outputRate = handler.sync.getSyncedExtractedAmount()
 
             val cap = MfsuSync.ENERGY_CAPACITY
             val fraction = if (cap > 0) (energy.toFloat() / cap).coerceIn(0f, 1f) else 0f
@@ -73,7 +70,7 @@ class MfsuScreen(
                     shadow = false
                 )
                 Text(
-                    "输入 ${formatEu(filteredInputRate)} EU/t · 输出 ${formatEu(filteredOutputRate)} EU/t",
+                    "输入 ${formatEu(inputRate)} EU/t · 输出 ${formatEu(outputRate)} EU/t",
                     color = 0xAAAAAA,
                     shadow = false
                 )

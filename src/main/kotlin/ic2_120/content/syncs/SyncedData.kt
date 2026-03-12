@@ -17,6 +17,7 @@ import kotlin.reflect.KProperty
  *     var counter  by schema.int("Counter")
  *     var energy   by schema.int("Energy", default = 1000)
  *     var progress by schema.int("Progress")
+ *     var avgRate  by schema.intAveraged("AvgRate", windowSize = 20) // 滑动窗口平均
  * }
  * ```
  * 服务端：`MyMachineSync(syncedData)`
@@ -24,6 +25,15 @@ import kotlin.reflect.KProperty
  */
 interface SyncSchema {
     fun int(name: String, default: Int = 0): ReadWriteProperty<Any?, Int>
+    /**
+     * 创建一个带滑动窗口平均滤波的整型属性。
+     * 每次赋值会将当前值加入滑动窗口，返回值为窗口内所有值的平均值。
+     *
+     * @param name 属性名称
+     * @param default 默认值
+     * @param windowSize 滑动窗口大小（tick 数），默认 20（1 秒）
+     */
+    fun intAveraged(name: String, default: Int = 0, windowSize: Int = 20): ReadWriteProperty<Any?, Int>
 }
 
 /**
@@ -46,6 +56,30 @@ class SyncedData(private val blockEntity: BlockEntity? = null) : PropertyDelegat
         return object : ReadWriteProperty<Any?, Int> {
             override fun getValue(thisRef: Any?, property: KProperty<*>): Int = entries[index].value
             override fun setValue(thisRef: Any?, property: KProperty<*>, value: Int) {
+                entries[index].value = value
+                markDirtyIfNeeded()
+            }
+        }
+    }
+
+    override fun intAveraged(name: String, default: Int, windowSize: Int): ReadWriteProperty<Any?, Int> {
+        val index = entries.size
+        entries.add(Entry(name, default))
+        // 为每个属性维护独立的滑动窗口
+        val window = ArrayDeque<Int>()
+        return object : ReadWriteProperty<Any?, Int> {
+            override fun getValue(thisRef: Any?, property: KProperty<*>): Int {
+                // 返回滑动窗口的平均值
+                return if (window.isEmpty()) entries[index].value
+                else window.sum() / window.size
+            }
+            override fun setValue(thisRef: Any?, property: KProperty<*>, value: Int) {
+                // 更新滑动窗口
+                window.addLast(value)
+                if (window.size > windowSize) {
+                    window.removeFirst()
+                }
+                // 同步当前值到 entry（用于 NBT 序列化）
                 entries[index].value = value
                 markDirtyIfNeeded()
             }
@@ -84,5 +118,10 @@ class SyncedDataView(private val delegate: PropertyDelegate) : SyncSchema {
                 delegate.set(index, value)
             }
         }
+    }
+
+    override fun intAveraged(name: String, default: Int, windowSize: Int): ReadWriteProperty<Any?, Int> {
+        // 客户端不需要滤波，直接返回服务端计算好的平均值
+        return int(name, default)
     }
 }

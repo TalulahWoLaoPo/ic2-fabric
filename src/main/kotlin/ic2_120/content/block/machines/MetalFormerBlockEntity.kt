@@ -38,7 +38,8 @@ class MetalFormerBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport, IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, ExtendedScreenHandlerFactory {
+) : BlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport, IEnergyStorageUpgradeSupport,
+    ITransformerUpgradeSupport, ExtendedScreenHandlerFactory {
 
     override val tier: Int = METAL_FORMER_TIER
 
@@ -64,6 +65,7 @@ class MetalFormerBlockEntity(
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
 
     val syncedData = SyncedData(this)
+
     @RegisterEnergy
     val sync = MetalFormerSync(
         syncedData,
@@ -94,11 +96,15 @@ class MetalFormerBlockEntity(
         if (stack.count > maxCountPerStack) stack.count = maxCountPerStack
         markDirty()
     }
+
     override fun removeStack(slot: Int, amount: Int): ItemStack = Inventories.splitStack(inventory, slot, amount)
     override fun removeStack(slot: Int): ItemStack = Inventories.removeStack(inventory, slot)
     override fun clear() = inventory.clear()
     override fun isEmpty(): Boolean = inventory.all { it.isEmpty }
-    override fun markDirty() { super.markDirty() }
+    override fun markDirty() {
+        super.markDirty()
+    }
+
     override fun canPlayerUse(player: PlayerEntity): Boolean = Inventory.canPlayerUse(this, player)
 
     override fun writeScreenOpeningData(player: net.minecraft.server.network.ServerPlayerEntity, buf: PacketByteBuf) {
@@ -109,13 +115,20 @@ class MetalFormerBlockEntity(
     override fun getDisplayName(): Text = Text.translatable("block.ic2_120.metal_former")
 
     override fun createMenu(syncId: Int, playerInventory: PlayerInventory, player: PlayerEntity?): ScreenHandler =
-        MetalFormerScreenHandler(syncId, playerInventory, this, net.minecraft.screen.ScreenHandlerContext.create(world!!, pos), syncedData)
+        MetalFormerScreenHandler(
+            syncId,
+            playerInventory,
+            this,
+            net.minecraft.screen.ScreenHandlerContext.create(world!!, pos),
+            syncedData
+        )
 
     override fun readNbt(nbt: NbtCompound) {
         super.readNbt(nbt)
         Inventories.readNbt(nbt, inventory)
         syncedData.readNbt(nbt)
         sync.amount = nbt.getLong(MetalFormerSync.NBT_ENERGY_STORED)
+        sync.syncCommittedAmount()
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
         sync.setMode(MetalFormerSync.Mode.fromId(nbt.getInt(MetalFormerSync.NBT_MODE)))
     }
@@ -145,11 +158,11 @@ class MetalFormerBlockEntity(
         OverclockerUpgradeComponent.apply(this, SLOT_UPGRADE_INDICES, this)
         EnergyStorageUpgradeComponent.apply(this, SLOT_UPGRADE_INDICES, this)
         TransformerUpgradeComponent.apply(this, SLOT_UPGRADE_INDICES, this)
+//        println("voltageTierBonus: $voltageTierBonus")
         sync.energyCapacity = sync.getEffectiveCapacity().toInt().coerceIn(0, Int.MAX_VALUE)
 
         // 从相邻方块或导线提取能量（maxPull 随高压升级提高）
-        val maxPull = sync.getMaxInsertPerTick()
-        pullEnergyFromNeighbors(world, pos, sync, maxPull)
+        pullEnergyFromNeighbors(world, pos, sync)
 
         // 从放电槽提取能量
         extractFromDischargingSlot()
@@ -158,6 +171,8 @@ class MetalFormerBlockEntity(
         if (input.isEmpty) {
             if (sync.progress != 0) sync.progress = 0
             setActiveState(world, pos, state, false)
+            // 同步当前 tick 的实际输入/耗能
+//            sync.syncCurrentTickFlow()
             return
         }
 
@@ -168,17 +183,21 @@ class MetalFormerBlockEntity(
         val result = MetalFormerRecipes.getOutput(currentMode, input, secondaryInput) ?: run {
             if (sync.progress != 0) sync.progress = 0
             setActiveState(world, pos, state, false)
+            // 同步当前 tick 的实际输入/耗能
+//            sync.syncCurrentTickFlow()
             return
         }
 
         val outputSlot = getStack(SLOT_OUTPUT)
         val maxStack = result.maxCount
         val canAccept = outputSlot.isEmpty() ||
-            (ItemStack.areItemsEqual(outputSlot, result) && outputSlot.count + result.count <= maxStack)
+                (ItemStack.areItemsEqual(outputSlot, result) && outputSlot.count + result.count <= maxStack)
 
         if (!canAccept) {
             if (sync.progress != 0) sync.progress = 0
             setActiveState(world, pos, state, false)
+            // 同步当前 tick 的实际输入/耗能
+//            sync.syncCurrentTickFlow()
             return
         }
 
@@ -199,6 +218,8 @@ class MetalFormerBlockEntity(
             sync.progress = 0
             markDirty()
             setActiveState(world, pos, state, false)
+            // 同步当前 tick 的实际输入/耗能
+//            sync.syncCurrentTickFlow()
             return
         }
 
@@ -212,6 +233,9 @@ class MetalFormerBlockEntity(
         } else {
             setActiveState(world, pos, state, false)
         }
+
+        // 同步当前 tick 的实际输入/耗能
+        sync.syncCurrentTickFlow()
     }
 
     /**
@@ -229,7 +253,7 @@ class MetalFormerBlockEntity(
         val space = (sync.getEffectiveCapacity() - sync.amount).coerceAtLeast(0L)
         if (space <= 0L) return
 
-        val request = minOf(space, sync.getMaxInsertPerTick())
+        val request = minOf(space, sync.getEffectiveMaxInsertPerTick())
         val extracted = batteryDischarger.tick(request)
         if (extracted <= 0L) return
 

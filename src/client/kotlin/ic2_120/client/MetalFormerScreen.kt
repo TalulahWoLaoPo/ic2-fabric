@@ -116,6 +116,9 @@ class MetalFormerScreen(
             MetalFormerSync.Mode.CUTTING -> "切割"
             MetalFormerSync.Mode.EXTRUDING -> "挤压"
         }
+        // 直接使用后端滤波后的值
+        val inputRate = handler.sync.getSyncedInsertedAmount()
+        val consumedRate = handler.sync.getSyncedConsumedAmount()
 
         ui.render(context, textRenderer, mouseX, mouseY) {
             Column(x = left + 8, y = top + 6, spacing = 2, modifier = Modifier.EMPTY.width(contentW).padding(0, 0, 8, 0)) {
@@ -149,9 +152,23 @@ class MetalFormerScreen(
                     )
                 })
                 }
+                // 第三行：输入/耗能速率
+                Text(
+                    "输入 ${formatEu(inputRate)} EU/t · 耗能 ${formatEu(consumedRate)} EU/t",
+                    color = 0xAAAAAA,
+                    shadow = false
+                )
             }
         }
         drawMouseoverTooltip(context, mouseX, mouseY)
+    }
+
+    private fun formatEu(value: Long): String {
+        return when {
+            value >= 1_000_000 -> String.format("%.1fM", value / 1_000_000.0)
+            value >= 1_000 -> String.format("%.1fK", value / 1_000.0)
+            else -> value.toString()
+        }
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {

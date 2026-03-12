@@ -14,11 +14,13 @@ import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemPlacementContext
 import net.minecraft.state.StateManager
+import net.minecraft.state.property.Properties
 import net.minecraft.state.property.BooleanProperty
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 
 /**
@@ -38,13 +40,34 @@ import net.minecraft.world.World
  * - 降压模式：其他五面接收高级能量，正面输出低级能量
  *   - 例：1 tick × 128 EU/t = 128 EU → 4 tick × 32 EU/t
  * - EU 总量始终守恒
+ *
+ * 方块支持六面朝向（上下南北西东），"正面"是方块朝向的那一面。
+ * 继承自 [DirectionalMachineBlock] 以获得六面朝向支持。
  */
-abstract class TransformerBlock : MachineBlock() {
+abstract class TransformerBlock : DirectionalMachineBlock() {
 
     abstract fun createTransformerBlockEntity(pos: BlockPos, state: BlockState): BlockEntity
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =
         createTransformerBlockEntity(pos, state)
+
+    // 添加 ACTIVE 状态属性（六面朝向由 DirectionalMachineBlock 提供）
+    override fun appendProperties(builder: StateManager.Builder<net.minecraft.block.Block, BlockState>) {
+        super.appendProperties(builder)  // 保留 FACING
+        builder.add(ACTIVE)  // 添加激活状态
+    }
+
+    init {
+        // 设置默认激活状态为 false（FACING 由父类处理）
+        defaultState = stateManager.defaultState.with(ACTIVE, false)
+    }
+
+    override fun getPlacementState(ctx: ItemPlacementContext): BlockState? {
+        // 根据玩家面向的方向决定变压器正面朝向（水平方向）
+        // 变压器通常放置在地面，正面应该朝向玩家面对的方向
+        val facing = ctx.horizontalPlayerFacing.opposite
+        return super.getPlacementState(ctx)?.with(ACTIVE, false)?.with(Properties.FACING, facing)
+    }
 
     override fun <T : BlockEntity> getTicker(
         world: World,
@@ -85,14 +108,6 @@ abstract class TransformerBlock : MachineBlock() {
         }
         return ActionResult.SUCCESS
     }
-
-    override fun appendProperties(builder: StateManager.Builder<net.minecraft.block.Block, BlockState>) {
-        super.appendProperties(builder)
-        builder.add(ACTIVE)
-    }
-
-    override fun getPlacementState(ctx: ItemPlacementContext): BlockState? =
-        super.getPlacementState(ctx)?.with(ACTIVE, false)
 
     companion object {
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")

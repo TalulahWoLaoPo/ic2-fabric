@@ -116,11 +116,11 @@ abstract class BaseCableBlock(settings: AbstractBlock.Settings = defaultSettings
 
     // ── 导线能量参数（子类覆写） ────────────────────────────────
 
-    /** 每 tick 最大传输量（EU/t），同时也是该导线对电网容量的贡献。 */
-    open fun getTransferRate(): Long = 128L
+    /** 每 tick 最大传输量（EU/t */
+    abstract fun getTransferRate(): Long
 
     /** 每格导线的能量损耗（milliEU）。电网总损耗 = sum(各导线损耗) / 1000 EU。 */
-    open fun getEnergyLoss(): Long = 200L
+    abstract fun getEnergyLoss(): Long
 
     /** 导线是否绝缘。用 [IInsulatedCable] 接口判断。 */
     open fun isInsulated(): Boolean = this is IInsulatedCable
@@ -192,14 +192,14 @@ abstract class BaseCableBlock(settings: AbstractBlock.Settings = defaultSettings
             Direction.DOWN -> DOWN
         }
 
-        /** 传输速率（EU/t）到能量等级（1–5）的映射：32→1, 128→2, 512→3, 2048→4, 8192→5。 */
-        @JvmStatic
-        fun transferRateToTier(transferRate: Long): Int = when {
-            transferRate >= 8192 -> 5
-            transferRate >= 2048 -> 4
-            transferRate >= 512 -> 3
-            transferRate >= 128 -> 2
-            else -> 1
-        }
+//        /** 传输速率（EU/t）到能量等级（1–5）的映射：32→1, 128→2, 512→3, 2048→4, 8192→5。 */
+//        @JvmStatic
+//        fun transferRateToTier(transferRate: Long): Int = when {
+//            transferRate >= 8192 -> 5
+//            transferRate >= 2048 -> 4
+//            transferRate >= 512 -> 3
+//            transferRate >= 128 -> 2
+//            else -> 1
+//        }
     }
 }

@@ -1,18 +1,18 @@
 package ic2_120.content.sync
 
-import ic2_120.content.TickLimitedEnergyStorage
+import ic2_120.content.TickLimitedSidedEnergyContainer
 import ic2_120.content.syncs.SyncSchema
 
 /**
  * 特斯拉线圈的同步属性与能量存储。
- * 不支持升级，使用简单的 TickLimitedEnergyStorage。
+ * 不支持升级，使用简单的 TickLimitedSidedEnergyContainer。
  * 规格：5000 EU 容量，128 EU/t 输入（MV 等级），0 输出。
  * 需达到 5000 EU 才能工作，每秒工作一次。
  */
 class TeslaCoilSync(
     schema: SyncSchema,
     currentTickProvider: () -> Long? = { null }
-) : TickLimitedEnergyStorage(ENERGY_CAPACITY, MAX_INSERT, MAX_EXTRACT, currentTickProvider) {
+) : TickLimitedSidedEnergyContainer(ENERGY_CAPACITY, MAX_INSERT, MAX_EXTRACT, currentTickProvider) {
 
     companion object {
         const val ENERGY_CAPACITY = 5000L

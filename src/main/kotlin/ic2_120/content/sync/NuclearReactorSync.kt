@@ -1,6 +1,6 @@
 package ic2_120.content.sync
 
-import ic2_120.content.TickLimitedEnergyStorage
+import ic2_120.content.TickLimitedSidedEnergyContainer
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.syncs.SyncSchema
 import net.minecraft.util.math.Direction
@@ -15,10 +15,10 @@ class NuclearReactorSync(
     schema: SyncSchema,
     private val getFacing: () -> Direction,
     private val currentTickProvider: () -> Long? = { null }
-) : TickLimitedEnergyStorage(
-    capacity = ENERGY_CAPACITY,
+) : TickLimitedSidedEnergyContainer(
+    baseCapacity = ENERGY_CAPACITY,
     maxInsertPerTick = 0L,
-    maxExtract = MAX_EXTRACT,
+    maxExtractPerTick = MAX_EXTRACT,
     currentTickProvider = currentTickProvider
 ) {
 

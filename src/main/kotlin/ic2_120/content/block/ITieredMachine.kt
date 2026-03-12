@@ -23,33 +23,6 @@ interface ITieredMachine {
             repeat((tier - 1).coerceAtMost(8)) { m *= 4 }
             return m
         }
-
-        /**
-         * 机器的有效耐压等级（用于电网过压检测与电网输出等级计算）。
-         * 若机器实现了 [ITransformerUpgradeSupport]，则为基础等级 + 高压升级带来的等级加成；
-         * 否则为 [ITieredMachine.tier]。
-         */
-        fun ITieredMachine.effectiveVoltageTier(): Int =
-            tier + (if (this is ITransformerUpgradeSupport) voltageTierBonus else 0)
-
-        /**
-         * 获取机器在特定方向的有效电压等级。
-         *
-         * 如果机器实现了分面电压等级（如变压器），返回该面的等级；
-         * 否则返回整体有效耐压等级。
-         *
-         * @param side 方向，null 表示整体等级
-         * @return 该方向的电压等级，如果机器不支持分面电压则返回整体等级
-         */
-        fun ITieredMachine.effectiveVoltageTierForSide(side: Direction?): Int {
-            val sidedTier = getVoltageTierForSide(side)
-            if (sidedTier != null) {
-                // 如果实现了分面电压等级，直接返回
-                return sidedTier + (if (this is ITransformerUpgradeSupport) voltageTierBonus else 0)
-            }
-            // 否则返回整体等级
-            return effectiveVoltageTier()
-        }
     }
 
     /**
@@ -73,16 +46,41 @@ interface ITieredMachine {
     val tier: Int
 
     /**
-     * 获取机器在特定方向的电压等级（可选实现）。
+     * 获取机器在特定方向的电压等级。
      *
-     * 默认返回 null，表示机器不支持分面电压等级，所有面使用相同的 [tier]。
+     * 默认实现返回全局电压等级 [tier]，表示所有面使用相同的电压等级。
      *
      * 对于变压器等设备，不同面可能有不同的电压等级：
      * - 升压模式：正面接收低级能量（tier），其他面输出高级能量（tier+1）
      * - 降压模式：其他面接收高级能量（tier+1），正面输出低级能量（tier）
+     * 这些机器应重写此方法以实现分面电压。
      *
      * @param side 方向，null 表示查询整体等级
-     * @return 该方向的电压等级，如果该方向未定义则返回 null
+     * @return 该方向的电压等级
      */
-    fun getVoltageTierForSide(side: Direction?): Int? = null
+    fun getVoltageTierForSide(side: Direction?): Int = tier
+
+    /**
+     * 机器的有效耐压等级（用于电网过压检测与电网输出等级计算）。
+     * 若机器实现了 [ITransformerUpgradeSupport]，则为基础等级 + 高压升级带来的等级加成；
+     * 否则为 [tier]。
+     */
+    fun effectiveVoltageTier(): Int =
+        tier + (if (this is ITransformerUpgradeSupport) voltageTierBonus else 0)
+
+    /**
+     * 获取机器在特定方向的有效电压等级。
+     *
+     * 返回该面的电压等级加上高压升级带来的加成。
+     * 对于实现了分面电压的机器（如变压器），使用该面的特定等级；
+     * 对于其他机器，所有面使用相同的全局有效等级。
+     *
+     * @param side 方向，null 表示整体等级
+     * @return 该方向的有效电压等级（基础等级 + 升级加成）
+     */
+    fun effectiveVoltageTierForSide(side: Direction?): Int {
+        // 获取该面的基础电压等级，然后加上高压升级加成
+        val sidedTier = getVoltageTierForSide(side)
+        return sidedTier + (if (this is ITransformerUpgradeSupport) voltageTierBonus else 0)
+    }
 }

@@ -1,6 +1,6 @@
 package ic2_120.content.sync
 
-import ic2_120.content.UpgradeableTickLimitedEnergyStorage
+import ic2_120.content.UpgradeableTickLimitedSidedEnergyContainer
 import ic2_120.content.syncs.SyncSchema
 
 /**
@@ -12,7 +12,7 @@ class MetalFormerSync(
     currentTickProvider: () -> Long? = { null },
     capacityBonusProvider: () -> Long = { 0L },
     maxInsertPerTickProvider: (() -> Long)? = null
-) : UpgradeableTickLimitedEnergyStorage(
+) : UpgradeableTickLimitedSidedEnergyContainer(
     ENERGY_CAPACITY,
     capacityBonusProvider,
     MAX_INSERT,
@@ -48,9 +48,10 @@ class MetalFormerSync(
     var progress by schema.int("Progress")
     var mode by schema.int("Mode")
     var energyCapacity by schema.int("EnergyCapacity", default = ENERGY_CAPACITY.toInt())
-
-    /** 当前有效的每 tick 输入上限（含高压升级），供 BlockEntity 调用 */
-    fun getMaxInsertPerTick(): Long = getEffectiveMaxInsertPerTick()
+    /** 滤波后的输入速率（EU/t），滑动窗口平均 */
+    var avgInsertedAmount by schema.intAveraged("AvgInserted", windowSize = 20)
+    /** 滤波后的耗能速率（EU/t），滑动窗口平均 */
+    var avgConsumedAmount by schema.intAveraged("AvgConsumed", windowSize = 20)
 
     override fun onFinalCommit() {
         energy = amount.toInt().coerceIn(0, Int.MAX_VALUE)
@@ -67,4 +68,18 @@ class MetalFormerSync(
         val nextMode = Mode.entries[(currentMode.ordinal + 1) % Mode.entries.size]
         setMode(nextMode)
     }
+
+    /**
+     * 在 tick 结束时调用，同步当前 tick 的实际输入/耗能
+     */
+    fun syncCurrentTickFlow() {
+        avgInsertedAmount = getCurrentTickInserted().toInt()
+        avgConsumedAmount = getCurrentTickConsumed().toInt()
+    }
+
+    /** 获取同步的滤波后输入量（EU/t） */
+    fun getSyncedInsertedAmount(): Long = avgInsertedAmount.toLong()
+
+    /** 获取同步的滤波后耗能量（EU/t） */
+    fun getSyncedConsumedAmount(): Long = avgConsumedAmount.toLong()
 }

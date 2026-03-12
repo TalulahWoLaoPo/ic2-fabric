@@ -110,7 +110,7 @@ class MaceratorBlockEntity(
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
 
         // 从相邻方块或物品栏电池提取能量
-        pullEnergyFromNeighbors(world, pos, sync, MaceratorSync.MAX_INSERT)
+        pullEnergyFromNeighbors(world, pos, sync)
 
         // 从放电槽提取能量
         extractFromDischargingSlot()

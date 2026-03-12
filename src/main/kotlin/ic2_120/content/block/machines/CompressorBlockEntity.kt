@@ -119,7 +119,7 @@ class CompressorBlockEntity(
         TransformerUpgradeComponent.apply(this, SLOT_UPGRADE_INDICES, this)
         sync.energyCapacity = sync.getEffectiveCapacity().toInt().coerceIn(0, Int.MAX_VALUE)
 
-        pullEnergyFromNeighbors(world, pos, sync, sync.getMaxInsertPerTick())
+        pullEnergyFromNeighbors(world, pos, sync)
 
         val input = getStack(SLOT_INPUT)
         val recipe = CompressorRecipes.getRecipe(input) ?: run {

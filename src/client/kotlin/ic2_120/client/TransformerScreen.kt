@@ -13,6 +13,8 @@ import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.network.packet.c2s.play.ButtonClickC2SPacket
 import net.minecraft.text.Text
+import org.slf4j.LoggerFactory
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * 变压器的 GUI 界面。
@@ -30,6 +32,10 @@ class TransformerScreen(
     private val ui = ComposeUI()
     private var filteredInputRate by FilteredValue()
     private var filteredOutputRate by FilteredValue()
+
+    // 用于调试：跟踪上次同步的值，只在变化时记录日志
+    private val lastLoggedInput = AtomicLong(-1)
+    private val lastLoggedOutput = AtomicLong(-1)
 
     init {
         backgroundWidth = PANEL_WIDTH
@@ -52,8 +58,30 @@ class TransformerScreen(
         val currentMode = handler.sync.getMode()
 
         // 更新滤波值：使用后端同步的真实输入/输出电流
-        filteredInputRate = handler.sync.getSyncedInsertedAmount()
-        filteredOutputRate = handler.sync.getSyncedExtractedAmount()
+        val rawInput = handler.sync.getSyncedInsertedAmount()
+        val rawOutput = handler.sync.getSyncedExtractedAmount()
+        filteredInputRate = rawInput
+        filteredOutputRate = rawOutput
+
+        // 调试日志：当输入/输出值变化时记录
+        val lastIn = lastLoggedInput.get()
+        val lastOut = lastLoggedOutput.get()
+        if (rawInput != lastIn || rawOutput != lastOut) {
+            if (lastLoggedInput.compareAndSet(lastIn, rawInput) ||
+                lastLoggedOutput.compareAndSet(lastOut, rawOutput)) {
+                val modeText = when (currentMode) {
+                    TransformerSync.Mode.STEP_UP -> "升压"
+                    TransformerSync.Mode.STEP_DOWN -> "降压"
+                }
+//                LOGGER.info(
+//                    "Transformer GUI - Mode: {}, Energy: {} EU, Input: {} EU/t, Output: {} EU/t",
+//                    modeText,
+//                    formatEu(energy),
+//                    formatEu(rawInput),
+//                    formatEu(rawOutput)
+//                )
+            }
+        }
 
         val modeText = when (currentMode) {
             TransformerSync.Mode.STEP_UP -> "升压 (低→高)"
@@ -145,6 +173,7 @@ class TransformerScreen(
     }
 
     companion object {
+        private val LOGGER = LoggerFactory.getLogger(TransformerScreen::class.java)
         private const val PANEL_WIDTH = 176
         private const val PANEL_HEIGHT = 120
     }

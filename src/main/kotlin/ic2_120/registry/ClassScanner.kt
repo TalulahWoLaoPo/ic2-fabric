@@ -1,5 +1,6 @@
 package ic2_120.registry
 
+import ic2_120.content.TickLimitedSidedEnergyContainer
 import ic2_120.registry.annotation.ModBlock
 import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.annotation.ModCreativeTab
@@ -8,7 +9,6 @@ import ic2_120.registry.annotation.ModScreenHandler
 import ic2_120.registry.annotation.RegisterEnergy
 import net.minecraft.util.math.Direction
 import team.reborn.energy.api.EnergyStorage
-import team.reborn.energy.api.base.SimpleSidedEnergyContainer
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup
 import net.fabricmc.fabric.api.`object`.builder.v1.block.entity.FabricBlockEntityTypeBuilder
@@ -400,9 +400,12 @@ object ClassScanner {
                     val prop = energyProperty
                     @Suppress("UNCHECKED_CAST")
                     EnergyStorage.SIDED.registerForBlockEntity({ be, direction ->
-                        val storage = (prop as kotlin.reflect.KProperty1<Any, Any?>).get(be)
-                        if (storage is SimpleSidedEnergyContainer) storage.getSideStorage(direction)
-                        else storage as EnergyStorage
+                        val energyContainer = (prop as KProperty1<Any, Any?>).get(be)
+                        if (energyContainer is TickLimitedSidedEnergyContainer) energyContainer.getSideStorage(direction)
+                        else {
+                            logger.error("方块实体 {} 的能量容器 {} 不是 TickLimitedSidedEnergyContainer 的子类", clazz.simpleName, prop.name)
+                            null
+                        }
                     }, type)
                     logger.debug("已为方块实体 {} 注册 EnergyStorage（属性 {}）", clazz.simpleName, prop.name)
                 }

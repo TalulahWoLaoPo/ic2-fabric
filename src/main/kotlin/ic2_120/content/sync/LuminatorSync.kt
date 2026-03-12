@@ -1,6 +1,6 @@
 package ic2_120.content.sync
 
-import ic2_120.content.TickLimitedEnergyStorage
+import ic2_120.content.TickLimitedSidedEnergyContainer
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.syncs.SyncSchema
 
@@ -12,7 +12,7 @@ import ic2_120.content.syncs.SyncSchema
 class LuminatorSync(
     schema: SyncSchema,
     currentTickProvider: () -> Long? = { null }
-) : TickLimitedEnergyStorage(ENERGY_CAPACITY, MAX_INSERT, MAX_EXTRACT, currentTickProvider) {
+) : TickLimitedSidedEnergyContainer(ENERGY_CAPACITY, MAX_INSERT, MAX_EXTRACT, currentTickProvider) {
 
     companion object {
         /** 最小缓冲，无储能，断电即关 */

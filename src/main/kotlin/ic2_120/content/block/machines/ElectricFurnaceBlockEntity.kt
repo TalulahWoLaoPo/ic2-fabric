@@ -98,7 +98,7 @@ class ElectricFurnaceBlockEntity(
     fun tick(world: World, pos: BlockPos, state: BlockState) {
         if (world.isClient) return
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
-        pullEnergyFromNeighbors(world, pos, sync, ElectricFurnaceSync.MAX_INSERT)
+        pullEnergyFromNeighbors(world, pos, sync)
 
         val input = getStack(0)
         if (input.isEmpty()) {

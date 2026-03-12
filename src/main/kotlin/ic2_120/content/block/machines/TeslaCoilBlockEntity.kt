@@ -94,7 +94,7 @@ class TeslaCoilBlockEntity(
         if (world.isClient) return
 
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
-        pullEnergyFromNeighbors(world, pos, sync, TeslaCoilSync.MAX_INSERT)
+        pullEnergyFromNeighbors(world, pos, sync)
 
         val powered = state.get(Properties.POWERED)
         if (!powered) {

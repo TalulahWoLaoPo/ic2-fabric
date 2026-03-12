@@ -2,7 +2,6 @@ package ic2_120.content.block.energy
 
 import ic2_120.content.block.IGenerator
 import ic2_120.content.block.ITieredMachine
-import ic2_120.content.block.ITieredMachine.Companion.effectiveVoltageTierForSide
 import ic2_120.content.block.cables.BaseCableBlock
 import ic2_120.content.item.energy.ITiered
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction
@@ -20,6 +19,8 @@ import net.minecraft.util.math.Box
 import net.minecraft.particle.ParticleTypes
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
+import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import team.reborn.energy.api.EnergyStorage
 import kotlin.math.pow
 import java.util.PriorityQueue
@@ -41,6 +42,24 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
     companion object {
         /** 漏电/低耐压烧毁的检查周期（tick）。x 秒 */
         const val damageIntervalTicks = 100
+        val log = LoggerFactory.getLogger("EnergyNetwork")
+
+        // ========== 日志开关配置 ==========
+
+        /** 超压爆炸日志开关：记录电网过压检测、机器爆炸等 */
+        var ENABLE_OVERVOLTAGE_LOG = false
+
+        /** 能量传输日志开关：记录能量流动、输入输出等 */
+        var ENABLE_ENERGY_TRANSFER_LOG = false
+
+        /** 拓扑构建日志开关：记录电网拓扑构建、输出等级计算等 */
+        var ENABLE_TOPOLOGY_LOG = false
+
+        /** 漏电检测日志开关：记录导线漏电、触电伤害等 */
+        var ENABLE_LEAK_LOG = false
+
+        /** 导线烧毁日志开关：记录低耐压导线烧毁等 */
+        var ENABLE_CABLE_BURN_LOG = false
     }
 
     /** 低耐压导线烧毁比例（0.0–1.0）。每次检查时随机选择该比例的“耐压低于电网等级”的导线烧毁。 */
@@ -50,22 +69,30 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
     val cables = mutableSetOf<Long>()
     var energy: Long = 0
     var capacity: Long = 0
+
     /** 电网输出等级（1–5），由电网内输出等级最高的机器决定，决定所有导线的电压等级。 */
     var outputLevel: Int = 1
+
     /** 触电伤害触发 tick 偏移（0–199），用于错开不同电网的伤害时机。 */
     var damageTickOffset: Int = 0
+
     /** 每根导线的损耗 (milliEU)。 */
     private val cableLossMilliEu = mutableMapOf<Long, Long>()
+
     /** 拓扑缓存：导线邻接、边界连接、每根导线速率。 */
     private var topologyCache: TopologyCache? = null
+
     /** 按消费者入口导线集合缓存最短路结果（仅拓扑不变时可复用）。 */
     private val dijkstraCacheByEntries = mutableMapOf<String, DijkstraResult>()
+
     /** 按消费者入口导线集合缓存到全体导线的候选路径（按损耗升序）。 */
     private val bufferedCandidatesCacheByEntries = mutableMapOf<String, List<PathCandidate>>()
     var lastTickTime: Long = -1
 
     override fun createSnapshot(): Long = energy
-    override fun readSnapshot(snapshot: Long) { energy = snapshot }
+    override fun readSnapshot(snapshot: Long) {
+        energy = snapshot
+    }
 
     fun addCable(pos: BlockPos, transferRate: Long, lossMilliEu: Long) {
         val key = pos.asLong()
@@ -106,17 +133,14 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
         lastTickTime = time
 
         val isDamageTick = (time + damageTickOffset) % damageIntervalTicks == 0L
-        if (isDamageTick) {
-            println("[电网 Tick] 世界时间=$time，开始执行电网 tick（导线数=${cables.size}，能量=$energy/$capacity，输出等级=$outputLevel，伤害检查周期）")
-        }
 
         pushToConsumers(world)
         tryUninsulatedCableDamage(world)
         tryUnderTierCableBurn(world)
         tryMachineOvervoltageExplosion(world)
 
-        if (isDamageTick) {
-            println("[电网 Tick] Tick 完成，剩余能量=$energy")
+        if (ENABLE_ENERGY_TRANSFER_LOG) {
+            log.debug("[电网 Tick] 世界时间=$time，导线数=${cables.size}，能量=$energy/$capacity，输出等级=$outputLevel")
         }
     }
 
@@ -129,7 +153,9 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
         val topology = topologyCache ?: buildTopology(world).also { topologyCache = it }
         if (topology.cablesThatLeak.isEmpty() || outputLevel < 1) return
 
-        println("[漏电检测] 电网输出等级=$outputLevel，漏电导线数量=${topology.cablesThatLeak.size}")
+        if (ENABLE_LEAK_LOG) {
+            log.debug("[漏电检测] 电网输出等级=$outputLevel，漏电导线数量=${topology.cablesThatLeak.size}")
+        }
 
         val damageSource = createCableShockDamageSource(serverWorld)
         val rangeInt = outputLevel
@@ -167,12 +193,12 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
             if (hasLeakingCableNearby(entity.blockPos, leakingCables, rangeInt)) {
                 entity.damage(damageSource, damageAmount)
                 hurtEntities.add(entity)
-                // println("触电伤害：${entity.name}，电压等级：$outputLevel")
+                // log.debug("触电伤害：${entity.name}，电压等级：$outputLevel")
             }
         }
 
-        if (hurtEntities.isNotEmpty()) {
-            println("[漏电检测] 造成伤害：${hurtEntities.joinToString { it.name.string }}，伤害值=$damageAmount")
+        if (hurtEntities.isNotEmpty() && ENABLE_LEAK_LOG) {
+            log.debug("[漏电检测] 造成伤害：${hurtEntities.joinToString { it.name.string }}，伤害值=$damageAmount")
         }
     }
 
@@ -194,7 +220,8 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
         val registry = world.registryManager.get(RegistryKeys.DAMAGE_TYPE)
         val key = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Identifier("ic2_120", "cable_shock"))
         val entry = registry.getEntry(key).orElse(null)
-            ?: registry.getEntry(RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Identifier("minecraft", "lightning"))).orElseThrow()
+            ?: registry.getEntry(RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Identifier("minecraft", "lightning")))
+                .orElseThrow()
         return DamageSource(entry)
     }
 
@@ -212,12 +239,16 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
         val toBurn = topology.cablesThatCanBurn
         if (toBurn.isEmpty() || outputLevel < 1) return
 
-        println("[导线烧毁] 电网输出等级=$outputLevel，可烧毁导线数量=${toBurn.size}（电压等级 < $outputLevel）")
+        if (ENABLE_CABLE_BURN_LOG) {
+            log.debug("[导线烧毁] 电网输出等级=$outputLevel，可烧毁导线数量=${toBurn.size}（电压等级 < $outputLevel）")
+        }
 
         val burnCount = (toBurn.size * underTierCableBurnRatio).toInt().coerceIn(0, toBurn.size)
         if (burnCount <= 0) return
 
-        println("[导线烧毁] 准备烧毁 $burnCount 根导线（比例=${underTierCableBurnRatio}）")
+        if (ENABLE_CABLE_BURN_LOG) {
+            log.debug("[导线烧毁] 准备烧毁 $burnCount 根导线（比例=${underTierCableBurnRatio}）")
+        }
 
         val shuffled = toBurn.toMutableList()
         for (i in shuffled.indices.reversed()) {
@@ -246,8 +277,8 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
             world.breakBlock(pos, false)
         }
 
-        if (actuallyBurned.isNotEmpty()) {
-            println("[导线烧毁] 实际烧毁：${actuallyBurned.joinToString { "${it.second} @ ${it.first}" }}")
+        if (actuallyBurned.isNotEmpty() && ENABLE_CABLE_BURN_LOG) {
+            log.debug("[导线烧毁] 实际烧毁：${actuallyBurned.joinToString { "${it.second} @ ${it.first}" }}")
         }
     }
 
@@ -265,7 +296,9 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
         val topology = topologyCache ?: buildTopology(world).also { topologyCache = it }
         if (outputLevel < 1) return
 
-        println("[超压检测] 开始检查，电网输出等级=$outputLevel，边界数量=${topology.boundaries.size}")
+        if (ENABLE_OVERVOLTAGE_LOG) {
+            log.debug("[超压检测] 开始检查，电网输出等级=$outputLevel，边界数量=${topology.boundaries.size}")
+        }
 
         val checked = mutableSetOf<Long>()
         var explodedCount = 0
@@ -280,33 +313,56 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
             val neighborPos = BlockPos.fromLong(neighborLong)
             val be = world.getBlockEntity(neighborPos) ?: continue
 
-            // 输出当前检查的方块信息
-            val blockState = world.getBlockState(neighborPos)
-            println("[超压检测] 检查方块：${blockState.block} @ $neighborPos")
-
             if (be is IGenerator) {
-                println("[超压检测]   → 跳过：是发电机 (IGenerator)")
+                if (ENABLE_OVERVOLTAGE_LOG) {
+                    log.debug("[超压检测]   → 跳过：是发电机 (IGenerator)")
+                }
                 skippedGeneratorCount++
                 continue
             }
             if (be !is ITieredMachine) {
-                println("[超压检测]   → 跳过：不是 ITieredMachine")
+                if (ENABLE_OVERVOLTAGE_LOG) {
+                    log.debug("[超压检测]   → 跳过：不是 ITieredMachine")
+                }
                 skippedNotMachineCount++
                 continue
             }
 
             // 使用分面电压等级，检查从电网方向看向机器时的耐压等级
             val effectiveTier = be.effectiveVoltageTierForSide(boundary.lookupFromNeighborSide)
-            println("[超压检测]   → 有效耐压等级=$effectiveTier (方向=${boundary.lookupFromNeighborSide})")
+
+            // 详细日志：记录过压检测
+            val blockState = world.getBlockState(neighborPos)
+            val machineTier = be.tier
+            val sidedTier = be.getVoltageTierForSide(boundary.lookupFromNeighborSide)
+            val lookupSide = boundary.lookupFromNeighborSide
+            val cableSide = lookupSide.opposite
+
+            if (ENABLE_OVERVOLTAGE_LOG) {
+                log.info(
+                    "[超压检测-详细] 方块=$blockState @ $neighborPos" +
+                    "\n  → lookupFromNeighborSide=$lookupSide（机器看导线），cableSide=$cableSide（导线看机器）" +
+                    "\n  → 基础tier=$machineTier，该面电压=$sidedTier，有效耐压=$effectiveTier" +
+                    "\n  → 电网输出等级=$outputLevel，检查方向=$lookupSide"
+                )
+            }
+
+            if (ENABLE_OVERVOLTAGE_LOG) {
+                log.debug("[超压检测]   → 有效耐压等级=$effectiveTier (方向=${boundary.lookupFromNeighborSide})")
+            }
 
             if (outputLevel <= effectiveTier) {
-                println("[超压检测]   → 跳过：耐压等级足够 ($outputLevel <= $effectiveTier)")
+                if (ENABLE_OVERVOLTAGE_LOG) {
+                    log.debug("[超压检测]   → 跳过：耐压等级足够 ($outputLevel <= $effectiveTier)")
+                }
                 skippedTierOkCount++
                 continue
             }
 
             // 触发爆炸
-            println("[超压检测]   → 🔥 触发爆炸！电网等级 $outputLevel > 机器耐压 $effectiveTier")
+            if (ENABLE_OVERVOLTAGE_LOG) {
+                log.debug("[超压检测]   → 🔥 触发爆炸！电网等级 $outputLevel > 机器耐压 $effectiveTier")
+            }
             if (be is Inventory) be.clear()
             world.breakBlock(neighborPos, false)
             val x = neighborPos.x + 0.5
@@ -317,7 +373,9 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
             explodedCount++
         }
 
-        println("[超压检测] 检查完成 - 爆炸=$explodedCount, 跳过发电机=$skippedGeneratorCount, 跳过耐压足够=$skippedTierOkCount, 跳过非机器=$skippedNotMachineCount")
+        if (ENABLE_OVERVOLTAGE_LOG) {
+            log.debug("[超压检测] 检查完成 - 爆炸=$explodedCount, 跳过发电机=$skippedGeneratorCount, 跳过耐压足够=$skippedTierOkCount, 跳过非机器=$skippedNotMachineCount")
+        }
     }
 
     /** 电网电压等级对应的爆炸威力：等级 4 = 10 颗心伤害（power=2），每提高 1 级伤害翻倍。 */
@@ -339,10 +397,12 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
             if (storage.supportsInsertion()) {
                 val endpoint = consumers.getOrPut(boundary.neighborPosLong) { Endpoint(storage) }
                 endpoint.entryCables.add(boundary.cablePosLong)
+                endpoint.blockPos = boundary.neighborPosLong
             }
             if (storage.supportsExtraction()) {
                 val endpoint = providers.getOrPut(boundary.neighborPosLong) { Endpoint(storage) }
                 endpoint.entryCables.add(boundary.cablePosLong)
+                endpoint.blockPos = boundary.neighborPosLong
             }
         }
 
@@ -353,18 +413,19 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
         // 先尝试让消费者从电网缓冲池取能（按路径损耗与路径容量计算）。
         for ((_, consumer) in consumers) {
             if (energy <= 0) break
-            pullFromBufferedEnergyByPath(consumer, topology.neighbors, remainingCableCapacity)
+            pullFromBufferedEnergyByPath(world, consumer, topology.neighbors, remainingCableCapacity)
         }
 
         if (providers.isEmpty()) return
 
         // 再按路径损耗从小到大，从所有供电者拉取。
         for ((_, consumer) in consumers) {
-            pullFromProvidersByPath(consumer, providers, topology.neighbors, remainingCableCapacity)
+            pullFromProvidersByPath(world, consumer, providers, topology.neighbors, remainingCableCapacity)
         }
     }
 
     private fun pullFromBufferedEnergyByPath(
+        world: World,
         consumer: Endpoint,
         neighbors: Map<Long, List<Long>>,
         remainingCableCapacity: MutableMap<Long, Long>
@@ -382,7 +443,8 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
                 val pathCapacity = candidate.path.minOfOrNull { remainingCableCapacity[it] ?: 0L } ?: 0L
                 if (pathCapacity <= 0) continue
 
-                val pathLossEu = candidate.pathLossMilliEu / 1000
+                // 线损向上取整：(milliEU + 999) / 1000，确保"可以多扣不能少扣"
+                val pathLossEu = (candidate.pathLossMilliEu + 999) / 1000
                 val maxDeliverable = (pathCapacity - pathLossEu).coerceAtLeast(0L)
                 if (maxDeliverable <= 0) continue
 
@@ -403,6 +465,16 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
                             remainingCableCapacity[cablePosLong] =
                                 (remainingCableCapacity[cablePosLong] ?: 0L) - moved
                         }
+
+                        if (ENABLE_ENERGY_TRANSFER_LOG) {
+                            val destPos = consumer.blockPos?.let { BlockPos.fromLong(it) } ?: BlockPos.ORIGIN
+                            val destBlock = world.getBlockState(destPos).block
+                            log.info(
+                                "[能量传输] 电网缓冲 → $destBlock @ $destPos | " +
+                                "传输=$inserted EU, 路径损耗=$pathLossEu EU, 路径长度=${candidate.path.size}"
+                            )
+                        }
+
                         tx.commit()
                         progressed = true
                     }
@@ -414,6 +486,7 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
     }
 
     private fun pullFromProvidersByPath(
+        world: World,
         consumer: Endpoint,
         providers: Map<Long, Endpoint>,
         neighbors: Map<Long, List<Long>>,
@@ -423,6 +496,8 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
             val demand = simulateInsertion(consumer.storage, Long.MAX_VALUE)
             if (demand <= 0) break
 
+            // log.info("demand: $demand")
+
             val candidates = buildProviderCandidates(consumer, providers, neighbors)
             if (candidates.isEmpty()) break
 
@@ -431,7 +506,8 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
                 val pathCapacity = candidate.path.minOfOrNull { remainingCableCapacity[it] ?: 0L } ?: 0L
                 if (pathCapacity <= 0) continue
 
-                val pathLossEu = candidate.pathLossMilliEu / 1000
+                // 线损向上取整：(milliEU + 999) / 1000，确保"可以多扣不能少扣"
+                val pathLossEu = (candidate.pathLossMilliEu + 999) / 1000
                 val maxDeliverable = (pathCapacity - pathLossEu).coerceAtLeast(0L)
                 if (maxDeliverable <= 0) continue
 
@@ -455,6 +531,18 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
                             remainingCableCapacity[cablePosLong] =
                                 (remainingCableCapacity[cablePosLong] ?: 0L) - moved
                         }
+
+                        if (ENABLE_ENERGY_TRANSFER_LOG) {
+                            val sourcePos = candidate.providerPos?.let { BlockPos.fromLong(it) } ?: BlockPos.ORIGIN
+                            val destPos = consumer.blockPos?.let { BlockPos.fromLong(it) } ?: BlockPos.ORIGIN
+                            val sourceBlock = world.getBlockState(sourcePos).block
+                            val destBlock = world.getBlockState(destPos).block
+                            log.info(
+                                "[能量传输] $sourceBlock @ $sourcePos → $destBlock @ $destPos | " +
+                                "提取=$extracted EU, 传输=$inserted EU, 路径损耗=$pathLossEu EU, 路径长度=${candidate.path.size}"
+                            )
+                        }
+
                         tx.commit()
                         progressed = true
                     }
@@ -462,6 +550,8 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
             }
 
             if (!progressed) break
+            //todo 这里好像和ticklimited冲突了
+            break
         }
     }
 
@@ -473,7 +563,7 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
         val dijkstra = shortestLossFromSourcesCached(consumer.entryCables, neighbors)
         val candidates = mutableListOf<ProviderPath>()
 
-        for ((_, provider) in providers) {
+        for ((providerPosLong, provider) in providers) {
             var bestEnd: Long? = null
             var bestLoss = Long.MAX_VALUE
             for (entry in provider.entryCables) {
@@ -486,7 +576,7 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
             val end = bestEnd ?: continue
             val path = buildPath(end, dijkstra.prev)
             if (path.isNotEmpty()) {
-                candidates.add(ProviderPath(provider.storage, path, bestLoss))
+                candidates.add(ProviderPath(provider.storage, path, bestLoss, providerPosLong))
             }
         }
         candidates.sortBy { it.pathLossMilliEu }
@@ -547,7 +637,9 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
         val boundaries = mutableListOf<BoundaryEdge>()
         var maxLevel = 1
 
-        println("[电网拓扑] 开始构建电网拓扑，导线数量=${cables.size}")
+        if (ENABLE_TOPOLOGY_LOG) {
+            log.debug("[电网拓扑] 开始构建电网拓扑，导线数量=${cables.size}")
+        }
 
         for (cablePosLong in cables) {
             val cablePos = BlockPos.fromLong(cablePosLong)
@@ -565,26 +657,59 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
                     boundaries.add(BoundaryEdge(cablePosLong, neighborLong, dir.opposite))
                     val neighborBe = world.getBlockEntity(neighborPos)
                     val storage = EnergyStorage.SIDED.find(world, neighborPos, dir.opposite)
-                    //只考虑输出，输入不考虑，例如：mfsu作为被充电的一方是不会把电网电压等级拉高的
+                    //电网输出等级计算：只考虑向电网输出能量的面（输出面） 例子：mfsu被接在低压电网充电不应该拉高电压等级，mfsu的输出面并没有接入电网
+                    //supportsExtraction() = true 表示机器可以从该方向输出能量
                     //使用分面电压等级，支持变压器等不同面电压不同的设备
-                    //变压器不是发电机，它的"输出"是从电网输入后转换的，不应该决定电网电压等级
-                    if (neighborBe is ITieredMachine && neighborBe !is ic2_120.content.block.machines.TransformerBlockEntity && storage?.supportsExtraction() == true) {
-                        val tierForSide = neighborBe.effectiveVoltageTierForSide(dir)
+                    if (neighborBe is ITieredMachine && storage?.supportsExtraction() == true) {
+                        //对于被查询电压等级的机器，反向才是面向导线的方向
+                        val tierForSide = neighborBe.effectiveVoltageTierForSide(dir.opposite)
                         val oldMax = maxLevel
                         maxLevel = maxOf(maxLevel, tierForSide)
-                        if (maxLevel != oldMax) {
-                            println("[电网拓扑] 更新输出等级：$oldMax -> $maxLevel (来源：${world.getBlockState(neighborPos).block} @ $neighborPos，方向=$dir，该面等级=$tierForSide)")
+
+                        // 详细日志：记录电压等级检测
+                        if (ENABLE_TOPOLOGY_LOG) {
+                            val blockName = world.getBlockState(neighborPos).block.toString()
+                            val machineTier = neighborBe.tier
+                            val sidedTier = neighborBe.getVoltageTierForSide(dir)
+                            val effectiveTier = neighborBe.effectiveVoltageTierForSide(dir)
+
+                            log.info(
+                                "[电网拓扑-输出检测] 方块=$blockName @ $neighborPos，方向=$dir（导线->机器）" +
+                                "\n  → 基础tier=$machineTier，该面电压=$sidedTier，有效电压=$effectiveTier" +
+                                "\n  → 该面只输出不输入，判定为真正的输出面" +
+                                "\n  → 当前电网输出等级=$oldMax，更新后=$maxLevel"
+                            )
+
+                            if (maxLevel != oldMax) {
+                                log.debug(
+                                    "[电网拓扑] 更新输出等级：$oldMax -> $maxLevel (来源：$blockName @ $neighborPos，方向=$dir，该面电压=$tierForSide)"
+                                )
+                            }
                         }
+                    } else if (ENABLE_TOPOLOGY_LOG && neighborBe is ITieredMachine && storage?.supportsExtraction() == true && storage.supportsInsertion()) {
+                        // 详细日志：记录跳过的输入输出面
+                        val blockName = world.getBlockState(neighborPos).block.toString()
+                        val machineTier = neighborBe.tier
+                        val sidedTier = neighborBe.getVoltageTierForSide(dir)
+
+                        log.info(
+                            "[电网拓扑-跳过输入输出面] 方块=$blockName @ $neighborPos，方向=$dir（导线->机器）" +
+                            "\n  → 该面同时支持输入和输出，判定为输入面，跳过电网输出等级计算" +
+                            "\n  → 基础tier=$machineTier，该面电压=$sidedTier"
+                        )
                     }
                 }
             }
         }
 
         outputLevel = maxLevel
-        println("[电网拓扑] 电网拓扑构建完成，最终输出等级=$outputLevel，边界数量=${boundaries.size}")
+        if (ENABLE_TOPOLOGY_LOG) {
+            log.debug("[电网拓扑] 电网拓扑构建完成，最终输出等级=$outputLevel，边界数量=${boundaries.size}")
+        }
 
         val cablesThatLeak = cables.filter { cablePosLong ->
-            val block = world.getBlockState(BlockPos.fromLong(cablePosLong)).block as? BaseCableBlock ?: return@filter true
+            val block =
+                world.getBlockState(BlockPos.fromLong(cablePosLong)).block as? BaseCableBlock ?: return@filter true
             block.insulationLevel < outputLevel
         }
 
@@ -603,23 +728,31 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
         )
     }
 
+    /**
+     * 模拟插入能量，不改变实际存储，因为有事务在，会自动回滚storage
+     */
     private fun simulateInsertion(storage: EnergyStorage, maxAmount: Long): Long {
         var accepted = 0L
+        // println("tx open")
         Transaction.openOuter().use { tx ->
             accepted = storage.insert(maxAmount, tx)
         }
+        // println("tx close")
+
         return accepted
     }
 
     private data class Endpoint(
         val storage: EnergyStorage,
-        val entryCables: MutableSet<Long> = mutableSetOf()
+        val entryCables: MutableSet<Long> = mutableSetOf(),
+        var blockPos: Long? = null  // 记录方块位置用于日志
     )
 
     private data class ProviderPath(
         val provider: EnergyStorage,
         val path: List<Long>,
-        val pathLossMilliEu: Long
+        val pathLossMilliEu: Long,
+        val providerPos: Long? = null  // 记录供电者位置用于日志
     )
 
     private data class PathCandidate(

@@ -16,7 +16,7 @@ class SolarGeneratorSync(
     private val getFacing: () -> Direction,
     private val currentTickProvider: () -> Long? = { null }
 ) : TickLimitedSidedEnergyContainer(
-    capacity = ENERGY_CAPACITY,
+    baseCapacity = ENERGY_CAPACITY,
     maxInsertPerTick = 0L,
     maxExtractPerTick = MAX_EXTRACT,
     currentTickProvider = currentTickProvider

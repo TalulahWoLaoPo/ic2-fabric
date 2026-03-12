@@ -59,7 +59,7 @@ class LuminatorFlatBlockEntity(
         if (world.isClient) return
 
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
-        pullEnergyFromNeighbors(world, pos, sync, LuminatorSync.MAX_INSERT)
+        pullEnergyFromNeighbors(world, pos, sync)
 
         cycleTicks++
         if (cycleTicks >= LuminatorSync.CYCLE_TICKS) {

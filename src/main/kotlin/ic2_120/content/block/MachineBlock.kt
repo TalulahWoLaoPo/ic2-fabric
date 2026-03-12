@@ -75,3 +75,66 @@ abstract class MachineBlock(settings: AbstractBlock.Settings = defaultMachineSet
      */
     override fun getRenderType(state: BlockState): BlockRenderType = BlockRenderType.MODEL
 }
+
+/**
+ * 支持六面朝向的机器方块基类。
+ *
+ * 与 [MachineBlock] 的区别：
+ * - 使用 [Properties.FACING] 支持六面朝向（上下南北西东）
+ * - 放置时根据玩家点击的面决定朝向（点击哪个面，方块就朝向那个面）
+ * - 适用于需要任意方向放置的机器（如变压器）
+ *
+ * 其他行为（硬度、物品掉落、Inventory 散落等）与 [MachineBlock] 完全相同。
+ */
+abstract class DirectionalMachineBlock(settings: AbstractBlock.Settings = defaultMachineSettings()) : BlockWithEntity(settings) {
+
+    companion object {
+        /** 机器方块的默认设置：铁方块硬度（5.0f, 6.0f） */
+        fun defaultMachineSettings(): AbstractBlock.Settings =
+            AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(5.0f, 6.0f)
+    }
+
+    /**
+     * 非扳手拆卸时掉落的物品（默认基础机器外壳）。
+     * 子类可覆写以改为高级机器外壳或其他物品。
+     */
+    open fun getCasingDrop(): Item =
+        Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "machine"))
+
+    init {
+        defaultState = stateManager.defaultState.with(Properties.FACING, Direction.NORTH)
+    }
+
+    override fun appendProperties(builder: StateManager.Builder<net.minecraft.block.Block, BlockState>) {
+        super.appendProperties(builder)
+        builder.add(Properties.FACING)
+    }
+
+    override fun getPlacementState(ctx: ItemPlacementContext): BlockState? {
+        // 根据玩家点击的面决定朝向：玩家点击哪个面，方块就朝向那个面
+        val facing = ctx.side.opposite
+        return defaultState.with(Properties.FACING, facing)
+    }
+
+    override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? = null
+
+    /**
+     * 方块被破坏时，将 BlockEntity 内 Inventory 的物品散落掉落，而非凭空消失。
+     * 仅当方块被替换（如挖掉）且未被活塞推动时生效。
+     */
+    override fun onStateReplaced(state: BlockState, world: World, pos: BlockPos, newState: BlockState, moved: Boolean) {
+        if (!world.isClient && !state.isOf(newState.block) && !moved) {
+            val be = world.getBlockEntity(pos)
+            if (be is Inventory) {
+                ItemScatterer.spawn(world, pos, be)
+            }
+        }
+        super.onStateReplaced(state, world, pos, newState, moved)
+    }
+
+    /**
+     * BlockWithEntity 默认可能不会使用 JSON 模型渲染，显式指定为 MODEL
+     * 以确保像电炉这类机器方块按 blockstate/model 显示材质。
+     */
+    override fun getRenderType(state: BlockState): BlockRenderType = BlockRenderType.MODEL
+}

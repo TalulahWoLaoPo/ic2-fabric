@@ -25,6 +25,9 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 /**
  * 变压器方块实体。
  *
@@ -53,13 +56,17 @@ open class TransformerBlockEntity(
     private val transformerTier: Int
 ) : BlockEntity(type, pos, state), ITieredMachine, ExtendedScreenHandlerFactory {
 
+    companion object {
+        val LOGGER: Logger = LoggerFactory.getLogger(TransformerBlockEntity::class.java)
+    }
+
     override val tier: Int = transformerTier
 
     val syncedData = SyncedData(this)
     @RegisterEnergy
     val sync = TransformerSync(
         syncedData,
-        { world?.getBlockState(pos)?.get(Properties.HORIZONTAL_FACING) ?: Direction.NORTH },
+        { world?.getBlockState(pos)?.get(Properties.FACING) ?: Direction.NORTH },
         { world?.time },
         transformerTier
     )
@@ -67,19 +74,21 @@ open class TransformerBlockEntity(
     /**
      * 实现分面电压等级。
      * 变压器不同面的电压等级不同：
-     * - 升压模式：正面为低级（tier），其他面为高级（tier+1）
-     * - 降压模式：正面为低级（tier），其他面为高级（tier+1）
+     * - 正面为低级（tier），其他面为高级（tier+1）
+     *
+     * 注意：这个方法返回各面的物理电压等级，用于过压检测和电网输出等级计算。
+     * 电网会通过检查 supportsInsertion() 来区分真正的输出面（机器向电网输出能量的面）。
      *
      * @param side 方向，null 表示查询整体等级（返回低级等级）
-     * @return 该方向的电压等级
+     * @return 该方向的物理电压等级
      */
-    override fun getVoltageTierForSide(side: Direction?): Int? {
-        if (side == null) return null
+    override fun getVoltageTierForSide(side: Direction?): Int {
+        if (side == null) return tier
 
-        val facing = world?.getBlockState(pos)?.get(Properties.HORIZONTAL_FACING) ?: return null
+        val facing = world?.getBlockState(pos)?.get(Properties.FACING) ?: return tier
         val isFront = (side == facing)
 
-        // 无论升压还是降压，正面都是低级，其他面都是高级
+        // 正面是低级，其他面都是高级
         return if (isFront) tier else tier + 1
     }
 
@@ -135,24 +144,45 @@ open class TransformerBlockEntity(
 
     fun tick(world: World, pos: BlockPos, state: BlockState) {
         if (world.isClient) return
+
+        // 更新同步能量值
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
 
+        // 在 tick 结束时同步当前 tick 的实际输入/输出
+        sync.syncCurrentTickFlow()
+
+        // 更新方块状态
         val currentMode = sync.getMode()
         val wasActive = state.get(TransformerBlock.ACTIVE)
         val isActive = sync.amount > 0
 
-        // 更新方块状态
         if (wasActive != isActive) {
             world.setBlockState(pos, state.with(TransformerBlock.ACTIVE, isActive))
+        }
+
+        // 调试日志：记录能量流动
+        val energyAfter = sync.amount
+        val inputAfter = sync.avgInsertedAmount
+        val outputAfter = sync.avgExtractedAmount
+
+        if (inputAfter > 0 || outputAfter > 0) {
+            val modeText = when (currentMode) {
+                TransformerSync.Mode.STEP_UP -> "升压"
+                TransformerSync.Mode.STEP_DOWN -> "降压"
+            }
+//            LOGGER.info(
+//                "Transformer tick - Pos: {}, Mode: {}, Energy: {}, Input: {} EU/t, Output: {} EU/t",
+//                pos,
+//                modeText,
+//                energyAfter,
+//                inputAfter,
+//                outputAfter
+//            )
         }
 
         // 注意：实际的能量输入/输出由能量网络通过 SidedEnergyContainer API 自动处理
         // TransformerSync.getSideMaxInsert/getSideMaxExtract 已经根据模式正确配置了各面的输入输出能力
         // 因此这里不需要手动进行能量传输，只需要确保能量状态同步
-
-        // 在 tick 结束时同步当前 tick 的实际输入/输出
-        // 此时 insertedThisTick 和 extractedThisTick 已包含本 tick 的所有能量流动
-        sync.syncCurrentTickFlow()
     }
 }
 

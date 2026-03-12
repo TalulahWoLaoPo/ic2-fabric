@@ -1,6 +1,6 @@
 package ic2_120.content.sync
 
-import ic2_120.content.UpgradeableTickLimitedEnergyStorage
+import ic2_120.content.UpgradeableTickLimitedSidedEnergyContainer
 import ic2_120.content.syncs.SyncSchema
 
 /**
@@ -12,7 +12,7 @@ class CompressorSync(
     currentTickProvider: () -> Long? = { null },
     capacityBonusProvider: () -> Long = { 0L },
     maxInsertPerTickProvider: (() -> Long)? = null
-) : UpgradeableTickLimitedEnergyStorage(
+) : UpgradeableTickLimitedSidedEnergyContainer(
     ENERGY_CAPACITY,
     capacityBonusProvider,
     MAX_INSERT,
@@ -36,9 +36,6 @@ class CompressorSync(
     var energy by schema.int("Energy")
     var progress by schema.int("Progress")
     var energyCapacity by schema.int("EnergyCapacity", default = ENERGY_CAPACITY.toInt())
-
-    /** 当前有效的每 tick 输入上限（含高压升级），供 BlockEntity 调用 */
-    fun getMaxInsertPerTick(): Long = getEffectiveMaxInsertPerTick()
 
     override fun onFinalCommit() {
         energy = amount.toInt().coerceIn(0, Int.MAX_VALUE)

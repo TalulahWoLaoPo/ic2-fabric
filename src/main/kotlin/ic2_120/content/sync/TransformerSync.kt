@@ -29,7 +29,7 @@ class TransformerSync(
     currentTickProvider: () -> Long? = { null },
     private val tier: Int = 1
 ) : TickLimitedSidedEnergyContainer(
-    capacity = getCapacityForTier(tier),
+    baseCapacity = getCapacityForTier(tier),
     maxInsertPerTick = getMaxInsertForTier(tier),
     maxExtractPerTick = getMaxExtractForTier(tier),
     currentTickProvider = currentTickProvider
@@ -88,8 +88,10 @@ class TransformerSync(
 
     var energy by schema.int("Energy")
     var mode by schema.int("Mode")
-    var lastInsertedAmount by schema.int("LastInserted")
-    var lastExtractedAmount by schema.int("LastExtracted")
+    /** 滤波后的输入速率（EU/t），滑动窗口平均 */
+    var avgInsertedAmount by schema.intAveraged("AvgInserted", windowSize = 20)
+    /** 滤波后的输出速率（EU/t），滑动窗口平均 */
+    var avgExtractedAmount by schema.intAveraged("AvgExtract", windowSize = 20)
 
     private val facing: Direction
         get() = getFacing()
@@ -182,16 +184,16 @@ class TransformerSync(
      * 必须在 tick 方法结束时调用，此时 tick 即将变化
      */
     fun syncCurrentTickFlow() {
-        // 获取当前 tick 的累计值（在 tick 变化前）
-        lastInsertedAmount = getCurrentTickInserted().toInt()
-        lastExtractedAmount = getCurrentTickExtracted().toInt()
+        // 更新滑动窗口平均值
+        avgInsertedAmount = getCurrentTickInserted().toInt()
+        avgExtractedAmount = getCurrentTickExtracted().toInt()
     }
 
-    /** 获取同步的上一次 tick 的实际输入量（EU/t） */
-    fun getSyncedInsertedAmount(): Long = lastInsertedAmount.toLong()
+    /** 获取同步的滤波后输入量（EU/t） */
+    fun getSyncedInsertedAmount(): Long = avgInsertedAmount.toLong()
 
-    /** 获取同步的上一次 tick 的实际输出量（EU/t） */
-    fun getSyncedExtractedAmount(): Long = lastExtractedAmount.toLong()
+    /** 获取同步的滤波后输出量（EU/t） */
+    fun getSyncedExtractedAmount(): Long = avgExtractedAmount.toLong()
 }
 
 /**

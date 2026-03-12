@@ -177,7 +177,9 @@ class GeneratorBlockEntity(
             val space = (GeneratorSync.ENERGY_CAPACITY - sync.amount).coerceAtLeast(0L)
             // 已点燃的燃料会持续燃烧；有剩余空间就写入能量，溢出则钳制到上限
             if (space > 0L) {
-                sync.amount = (sync.amount + euToAdd).coerceAtMost(GeneratorSync.ENERGY_CAPACITY)
+                val actualAdded = minOf(euToAdd, space)
+                // 重要：使用 addInternalGeneration 让基类追踪内部产生的能量
+                sync.addInternalGeneration(actualAdded)
             }
             sync.burnTime = (sync.burnTime - 1).coerceAtLeast(0)
             sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)

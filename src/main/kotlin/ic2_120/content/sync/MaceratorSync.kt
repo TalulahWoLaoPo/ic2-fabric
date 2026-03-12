@@ -1,6 +1,6 @@
 package ic2_120.content.sync
 
-import ic2_120.content.TickLimitedEnergyStorage
+import ic2_120.content.TickLimitedSidedEnergyContainer
 import ic2_120.content.syncs.SyncSchema
 
 /**
@@ -9,7 +9,7 @@ import ic2_120.content.syncs.SyncSchema
 class MaceratorSync(
     schema: SyncSchema,
     currentTickProvider: () -> Long? = { null }
-) : TickLimitedEnergyStorage(ENERGY_CAPACITY, MAX_INSERT, MAX_EXTRACT, currentTickProvider) {
+) : TickLimitedSidedEnergyContainer(ENERGY_CAPACITY, MAX_INSERT, MAX_EXTRACT, currentTickProvider) {
 
     companion object {
         const val ENERGY_CAPACITY = 416L

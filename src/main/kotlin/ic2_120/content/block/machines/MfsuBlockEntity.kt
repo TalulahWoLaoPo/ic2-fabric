@@ -21,6 +21,8 @@ import net.minecraft.text.Text
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * MFSU 方块实体。仅能量存储，通过 Energy API 与电网交互。
@@ -31,6 +33,10 @@ class MfsuBlockEntity(
     pos: BlockPos,
     state: BlockState
 ) : BlockEntity(type, pos, state), ExtendedScreenHandlerFactory, ITieredMachine {
+
+    companion object {
+        val LOGGER: Logger = LoggerFactory.getLogger(MfsuBlockEntity::class.java)
+    }
 
     override val tier: Int = 4
 
@@ -76,6 +82,29 @@ class MfsuBlockEntity(
 
     fun tick(world: World, pos: BlockPos, state: BlockState) {
         if (world.isClient) return
+        // 记录 tick 开始时的状态
+//        val energyBefore = sync.amount
+//        val inputBefore = sync.lastInsertedAmount
+//        val outputBefore = sync.lastExtractedAmount
+
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
+
+        // 在 tick 结束时同步当前 tick 的实际输入/输出
+        sync.syncCurrentTickFlow()
+
+//        // 调试日志：记录能量流动
+//        val energyAfter = sync.amount
+//        val inputAfter = sync.lastInsertedAmount
+//        val outputAfter = sync.lastExtractedAmount
+//
+//        if (inputAfter > 0 || outputAfter > 0) {
+//            LOGGER.info(
+//                "MFSU tick - Pos: {}, Energy:  {}, Input: {} EU/t, Output: {} EU/t",
+//                pos,
+//                energyAfter,
+//                inputAfter,
+//                outputAfter
+//            )
+//        }
     }
 }
