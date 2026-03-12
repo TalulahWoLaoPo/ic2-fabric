@@ -35,8 +35,8 @@ class WindGeneratorSync(
     var energy by schema.int("Energy")
     /** 是否正在发电（供 GUI 显示） */
     var isGenerating by schema.int("IsGenerating")
-    /** 当前输出速率（EU/t），供 GUI 显示 */
-    var outputRate by schema.int("OutputRate")
+    /** 上一次 tick 的实际输出量（EU/t） */
+    var lastExtractedAmount by schema.int("LastExtracted")
 
     override fun getSideMaxInsert(side: Direction?): Long = 0L
 
@@ -46,4 +46,10 @@ class WindGeneratorSync(
     override fun onEnergyCommitted() {
         energy = amount.toInt().coerceIn(0, Int.MAX_VALUE)
     }
+
+    fun syncCurrentTickFlow() {
+        lastExtractedAmount = getCurrentTickExtracted().toInt()
+    }
+
+    fun getSyncedExtractedAmount(): Long = lastExtractedAmount.toLong()
 }

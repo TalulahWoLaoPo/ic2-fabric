@@ -40,6 +40,9 @@ import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.companionObject
 import kotlin.reflect.full.companionObjectInstance
 import kotlin.reflect.full.memberFunctions
+import kotlin.reflect.full.superclasses
+import kotlin.reflect.KClass
+import kotlin.reflect.KProperty1
 
 /**
  * 基于类注解的注册扫描器。
@@ -318,19 +321,40 @@ object ClassScanner {
     private fun registerScreenHandlers(modId: String, screenHandlerClasses: List<ScreenHandlerClassInfo>) {
         for ((clazz, annotation) in screenHandlerClasses) {
             try {
-                val name = resolveNameFromBlockOrAnnotation(annotation.name, annotation.block, clazz.simpleName ?: "unknown")
-                val id = Identifier(modId, name)
                 val companion = clazz.companionObjectInstance
                     ?: error("@ModScreenHandler 类 ${clazz.simpleName} 需有 companion 对象并提供 fromBuffer")
                 val fromBufferFn = clazz.companionObject?.memberFunctions?.find { it.name == "fromBuffer" }
                     ?: error("@ModScreenHandler 类 ${clazz.simpleName} 的 companion 需提供 fromBuffer(syncId, playerInventory, buf)")
-                val type = ExtendedScreenHandlerType { syncId, playerInventory, buf ->
-                    @Suppress("UNCHECKED_CAST")
-                    fromBufferFn.call(companion, syncId, playerInventory, buf) as ScreenHandler
+
+                // 收集所有需要注册的名称
+                val namesToRegister = when {
+                    annotation.names.isNotEmpty() -> annotation.names.toList()
+                    annotation.name.isNotEmpty() -> listOf(annotation.name)
+                    else -> {
+                        // 使用类名转换
+                        listOf(camelToSnake(clazz.simpleName ?: "unknown"))
+                    }
                 }
-                Registry.register(Registries.SCREEN_HANDLER, id, type)
-                ScreenHandlerTypeStore.registerType(clazz, type)
-                logger.debug("已注册 ScreenHandler 类型: {}", id)
+
+                // 为每个名称注册一个 ScreenHandlerType（多个方块共用同一个 UI）
+                for (name in namesToRegister) {
+                    val finalName = if (annotation.block != Any::class && blockClassToName.containsKey(annotation.block)) {
+                        blockClassToName[annotation.block]!!
+                    } else {
+                        name
+                    }
+
+                    val id = Identifier(modId, finalName)
+
+                    val type = ExtendedScreenHandlerType { syncId, playerInventory, buf ->
+                        @Suppress("UNCHECKED_CAST")
+                        fromBufferFn.call(companion, syncId, playerInventory, buf) as ScreenHandler
+                    }
+
+                    Registry.register(Registries.SCREEN_HANDLER, id, type)
+                    ScreenHandlerTypeStore.registerType(clazz, type)
+                    logger.debug("已注册 ScreenHandler 类型: {} (来自类 {})", id, clazz.simpleName)
+                }
             } catch (e: Exception) {
                 logger.error("注册 ScreenHandler {} 失败: {}", clazz.simpleName, e.message, e)
             }
@@ -370,7 +394,8 @@ object ClassScanner {
                 logger.debug("已注册方块实体类型: {}", id)
 
                 // 若存在 @RegisterEnergy 字段，则向 Energy API 注册 SIDED 查找
-                val energyProperty = clazz.declaredMemberProperties.firstOrNull { it.hasAnnotation<RegisterEnergy>() }
+                // 递归扫描类层次结构（包括父类）以查找 @RegisterEnergy 字段
+                val energyProperty = findAllMemberProperties(clazz).firstOrNull { it.hasAnnotation<RegisterEnergy>() }
                 if (energyProperty != null) {
                     val prop = energyProperty
                     @Suppress("UNCHECKED_CAST")
@@ -380,17 +405,6 @@ object ClassScanner {
                         else storage as EnergyStorage
                     }, type)
                     logger.debug("已为方块实体 {} 注册 EnergyStorage（属性 {}）", clazz.simpleName, prop.name)
-                } else {
-                    val energyField = clazz.java.declaredFields.firstOrNull { it.isAnnotationPresent(RegisterEnergy::class.java) }
-                    if (energyField != null) {
-                        energyField.trySetAccessible()
-                        EnergyStorage.SIDED.registerForBlockEntity({ be, direction ->
-                            val storage = energyField.get(be)
-                            if (storage is SimpleSidedEnergyContainer) storage.getSideStorage(direction)
-                            else storage as EnergyStorage
-                        }, type)
-                        logger.debug("已为方块实体 {} 注册 EnergyStorage（字段 {}）", clazz.simpleName, energyField.name)
-                    }
                 }
             } catch (e: Exception) {
                 logger.error("注册方块实体类型 {} 失败: {}", clazz.simpleName, e.message, e)
@@ -463,6 +477,19 @@ object ClassScanner {
 
     private fun camelToSnake(str: String): String {
         return str.replace(Regex("([a-z])([A-Z])"), "$1_$2").lowercase()
+    }
+
+    /**
+     * 递归查找类及其所有父类的成员属性（Kotlin 专用）
+     */
+    private fun findAllMemberProperties(clazz: kotlin.reflect.KClass<*>): Sequence<kotlin.reflect.KProperty1<*, *>> {
+        return sequence {
+            var current: kotlin.reflect.KClass<*>? = clazz
+            while (current != null && current != Any::class) {
+                yieldAll(current.declaredMemberProperties)
+                current = current.superclasses.firstOrNull()
+            }
+        }
     }
 
     private fun parseItemGroupKey(modId: String, tab: CreativeTab): RegistryKey<ItemGroup> {

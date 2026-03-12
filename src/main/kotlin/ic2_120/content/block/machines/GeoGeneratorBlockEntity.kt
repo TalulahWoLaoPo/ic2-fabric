@@ -306,6 +306,9 @@ class GeoGeneratorBlockEntity(
         if (state.get(GeoGeneratorBlock.ACTIVE) != active) {
             world.setBlockState(pos, state.with(GeoGeneratorBlock.ACTIVE, active))
         }
+        // 同步当前 tick 的实际输出/输入
+        sync.syncCurrentTickFlow()
+
     }
 
     private fun getFluidStorageForSide(side: Direction?): Storage<FluidVariant>? {

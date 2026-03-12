@@ -12,7 +12,7 @@
 - `cables: MutableSet<Long>`：成员导线坐标（`BlockPos.asLong`）。
 - `energy: Long`：共享池能量。
 - `capacity: Long`：所有成员导线 `transferRate` 之和。
-- `outputLevel: Int`：电网输出等级，初始为 `1`，由拓扑扫描时“可向电网该面输出能量（`supportsExtraction()`）”的邻接 `ITieredMachine.tier` 最大值决定。
+- `outputLevel: Int`：电网输出等级，初始为 `1`，由拓扑扫描时”可向电网该面输出能量（`supportsExtraction()`）”的邻接机器在该方向的电压等级最大值决定。对于支持分面电压等级的设备（如变压器），使用该方向的有效电压等级（[ITieredMachine.effectiveVoltageTierForSide](../src/main/kotlin/ic2_120/content/block/ITieredMachine.kt)）；否则使用整体电压等级（[ITieredMachine.tier](../src/main/kotlin/ic2_120/content/block/ITieredMachine.kt)）。
 - `cableLossMilliEu`：每根导线的路径损耗权重（milliEU）。
 
 `EnergyNetworkManager` 维护按维度分组的索引：
@@ -156,22 +156,32 @@
 
 ## 8. 机器耐压检测与过压爆炸
 
-与电网相连的机器若**有效耐压等级**低于电网 `outputLevel`，会在同一检查周期内**直接爆炸**（不按比例随机，电压等级不对就炸）。
+与电网相连的机器若**在连接方向的有效耐压等级**低于电网 `outputLevel`，会在同一检查周期内**直接爆炸**（不按比例随机，电压等级不对就炸）。
 
 **有效耐压等级**：
 - 基础为机器的 [ITieredMachine.tier](../src/main/kotlin/ic2_120/content/block/ITieredMachine.kt)。
-- 若机器实现了 [ITransformerUpgradeSupport](../src/main/kotlin/ic2_120/content/upgrade/ITransformerUpgradeSupport.kt)（高压升级），则有效耐压 = `tier + voltageTierBonus`（每插入一个高压升级 +1）。
-- 由 [ITieredMachine.effectiveVoltageTier()](../src/main/kotlin/ic2_120/content/block/ITieredMachine.kt) 统一计算。
+- 对于支持分面电压等级的设备（如变压器），使用该方向的电压等级（[ITieredMachine.getVoltageTierForSide](../src/main/kotlin/ic2_120/content/block/ITieredMachine.kt)）。
+- 若机器实现了 [ITransformerUpgradeSupport](../src/main/kotlin/ic2_120/content/upgrade/ITransformerUpgradeSupport.kt)（高压升级），则有效耐压 = 基础等级 + `voltageTierBonus`（每插入一个高压升级 +1）。
+- 由 [ITieredMachine.effectiveVoltageTierForSide](../src/main/kotlin/ic2_120/content/block/ITieredMachine.kt) 统一计算，它会：
+  1. 优先使用分面电压等级（如果机器实现了 [getVoltageTierForSide](../src/main/kotlin/ic2_120/content/block/ITieredMachine.kt)）
+  2. 加上高压升级带来的等级加成（如果有）
+  3. 如果没有分面电压等级，则使用整体等级
+
+**分面电压等级示例（变压器）**：
+- 变压器的正面（输出面）为低级电压（tier），其他面为高级电压（tier+1）。
+- 当电网通过变压器的正面连接时，电网看到的是低级电压等级。
+- 当电网通过变压器的其他面连接时，电网看到的是高级电压等级。
+- 这样可以正确识别变压器的输入输出电压，避免误判过压。
 
 触发条件（全部满足才执行）：
 - 服务端世界。
 - 与漏电/导线烧毁同一周期：`(world.time + damageTickOffset) % 200 == 0`。
 - `outputLevel >= 1`。
-- 边界上存在 [ITieredMachine](../src/main/kotlin/ic2_120/content/block/ITieredMachine.kt)，且 `outputLevel > effectiveVoltageTier`。
+- 边界上存在 [ITieredMachine](../src/main/kotlin/ic2_120/content/block/ITieredMachine.kt)，且 `outputLevel > effectiveVoltageTierForSide(边界方向)`。
 
 爆炸规则：
 - 实现 [IGenerator](../src/main/kotlin/ic2_120/content/block/IGenerator.kt) 的发电机不参与过压检测，**不会爆炸**。
-- 对每个与电网相邻的非发电机机器，若 `outputLevel > effectiveVoltageTier`，先清空该方块的物品栏（不生成掉落物），再移除方块（不掉落机器本身），最后在该位置创建爆炸，不生成火焰。
+- 对每个与电网相邻的非发电机机器，若 `outputLevel > effectiveVoltageTierForSide(边界方向)`，先清空该方块的物品栏（不生成掉落物），再移除方块（不掉落机器本身），最后在该位置创建爆炸，不生成火焰。
 - **不掉落任何物品**：机器本身和槽位内所有物品均不掉落，全部消失。
 - **爆炸伤害**按电网电压等级：等级 4 对应 10 颗心伤害（爆炸威力 2），电压每提高 1 级伤害翻倍（威力 = 2 × 2^(outputLevel-4)）。
 
@@ -179,8 +189,11 @@
 
 - 删除了重复章节，避免同一内容出现两版表述。
 - 明确 `damageTickOffset` 实际范围是 `0..199`，不是 `0..200`。
-- 明确 `outputLevel` 在代码里没有硬性上限截断，来源是“该面可提取（`supportsExtraction()`）”的边界机器的**有效耐压等级**（[ITieredMachine.effectiveVoltageTier()](../src/main/kotlin/ic2_120/content/block/ITieredMachine.kt)，含高压升级）最大值（初始 1）。
-- 明确“连接缓存失效”只清缓存，不拆网。
+- 明确 `outputLevel` 在代码里没有硬性上限截断，来源是”该面可提取（`supportsExtraction()`）”的边界机器的**该方向有效耐压等级**（[ITieredMachine.effectiveVoltageTierForSide](../src/main/kotlin/ic2_120/content/block/ITieredMachine.kt)）最大值（初始 1）。
+  - 支持分面电压等级：对于变压器等设备，不同方向可能有不同的电压等级。
+  - 电网会查询机器在该方向的有效电压等级，而不是使用整体等级。
+  - 这样可以正确识别变压器的输入输出电压，避免误判过压或错误计算电网输出等级。
+- 明确”连接缓存失效”只清缓存，不拆网。
 - 明确 Dijkstra 起点距离包含起点导线自身损耗。
 - 明确缓存清理阈值条件是 `> 512`。
 

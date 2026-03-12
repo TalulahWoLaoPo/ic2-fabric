@@ -44,6 +44,8 @@ class RtGeneratorSync(
     }
 
     var energy by schema.int("Energy")
+    /** 上一次 tick 的实际输出量（EU/t） */
+    var lastExtractedAmount by schema.int("LastExtracted")
 
     override fun getSideMaxInsert(side: Direction?): Long = 0L
 
@@ -53,4 +55,14 @@ class RtGeneratorSync(
     override fun onEnergyCommitted() {
         energy = amount.toInt().coerceIn(0, Int.MAX_VALUE)
     }
+
+    /**
+     * 在 tick 结束时调用，同步当前 tick 的实际输出
+     */
+    fun syncCurrentTickFlow() {
+        lastExtractedAmount = getCurrentTickExtracted().toInt()
+    }
+
+    /** 获取同步的上一次 tick 的实际输出量（EU/t） */
+    fun getSyncedExtractedAmount(): Long = lastExtractedAmount.toLong()
 }

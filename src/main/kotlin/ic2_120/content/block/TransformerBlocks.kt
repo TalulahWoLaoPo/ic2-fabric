@@ -1,108 +1,124 @@
 package ic2_120.content.block
 
+import ic2_120.content.ModBlockEntities
+import ic2_120.content.block.machines.LvTransformerBlockEntity
+import ic2_120.content.block.machines.MvTransformerBlockEntity
+import ic2_120.content.block.machines.HvTransformerBlockEntity
+import ic2_120.content.block.machines.EvTransformerBlockEntity
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.annotation.ModBlock
-import net.minecraft.block.AbstractBlock
-import net.minecraft.block.Block
 import net.minecraft.block.BlockState
-import net.minecraft.block.Blocks
+import net.minecraft.block.entity.BlockEntity
+import net.minecraft.block.entity.BlockEntityTicker
+import net.minecraft.block.entity.BlockEntityType
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemPlacementContext
 import net.minecraft.state.StateManager
 import net.minecraft.state.property.BooleanProperty
-import net.minecraft.state.property.Properties
-import net.minecraft.util.math.Direction
+import net.minecraft.util.ActionResult
+import net.minecraft.util.Hand
+import net.minecraft.util.hit.BlockHitResult
+import net.minecraft.util.math.BlockPos
+import net.minecraft.world.World
 
 /**
- * 变压器方块。仅作为合成材料，无 BlockEntity，不实现电力转换功能。
+ * 变压器方块基类。
+ *
+ * 变压器只改变电压等级（EU/t 速率），不改变 EU 总量。
+ *
+ * 能量等级转换：
+ * - LV变压器 (1级): 低级 32 EU/t <-> 高级 128 EU/t (2级)
+ * - MV变压器 (2级): 低级 128 EU/t <-> 高级 512 EU/t (3级)
+ * - HV变压器 (3级): 低级 512 EU/t <-> 高级 2048 EU/t (4级)
+ * - EV变压器 (4级): 低级 2048 EU/t <-> 高级 8192 EU/t (5级)
+ *
+ * 工作模式（通过UI切换）：
+ * - 升压模式：正面接收低级能量，其他五面输出高级能量
+ *   - 例：4 tick × 32 EU/t = 128 EU → 1 tick × 128 EU/t
+ * - 降压模式：其他五面接收高级能量，正面输出低级能量
+ *   - 例：1 tick × 128 EU/t = 128 EU → 4 tick × 32 EU/t
+ * - EU 总量始终守恒
  */
-@ModBlock(name = "lv_transformer", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "transformer")
-class LvTransformerBlock : Block(
-    AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(5.0f, 6.0f)
-) {
-    init {
-        defaultState = stateManager.defaultState
-            .with(Properties.FACING, Direction.NORTH)
-            .with(ACTIVE, false)
+abstract class TransformerBlock : MachineBlock() {
+
+    abstract fun createTransformerBlockEntity(pos: BlockPos, state: BlockState): BlockEntity
+
+    override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =
+        createTransformerBlockEntity(pos, state)
+
+    override fun <T : BlockEntity> getTicker(
+        world: World,
+        state: BlockState,
+        type: BlockEntityType<T>
+    ): BlockEntityTicker<T>? =
+        if (world.isClient) null
+        else {
+            val beType = when (this) {
+                is LvTransformerBlock -> ModBlockEntities.getType(LvTransformerBlockEntity::class)
+                is MvTransformerBlock -> ModBlockEntities.getType(MvTransformerBlockEntity::class)
+                is HvTransformerBlock -> ModBlockEntities.getType(HvTransformerBlockEntity::class)
+                is EvTransformerBlock -> ModBlockEntities.getType(EvTransformerBlockEntity::class)
+                else -> return null
+            }
+            checkType(type, beType) { world1, pos, state, be ->
+                (be as ic2_120.content.block.machines.TransformerBlockEntity).tick(world1, pos, state)
+            }
+        }
+
+    override fun createScreenHandlerFactory(state: BlockState, world: World, pos: BlockPos): net.minecraft.screen.NamedScreenHandlerFactory? {
+        val be = world.getBlockEntity(pos)
+        return be as? net.minecraft.screen.NamedScreenHandlerFactory
     }
 
-    override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {
+    override fun onUse(
+        state: BlockState,
+        world: World,
+        pos: BlockPos,
+        player: PlayerEntity,
+        hand: Hand,
+        hit: BlockHitResult
+    ): ActionResult {
+        if (!world.isClient) {
+            createScreenHandlerFactory(state, world, pos)?.let { factory ->
+                player.openHandledScreen(factory)
+            }
+        }
+        return ActionResult.SUCCESS
+    }
+
+    override fun appendProperties(builder: StateManager.Builder<net.minecraft.block.Block, BlockState>) {
         super.appendProperties(builder)
-        builder.add(Properties.FACING, ACTIVE)
+        builder.add(ACTIVE)
     }
 
     override fun getPlacementState(ctx: ItemPlacementContext): BlockState? =
-        defaultState.with(Properties.FACING, ctx.side.opposite)
+        super.getPlacementState(ctx)?.with(ACTIVE, false)
 
     companion object {
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")
     }
+}
+
+@ModBlock(name = "lv_transformer", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "transformer")
+class LvTransformerBlock : TransformerBlock() {
+    override fun createTransformerBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =
+        LvTransformerBlockEntity(pos, state)
 }
 
 @ModBlock(name = "mv_transformer", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "transformer")
-class MvTransformerBlock : Block(
-    AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(5.0f, 6.0f)
-) {
-    init {
-        defaultState = stateManager.defaultState
-            .with(Properties.FACING, Direction.NORTH)
-            .with(ACTIVE, false)
-    }
-
-    override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {
-        super.appendProperties(builder)
-        builder.add(Properties.FACING, ACTIVE)
-    }
-
-    override fun getPlacementState(ctx: ItemPlacementContext): BlockState? =
-        defaultState.with(Properties.FACING, ctx.side.opposite)
-
-    companion object {
-        val ACTIVE: BooleanProperty = BooleanProperty.of("active")
-    }
+class MvTransformerBlock : TransformerBlock() {
+    override fun createTransformerBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =
+        MvTransformerBlockEntity(pos, state)
 }
 
 @ModBlock(name = "hv_transformer", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "transformer")
-class HvTransformerBlock : Block(
-    AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(5.0f, 6.0f)
-) {
-    init {
-        defaultState = stateManager.defaultState
-            .with(Properties.FACING, Direction.NORTH)
-            .with(ACTIVE, false)
-    }
-
-    override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {
-        super.appendProperties(builder)
-        builder.add(Properties.FACING, ACTIVE)
-    }
-
-    override fun getPlacementState(ctx: ItemPlacementContext): BlockState? =
-        defaultState.with(Properties.FACING, ctx.side.opposite)
-
-    companion object {
-        val ACTIVE: BooleanProperty = BooleanProperty.of("active")
-    }
+class HvTransformerBlock : TransformerBlock() {
+    override fun createTransformerBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =
+        HvTransformerBlockEntity(pos, state)
 }
 
 @ModBlock(name = "ev_transformer", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "transformer")
-class EvTransformerBlock : Block(
-    AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(5.0f, 6.0f)
-) {
-    init {
-        defaultState = stateManager.defaultState
-            .with(Properties.FACING, Direction.NORTH)
-            .with(ACTIVE, false)
-    }
-
-    override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {
-        super.appendProperties(builder)
-        builder.add(Properties.FACING, ACTIVE)
-    }
-
-    override fun getPlacementState(ctx: ItemPlacementContext): BlockState? =
-        defaultState.with(Properties.FACING, ctx.side.opposite)
-
-    companion object {
-        val ACTIVE: BooleanProperty = BooleanProperty.of("active")
-    }
+class EvTransformerBlock : TransformerBlock() {
+    override fun createTransformerBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =
+        EvTransformerBlockEntity(pos, state)
 }

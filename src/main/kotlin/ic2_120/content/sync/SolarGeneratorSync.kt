@@ -35,6 +35,8 @@ class SolarGeneratorSync(
     var energy by schema.int("Energy")
     /** 是否正在发电（供 GUI 显示半圆球体颜色） */
     var isGenerating by schema.int("IsGenerating")
+    /** 上一次 tick 的实际输出量（EU/t） */
+    var lastExtractedAmount by schema.int("LastExtracted")
 
     override fun getSideMaxInsert(side: Direction?): Long = 0L
 
@@ -44,4 +46,10 @@ class SolarGeneratorSync(
     override fun onEnergyCommitted() {
         energy = amount.toInt().coerceIn(0, Int.MAX_VALUE)
     }
+
+    fun syncCurrentTickFlow() {
+        lastExtractedAmount = getCurrentTickExtracted().toInt()
+    }
+
+    fun getSyncedExtractedAmount(): Long = lastExtractedAmount.toLong()
 }

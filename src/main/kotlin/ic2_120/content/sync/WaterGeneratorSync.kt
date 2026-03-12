@@ -43,6 +43,8 @@ class WaterGeneratorSync(
     var energy by schema.int("Energy")
     /** 水储量（mB），供 GUI 显示 */
     var waterAmountMb by schema.int("WaterAmountMb")
+    /** 上一次 tick 的实际输出量（EU/t） */
+    var lastExtractedAmount by schema.int("LastExtracted")
 
     override fun getSideMaxInsert(side: Direction?): Long = 0L
 
@@ -52,4 +54,10 @@ class WaterGeneratorSync(
     override fun onEnergyCommitted() {
         energy = amount.toInt().coerceIn(0, Int.MAX_VALUE)
     }
+
+    fun syncCurrentTickFlow() {
+        lastExtractedAmount = getCurrentTickExtracted().toInt()
+    }
+
+    fun getSyncedExtractedAmount(): Long = lastExtractedAmount.toLong()
 }

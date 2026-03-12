@@ -49,7 +49,7 @@ class WindGeneratorScreen(
         val left = x
         val top = y
         val energy = handler.sync.energy.toLong().coerceAtLeast(0)
-        val outputRate = handler.sync.outputRate.toLong().coerceAtLeast(0)
+        val outputRate = handler.sync.getSyncedExtractedAmount()
         val cap = WindGeneratorSync.ENERGY_CAPACITY
         val energyFraction = if (cap > 0) (energy.toFloat() / cap).coerceIn(0f, 1f) else 0f
         val contentW = (backgroundWidth - 16).coerceAtLeast(0)

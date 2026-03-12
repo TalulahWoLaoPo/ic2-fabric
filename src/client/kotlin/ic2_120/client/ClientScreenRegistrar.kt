@@ -109,25 +109,38 @@ object ClientScreenRegistrar {
                 logger.warn("@ModScreen 类 {} 不是 HandledScreen 的子类", className)
                 return
             }
-            val handlerName = resolveHandlerName(modScreen, modId)
-                ?: run {
-                    logger.error("@ModScreen 类 {} 未指定 handler 或 block，或根据 block 未找到对应方块注册名", className)
-                    return
-                }
-            val id = Identifier(modId, handlerName)
-            val type = Registries.SCREEN_HANDLER.get(id)
-                ?: run {
-                    logger.error("未找到 ScreenHandler 类型: {}，请确保主端已注册 @ModScreenHandler(name = \"{}\")", id, handlerName)
-                    return
-                }
+
             val ctor = clazz.primaryConstructor
                 ?: error("@ModScreen 类 ${clazz.simpleName} 需有主构造函数 (handler, playerInventory, title)")
-            @Suppress("UNCHECKED_CAST")
-            val screenType = type as ScreenHandlerType<ScreenHandler>
-            HandledScreens.register(screenType) { handler, playerInventory, title ->
-                ctor.call(handler, playerInventory, title) as HandledScreen<ScreenHandler>
+
+            // 收集所有需要注册的 handler 名称
+            val handlersToRegister = when {
+                modScreen.handlers.isNotEmpty() -> modScreen.handlers.toList()
+                else -> {
+                    val handlerName = resolveHandlerName(modScreen, modId)
+                    if (handlerName != null) listOf(handlerName)
+                    else {
+                        logger.error("@ModScreen 类 {} 未指定 handler 或 block，或根据 block 未找到对应方块注册名", className)
+                        return
+                    }
+                }
             }
-            logger.debug("已注册客户端 Screen: {} -> {}", clazz.simpleName, id)
+
+            // 为每个 handler 名称注册一次（多个方块共用同一个 UI）
+            for (handlerName in handlersToRegister) {
+                val id = Identifier(modId, handlerName)
+                val type = Registries.SCREEN_HANDLER.get(id)
+                    ?: run {
+                        logger.error("未找到 ScreenHandler 类型: {}，请确保主端已注册 @ModScreenHandler(name = \"{}\")", id, handlerName)
+                        return@processClass
+                    }
+                @Suppress("UNCHECKED_CAST")
+                val screenType = type as ScreenHandlerType<ScreenHandler>
+                HandledScreens.register(screenType) { handler, playerInventory, title ->
+                    ctor.call(handler, playerInventory, title) as HandledScreen<ScreenHandler>
+                }
+                logger.debug("已注册客户端 Screen: {} -> {}", clazz.simpleName, id)
+            }
         } catch (e: ClassNotFoundException) {
             logger.warn("无法加载类: {}", className)
         } catch (e: Exception) {

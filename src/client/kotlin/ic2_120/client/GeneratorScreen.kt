@@ -2,7 +2,7 @@ package ic2_120.client
 
 import ic2_120.client.compose.*
 import ic2_120.client.ui.EnergyBar
-import ic2_120.client.ui.FilteredOutputRate
+import ic2_120.client.ui.FilteredValue
 import ic2_120.client.ui.GuiBackground
 import ic2_120.client.ui.ProgressBar
 import ic2_120.content.sync.GeneratorSync
@@ -24,7 +24,7 @@ class GeneratorScreen(
 ) : HandledScreen<GeneratorScreenHandler>(handler, playerInventory, title) {
 
     private val ui = ComposeUI()
-    private var outputRate by FilteredOutputRate()
+    private var filteredOutputRate by FilteredValue()
 
     init {
         backgroundWidth = PANEL_WIDTH
@@ -66,7 +66,8 @@ class GeneratorScreen(
         val left = x
         val top = y
         val energy = handler.sync.energy.toLong().coerceAtLeast(0)
-        outputRate = energy
+        // 更新滤波值：使用后端同步的真实输出电流
+        filteredOutputRate = handler.sync.getSyncedExtractedAmount()
         val cap = GeneratorSync.ENERGY_CAPACITY
         val energyFraction = if (cap > 0) (energy.toFloat() / cap).coerceIn(0f, 1f) else 0f
         val contentW = (backgroundWidth - 16).coerceAtLeast(0)
@@ -95,7 +96,7 @@ class GeneratorScreen(
                         shadow = false
                     )
                     Text(
-                        "输出 ${formatEu(outputRate)} EU/t",
+                        "输出 ${formatEu(filteredOutputRate)} EU/t",
                         color = 0xAAAAAA,
                         shadow = false
                     )

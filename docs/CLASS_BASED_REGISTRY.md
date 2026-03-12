@@ -134,10 +134,47 @@ class ElectricFurnaceBlockEntity(
 
 **注解参数**：
 - `name`: 注册名（不含命名空间），需与对应方块的注册名一致，以便扫描器从 `Registries.BLOCK` 获取方块。为空时使用类名转换
+- `block`: 可选。直接指定关联的方块类（`KClass<out Block>`），优先级高于 `name` 解析
 
 **约定**：
 - 方块实体需提供 `(BlockPos, BlockState)` 的副构造函数，内部通过 `ModBlockEntities.getType(当前类::class)` 调用主构造
 - 对应方块在 `createBlockEntity` 中应使用该副构造创建实体（如 `ElectricFurnaceBlockEntity(pos, state)`）
+
+**能量存储注册**：
+- 方块实体可以在任何属性上添加 `@RegisterEnergy` 注解（Kotlin 属性）
+- 扫描器会自动将带有该注解的属性注册到 Fabric Energy API 的 `EnergyStorage.SIDED` 查找系统
+- 支持在**父类**中声明的 `@RegisterEnergy` 属性（扫描器会递归扫描整个类继承链）
+- 属性类型可以是 `EnergyStorage` 或 `SimpleSidedEnergyContainer`
+
+**继承示例**（变压器）：
+```kotlin
+// 父类：包含能量存储逻辑
+abstract class TransformerBlockEntity(
+    type: BlockEntityType<*>,
+    pos: BlockPos,
+    state: BlockState,
+    private val tier: Int
+) : BlockEntity(type, pos, state) {
+
+    @RegisterEnergy  // 在父类中标记能量存储字段
+    val sync = TransformerSync(...)
+
+    // ...
+}
+
+// 子类：只需添加 @ModBlockEntity 注解
+@ModBlockEntity(block = LvTransformerBlock::class)
+class LvTransformerBlockEntity(pos: BlockPos, state: BlockState) :
+    TransformerBlockEntity(
+        ModBlockEntities.getType(LvTransformerBlockEntity::class),
+        pos, state, tier = 1
+    )
+```
+
+**注意事项**：
+- 扫描器会递归检查父类链，直到 `BlockEntity` 或 `Any` 类
+- 支持同时扫描 Kotlin 属性（`KProperty1`）和 Java 字段（`Field`）
+- 对于 `SimpleSidedEnergyContainer`，会自动调用 `getSideStorage(direction)` 获取分面存储
 
 ### 5. 控制物品栏内顺序（group）
 
@@ -262,6 +299,29 @@ object Ic2_120 : ModInitializer {
 5. **实例化**：使用 `clazz.createInstance()` 创建实例
 6. **注册**：将实例注册到 Minecraft 注册表
 
+### 继承链扫描
+
+对于 `@RegisterEnergy` 注解的能量存储属性，扫描器会执行**递归扫描**（Kotlin 反射）：
+
+```kotlin
+// 伪代码：递归查找类及其所有父类的成员属性
+fun findAllMemberProperties(clazz: KClass<*>): Sequence<KProperty1<*, *>> {
+    return sequence {
+        var current: KClass<*>? = clazz
+        while (current != null && current != Any::class) {
+            yieldAll(current.declaredMemberProperties)  // 当前类的 Kotlin 属性
+            current = current.superclasses.firstOrNull()  // 继续向上查找父类
+        }
+    }
+}
+```
+
+**特点**：
+- 支持在**父类**中声明 `@RegisterEnergy` 属性
+- 支持多层继承（例如：`具体类 → 抽象机器类 → 基础实体类`）
+- 使用 Kotlin 反射，不依赖 Java 反射
+- 扫描到第一个匹配的 `@RegisterEnergy` 属性即停止
+
 ### 注册顺序
 
 自动按以下顺序执行注册：
@@ -350,6 +410,24 @@ class HiddenBlock : Block(Settings.create())
 
 在 BlockEntity 类上添加 `@ModBlockEntity(name = "与方块相同的注册名")`，并提供 `(BlockPos, BlockState)` 副构造，内部通过 `ModBlockEntities.getType(当前类::class)` 调用主构造。对应方块在 `createBlockEntity` 中调用该副构造即可。详见上文「4. 注册方块实体类型」。
 
+### Q: 方块实体继承父类时，@RegisterEnergy 字段会被识别吗？
+
+**会**。扫描器会递归扫描整个类继承链（包括所有父类），查找 `@RegisterEnergy` 注解的 Kotlin 属性。
+
+这意味着你可以在抽象基类中声明能量存储属性，所有子类都会自动注册到 Energy API：
+
+```kotlin
+abstract class BaseMachineBlockEntity(...) : BlockEntity(...) {
+    @RegisterEnergy  // 父类中的 Kotlin 属性会被识别
+    val energyStorage = MachineEnergyStorage(...)
+}
+
+@ModBlockEntity(name = "electric_furnace")
+class ElectricFurnaceBlockEntity(...) : BaseMachineBlockEntity(...) {
+    // 不需要重复声明 @RegisterEnergy，父类的会被自动识别
+}
+```
+
 ### Q: 如何将物品添加到原版创造模式标签？
 
 ```kotlin
@@ -394,10 +472,12 @@ CreativeTab.  // 输入点号后查看所有选项
 
 ## 限制
 
-1. **无参构造**：类必须有无参构造函数或所有参数都有默认值
-2. **包扫描**：需要在入口点明确指定要扫描的包
-3. **注册顺序**：物品栏必须先于方块和物品注册
-4. **Kotlin 反射**：使用 Kotlin 反射，注解必须是 `RUNTIME` 保留
+1. **纯 Kotlin 项目**：本系统仅支持 Kotlin，不兼容 Java
+2. **无参构造**：类必须有无参构造函数或所有参数都有默认值
+3. **包扫描**：需要在入口点明确指定要扫描的包
+4. **注册顺序**：物品栏必须先于方块和物品注册
+5. **Kotlin 反射**：使用 Kotlin 反射，注解必须是 `RUNTIME` 保留
+6. **继承扫描**：`@RegisterEnergy` 注解支持扫描父类，但其他注解（如 `@ModBlockEntity`）只能在当前类上使用，不支持继承
 
 ## 类型安全示例
 

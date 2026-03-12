@@ -18,14 +18,20 @@ import kotlin.reflect.KClass
  * // 方式二：显式写 name
  * @ModScreenHandler(name = "electric_furnace")
  * class ElectricFurnaceScreenHandler(...) : ScreenHandler(...)
+ *
+ * // 方式三：多个方块共用同一个 UI（使用 names 数组）
+ * @ModScreenHandler(names = ["lv_transformer", "mv_transformer", "hv_transformer", "ev_transformer"])
+ * class TransformerScreenHandler(...) : ScreenHandler(...)
  * ```
  *
- * @param name 注册名（不含命名空间）。为空且未指定 block 时使用类名转换（驼峰转下划线小写）
+ * @param name 注册名（不含命名空间）。为空且未指定 block 或 names 时使用类名转换（驼峰转下划线小写）
+ * @param names 多个注册名（用于多个方块共用同一个 UI）
  * @param block 对应的方块类；指定后注册名使用该方块的注册名，与 @ModBlock 保持一致
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class ModScreenHandler(
     val name: String = "",
+    val names: Array<String> = [],
     val block: KClass<*> = Any::class
 )

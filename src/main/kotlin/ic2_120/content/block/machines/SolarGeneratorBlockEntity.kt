@@ -173,6 +173,9 @@ class SolarGeneratorBlockEntity(
         if (state.get(SolarGeneratorBlock.ACTIVE) != active) {
             world.setBlockState(pos, state.with(SolarGeneratorBlock.ACTIVE, active))
         }
+        // 同步当前 tick 的实际输出/输入
+        sync.syncCurrentTickFlow()
+
     }
 
     /**

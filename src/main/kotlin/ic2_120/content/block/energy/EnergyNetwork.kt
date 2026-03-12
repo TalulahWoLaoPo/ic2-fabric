@@ -2,7 +2,7 @@ package ic2_120.content.block.energy
 
 import ic2_120.content.block.IGenerator
 import ic2_120.content.block.ITieredMachine
-import ic2_120.content.block.ITieredMachine.Companion.effectiveVoltageTier
+import ic2_120.content.block.ITieredMachine.Companion.effectiveVoltageTierForSide
 import ic2_120.content.block.cables.BaseCableBlock
 import ic2_120.content.item.energy.ITiered
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction
@@ -104,10 +104,20 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
         val time = world.time
         if (lastTickTime == time) return
         lastTickTime = time
+
+        val isDamageTick = (time + damageTickOffset) % damageIntervalTicks == 0L
+        if (isDamageTick) {
+            println("[电网 Tick] 世界时间=$time，开始执行电网 tick（导线数=${cables.size}，能量=$energy/$capacity，输出等级=$outputLevel，伤害检查周期）")
+        }
+
         pushToConsumers(world)
         tryUninsulatedCableDamage(world)
         tryUnderTierCableBurn(world)
         tryMachineOvervoltageExplosion(world)
+
+        if (isDamageTick) {
+            println("[电网 Tick] Tick 完成，剩余能量=$energy")
+        }
     }
 
     /** 漏电导线触电伤害：绝缘等级 < 电网输出等级的导线会漏电。每 10 秒触发，范围与伤害量由电网输出等级决定。 */
@@ -118,6 +128,8 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
 
         val topology = topologyCache ?: buildTopology(world).also { topologyCache = it }
         if (topology.cablesThatLeak.isEmpty() || outputLevel < 1) return
+
+        println("[漏电检测] 电网输出等级=$outputLevel，漏电导线数量=${topology.cablesThatLeak.size}")
 
         val damageSource = createCableShockDamageSource(serverWorld)
         val rangeInt = outputLevel
@@ -148,13 +160,19 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
             maxX + range + 1.0, maxY + range + 1.0, maxZ + range + 1.0
         )
 
+        val hurtEntities = mutableListOf<LivingEntity>()
         for (entity in world.getEntitiesByClass(LivingEntity::class.java, scanBox) { e ->
             e.isAlive && !e.isSpectator
         }) {
             if (hasLeakingCableNearby(entity.blockPos, leakingCables, rangeInt)) {
                 entity.damage(damageSource, damageAmount)
+                hurtEntities.add(entity)
                 // println("触电伤害：${entity.name}，电压等级：$outputLevel")
             }
+        }
+
+        if (hurtEntities.isNotEmpty()) {
+            println("[漏电检测] 造成伤害：${hurtEntities.joinToString { it.name.string }}，伤害值=$damageAmount")
         }
     }
 
@@ -194,8 +212,12 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
         val toBurn = topology.cablesThatCanBurn
         if (toBurn.isEmpty() || outputLevel < 1) return
 
+        println("[导线烧毁] 电网输出等级=$outputLevel，可烧毁导线数量=${toBurn.size}（电压等级 < $outputLevel）")
+
         val burnCount = (toBurn.size * underTierCableBurnRatio).toInt().coerceIn(0, toBurn.size)
         if (burnCount <= 0) return
+
+        println("[导线烧毁] 准备烧毁 $burnCount 根导线（比例=${underTierCableBurnRatio}）")
 
         val shuffled = toBurn.toMutableList()
         for (i in shuffled.indices.reversed()) {
@@ -205,6 +227,7 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
             shuffled[i] = shuffled[j]
             shuffled[j] = t
         }
+        val actuallyBurned = mutableListOf<Pair<BlockPos, String>>()
         for (i in 0 until burnCount) {
             val posLong = shuffled[i]
             val pos = BlockPos.fromLong(posLong)
@@ -213,12 +236,18 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
             val block = state.block as? BaseCableBlock ?: continue
             if (block !is ITiered || block.tier >= outputLevel) continue
 
+            actuallyBurned.add(pos to state.block.toString())
+
             val x = pos.x + 0.5
             val y = pos.y + 0.5
             val z = pos.z + 0.5
             serverWorld.spawnParticles(ParticleTypes.LARGE_SMOKE, x, y, z, 12, 0.2, 0.2, 0.2, 0.02)
             serverWorld.spawnParticles(ParticleTypes.FLAME, x, y, z, 6, 0.15, 0.15, 0.15, 0.01)
             world.breakBlock(pos, false)
+        }
+
+        if (actuallyBurned.isNotEmpty()) {
+            println("[导线烧毁] 实际烧毁：${actuallyBurned.joinToString { "${it.second} @ ${it.first}" }}")
         }
     }
 
@@ -236,17 +265,48 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
         val topology = topologyCache ?: buildTopology(world).also { topologyCache = it }
         if (outputLevel < 1) return
 
+        println("[超压检测] 开始检查，电网输出等级=$outputLevel，边界数量=${topology.boundaries.size}")
+
         val checked = mutableSetOf<Long>()
+        var explodedCount = 0
+        var skippedGeneratorCount = 0
+        var skippedTierOkCount = 0
+        var skippedNotMachineCount = 0
+
         for (boundary in topology.boundaries) {
             val neighborLong = boundary.neighborPosLong
             if (neighborLong in checked) continue
             checked.add(neighborLong)
             val neighborPos = BlockPos.fromLong(neighborLong)
             val be = world.getBlockEntity(neighborPos) ?: continue
-            if (be is IGenerator) continue
-            if (be !is ITieredMachine) continue
-            val effectiveTier = be.effectiveVoltageTier()
-            if (outputLevel <= effectiveTier) continue
+
+            // 输出当前检查的方块信息
+            val blockState = world.getBlockState(neighborPos)
+            println("[超压检测] 检查方块：${blockState.block} @ $neighborPos")
+
+            if (be is IGenerator) {
+                println("[超压检测]   → 跳过：是发电机 (IGenerator)")
+                skippedGeneratorCount++
+                continue
+            }
+            if (be !is ITieredMachine) {
+                println("[超压检测]   → 跳过：不是 ITieredMachine")
+                skippedNotMachineCount++
+                continue
+            }
+
+            // 使用分面电压等级，检查从电网方向看向机器时的耐压等级
+            val effectiveTier = be.effectiveVoltageTierForSide(boundary.lookupFromNeighborSide)
+            println("[超压检测]   → 有效耐压等级=$effectiveTier (方向=${boundary.lookupFromNeighborSide})")
+
+            if (outputLevel <= effectiveTier) {
+                println("[超压检测]   → 跳过：耐压等级足够 ($outputLevel <= $effectiveTier)")
+                skippedTierOkCount++
+                continue
+            }
+
+            // 触发爆炸
+            println("[超压检测]   → 🔥 触发爆炸！电网等级 $outputLevel > 机器耐压 $effectiveTier")
             if (be is Inventory) be.clear()
             world.breakBlock(neighborPos, false)
             val x = neighborPos.x + 0.5
@@ -254,7 +314,10 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
             val z = neighborPos.z + 0.5
             val power = explosionPowerForOutputLevel(outputLevel)
             world.createExplosion(null, x, y, z, power, false, World.ExplosionSourceType.BLOCK)
+            explodedCount++
         }
+
+        println("[超压检测] 检查完成 - 爆炸=$explodedCount, 跳过发电机=$skippedGeneratorCount, 跳过耐压足够=$skippedTierOkCount, 跳过非机器=$skippedNotMachineCount")
     }
 
     /** 电网电压等级对应的爆炸威力：等级 4 = 10 颗心伤害（power=2），每提高 1 级伤害翻倍。 */
@@ -484,6 +547,8 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
         val boundaries = mutableListOf<BoundaryEdge>()
         var maxLevel = 1
 
+        println("[电网拓扑] 开始构建电网拓扑，导线数量=${cables.size}")
+
         for (cablePosLong in cables) {
             val cablePos = BlockPos.fromLong(cablePosLong)
             val state = world.getBlockState(cablePos)
@@ -501,14 +566,22 @@ class EnergyNetwork : SnapshotParticipant<Long>() {
                     val neighborBe = world.getBlockEntity(neighborPos)
                     val storage = EnergyStorage.SIDED.find(world, neighborPos, dir.opposite)
                     //只考虑输出，输入不考虑，例如：mfsu作为被充电的一方是不会把电网电压等级拉高的
-                    if (neighborBe is ITieredMachine && storage?.supportsExtraction() == true) {
-                        maxLevel = maxOf(maxLevel, neighborBe.tier)
+                    //使用分面电压等级，支持变压器等不同面电压不同的设备
+                    //变压器不是发电机，它的"输出"是从电网输入后转换的，不应该决定电网电压等级
+                    if (neighborBe is ITieredMachine && neighborBe !is ic2_120.content.block.machines.TransformerBlockEntity && storage?.supportsExtraction() == true) {
+                        val tierForSide = neighborBe.effectiveVoltageTierForSide(dir)
+                        val oldMax = maxLevel
+                        maxLevel = maxOf(maxLevel, tierForSide)
+                        if (maxLevel != oldMax) {
+                            println("[电网拓扑] 更新输出等级：$oldMax -> $maxLevel (来源：${world.getBlockState(neighborPos).block} @ $neighborPos，方向=$dir，该面等级=$tierForSide)")
+                        }
                     }
                 }
             }
         }
 
         outputLevel = maxLevel
+        println("[电网拓扑] 电网拓扑构建完成，最终输出等级=$outputLevel，边界数量=${boundaries.size}")
 
         val cablesThatLeak = cables.filter { cablePosLong ->
             val block = world.getBlockState(BlockPos.fromLong(cablePosLong)).block as? BaseCableBlock ?: return@filter true

@@ -181,7 +181,6 @@ class WindGeneratorBlockEntity(
 
         val canGenerate = currentOutputMilliEuPerTick > 0
         sync.isGenerating = if (canGenerate) 1 else 0
-        sync.outputRate = (currentOutputMilliEuPerTick / 1000).coerceIn(0, Int.MAX_VALUE)
 
         if (canGenerate) {
             val space = (WindGeneratorSync.ENERGY_CAPACITY - sync.amount).coerceAtLeast(0L)
@@ -207,6 +206,9 @@ class WindGeneratorBlockEntity(
         if (state.get(WindGeneratorBlock.ACTIVE) != active) {
             world.setBlockState(pos, state.with(WindGeneratorBlock.ACTIVE, active))
         }
+        // 同步当前 tick 的实际输出/输入
+        sync.syncCurrentTickFlow()
+
     }
 
     /**

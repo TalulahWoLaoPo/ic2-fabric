@@ -2,7 +2,7 @@ package ic2_120.client
 
 import ic2_120.client.compose.*
 import ic2_120.client.ui.EnergyBar
-import ic2_120.client.ui.FilteredOutputRate
+import ic2_120.client.ui.FilteredValue
 import ic2_120.client.ui.GuiBackground
 import ic2_120.client.ui.ProgressBar
 import ic2_120.content.block.WaterGeneratorBlock
@@ -23,7 +23,7 @@ class WaterGeneratorScreen(
 ) : HandledScreen<WaterGeneratorScreenHandler>(handler, playerInventory, title) {
 
     private val ui = ComposeUI()
-    private var outputRate by FilteredOutputRate()
+    private var filteredOutputRate by FilteredValue()
 
     init {
         backgroundWidth = PANEL_WIDTH
@@ -66,7 +66,7 @@ class WaterGeneratorScreen(
         val left = x
         val top = y
         val energy = handler.sync.energy.toLong().coerceAtLeast(0)
-        outputRate = energy
+        filteredOutputRate = handler.sync.getSyncedExtractedAmount()
         val cap = WaterGeneratorSync.ENERGY_CAPACITY
         val energyFraction = if (cap > 0) (energy.toFloat() / cap).coerceIn(0f, 1f) else 0f
         val rightBarsWidth = 12 + 8
@@ -96,7 +96,7 @@ class WaterGeneratorScreen(
                         shadow = false
                     )
                     Text(
-                        "输出 ${formatEu(outputRate)} EU/t",
+                        "输出 ${formatEu(filteredOutputRate)} EU/t",
                         color = 0xAAAAAA,
                         shadow = false
                     )

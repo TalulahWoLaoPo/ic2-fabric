@@ -22,6 +22,8 @@ open class TickLimitedSidedEnergyContainer(
     private var insertedThisTick: Long = 0L
     private var extractedThisTick: Long = 0L
     private var lastCommittedAmount: Long = 0L
+    private var lastInsertedAmount: Long = 0L
+    private var lastExtractedAmount: Long = 0L
 
     override fun getCapacity(): Long = capacity
 
@@ -51,6 +53,18 @@ open class TickLimitedSidedEnergyContainer(
         onEnergyCommitted()
     }
 
+    /** 获取上一次 tick 的实际输入量（EU/t） */
+    fun getLastInsertedAmount(): Long = lastInsertedAmount
+
+    /** 获取上一次 tick 的实际输出量（EU/t） */
+    fun getLastExtractedAmount(): Long = lastExtractedAmount
+
+    /** 获取当前 tick 的累计输入量（子类用于同步） */
+    protected fun getCurrentTickInserted(): Long = insertedThisTick
+
+    /** 获取当前 tick 的累计输出量（子类用于同步） */
+    protected fun getCurrentTickExtracted(): Long = extractedThisTick
+
     /** 外部直接改 amount（例如读 NBT）后调用，重置提交基线，避免首个事务误判为大额插入。 */
     fun syncCommittedAmount() {
         lastCommittedAmount = amount
@@ -68,6 +82,10 @@ open class TickLimitedSidedEnergyContainer(
     private fun normalizeTickBudget() {
         val now = currentTickProvider() ?: return
         if (budgetTrackedTick != now) {
+            // 保存上一次 tick 的实际输入/输出
+            lastInsertedAmount = insertedThisTick
+            lastExtractedAmount = extractedThisTick
+            // 重置当前 tick 的累计值
             budgetTrackedTick = now
             insertedThisTick = 0L
             extractedThisTick = 0L

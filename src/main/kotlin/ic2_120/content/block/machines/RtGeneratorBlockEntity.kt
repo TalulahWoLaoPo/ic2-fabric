@@ -197,5 +197,8 @@ class RtGeneratorBlockEntity(
         if (state.get(RtGeneratorBlock.ACTIVE) != active) {
             world.setBlockState(pos, state.with(RtGeneratorBlock.ACTIVE, active))
         }
+        // 同步当前 tick 的实际输出/输入
+        sync.syncCurrentTickFlow()
+
     }
 }

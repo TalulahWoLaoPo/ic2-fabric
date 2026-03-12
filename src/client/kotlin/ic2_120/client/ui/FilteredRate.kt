@@ -28,6 +28,28 @@ fun FilteredRate(
         }
     }
 
+/**
+ * 用于 GUI 中显示后端同步的数值的指数移动平均滤波委派。
+ * 直接对传入的值进行滤波，不需要通过容量变化计算速率。
+ * 适用于后端已经追踪好实际值的情况（如变压器的输入/输出电流）。
+ *
+ * @param alpha 滤波系数 (0, 1)，越小越平滑、响应越慢，推荐 0.2~0.4
+ */
+fun FilteredValue(alpha: Float = 0.25f): FilteredRateDelegate =
+    object : FilteredRateDelegate {
+        private var lastValue: Long = -1
+        private var filtered: Float = 0f
+
+        override fun getValue(thisRef: Any?, property: KProperty<*>): Long =
+            filtered.toLong().coerceAtLeast(0)
+
+        override fun setValue(thisRef: Any?, property: KProperty<*>, value: Long) {
+            if (value == lastValue) return  // 跳过重复帧
+            lastValue = value
+            filtered = alpha * value + (1 - alpha) * filtered
+        }
+    }
+
 /** 委派接口：赋值接收 Long（当前容量），读取返回 Long（滤波后速率） */
 interface FilteredRateDelegate {
     operator fun getValue(thisRef: Any?, property: KProperty<*>): Long
