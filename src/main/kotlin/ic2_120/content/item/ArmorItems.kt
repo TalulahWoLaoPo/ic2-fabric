@@ -24,6 +24,7 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
+import net.minecraft.fluid.Fluids
 
 
 //todo 全套防化服，防化三件套加橡胶靴 可免疫特斯拉线圈伤害 可免疫触电伤害，只要有单个防化头盔，物品栏有压缩空气单元，就可以在气泡值用尽时消耗压缩空气单元回满
@@ -473,7 +474,61 @@ class RubberBoots : ArmorItem(RUBBER_ARMOR, ArmorItem.Type.BOOTS, FabricItemSett
  * 参考原版 IC2 各部位耐久：均为 64
  */
 @ModItem(name = "hazmat_helmet", tab = CreativeTab.IC2_MATERIALS, group = "hazmat_armor")
-class HazmatHelmet : ArmorItem(HAZMAT_ARMOR, ArmorItem.Type.HELMET, FabricItemSettings().maxCount(1))
+class HazmatHelmet : ArmorItem(HAZMAT_ARMOR, ArmorItem.Type.HELMET, FabricItemSettings().maxCount(1)) {
+    companion object {
+        private const val CHECK_COOLDOWN_KEY = "AirCheckCooldown"
+        private const val AIR_THRESHOLD = 60  // 当气泡值 <= 60 时触发（约 3 秒，20%）
+    }
+
+    override fun inventoryTick(stack: ItemStack, world: World, entity: net.minecraft.entity.Entity, slot: Int, selected: Boolean) {
+        super.inventoryTick(stack, world, entity, slot, selected)
+        if (world.isClient) return
+
+        val player = entity as? PlayerEntity ?: return
+        if (player.getEquippedStack(EquipmentSlot.HEAD) !== stack) return
+
+        // 只在玩家接触水时检测
+        if (!player.isTouchingWater) return
+
+        // 检查冷却，防止同一tick多次消耗
+        val nbt = stack.orCreateNbt
+        val cooldown = nbt.getInt(CHECK_COOLDOWN_KEY)
+        if (cooldown > 0) {
+            nbt.putInt(CHECK_COOLDOWN_KEY, cooldown - 1)
+            return
+        }
+
+        // 当气泡值低于阈值时（<= 60，约 3 秒）
+        if (player.air <= AIR_THRESHOLD) {
+            val airCellItem = Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "air_cell"))
+            val emptyCellItem = Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "empty_cell"))
+
+            // 查找背包中的压缩空气单元
+            val airCellSlot = player.inventory.main.find { slot ->
+                !slot.isEmpty && slot.item === airCellItem
+            }
+
+            if (airCellSlot != null) {
+                // 消耗一个压缩空气单元
+                airCellSlot.decrement(1)
+
+                // 创建空单元
+                val emptyCell = ItemStack(emptyCellItem)
+
+                // 尝试放入背包，如果满了就掉在地上
+                if (!player.inventory.insertStack(emptyCell)) {
+                    player.dropItem(emptyCell, false)
+                }
+
+                // 回满气泡值
+                player.air = player.maxAir
+
+                // 设置冷却时间，防止同一tick多次触发（20 ticks = 1秒）
+                nbt.putInt(CHECK_COOLDOWN_KEY, 20)
+            }
+        }
+    }
+}
 
 @ModItem(name = "hazmat_chestplate", tab = CreativeTab.IC2_MATERIALS, group = "hazmat_armor")
 class HazmatChestplate : ArmorItem(HAZMAT_ARMOR, ArmorItem.Type.CHESTPLATE, FabricItemSettings().maxCount(1))
