@@ -297,7 +297,6 @@ class NuclearReactorBlockEntity(
             // 将 output 转为 EU 并存储到 pendingEnergyOutput，将在后续20个tick中均摊输出
             val euTotal = (outputAccumulator * NuclearReactorSync.EU_PER_OUTPUT).toLong()
             pendingEnergyOutput = euTotal.coerceIn(0L, NuclearReactorSync.ENERGY_CAPACITY)
-            println("pendingEnergyOutput: $pendingEnergyOutput")
 
             // 同步产热和散热数据
             sync.totalHeatProduced = totalHeatProduced

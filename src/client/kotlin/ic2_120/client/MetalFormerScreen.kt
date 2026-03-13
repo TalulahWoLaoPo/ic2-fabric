@@ -48,12 +48,10 @@ class MetalFormerScreen(
         val inputSlot = handler.slots[MetalFormerScreenHandler.SLOT_INPUT_INDEX]
         val dischargingSlot = handler.slots[MetalFormerScreenHandler.SLOT_DISCHARGING_INDEX]
         val outputSlot = handler.slots[MetalFormerScreenHandler.SLOT_OUTPUT_INDEX]
-        val secondaryInputSlot = handler.slots[MetalFormerScreenHandler.SLOT_SECONDARY_INPUT_INDEX]
 
         context.drawBorder(x + inputSlot.x - borderOffset, y + inputSlot.y - borderOffset, slotSize, slotSize, borderColor)
         context.drawBorder(x + dischargingSlot.x - borderOffset, y + dischargingSlot.y - borderOffset, slotSize, slotSize, borderColor)
         context.drawBorder(x + outputSlot.x - borderOffset, y + outputSlot.y - borderOffset, slotSize, slotSize, borderColor)
-        context.drawBorder(x + secondaryInputSlot.x - borderOffset, y + secondaryInputSlot.y - borderOffset, slotSize, slotSize, borderColor)
 
         for (i in MetalFormerScreenHandler.SLOT_UPGRADE_INDEX_START..MetalFormerScreenHandler.SLOT_UPGRADE_INDEX_END) {
             val slot = handler.slots[i]
@@ -120,6 +118,15 @@ class MetalFormerScreen(
         val inputRate = handler.sync.getSyncedInsertedAmount()
         val consumeRate = handler.sync.getSyncedConsumedAmount()
 
+        // 在UI左侧绘制速度文本
+        val inputText = "输入 ${formatEu(inputRate)} EU/t"
+        val consumeText = "耗能 ${formatEu(consumeRate)} EU/t"
+        val inputTextWidth = inputText.length * 6
+        val consumeTextWidth = consumeText.length * 6
+        val textX = left - maxOf(inputTextWidth, consumeTextWidth) - 4  // 留4像素边距
+        context.drawText(textRenderer, inputText, textX, top + 6, 0xAAAAAA, false)
+        context.drawText(textRenderer, consumeText, textX, top + 18, 0xAAAAAA, false)
+
         ui.render(context, textRenderer, mouseX, mouseY) {
             Column(x = left + 8, y = top + 6, spacing = 2, modifier = Modifier.EMPTY.width(contentW).padding(0, 0, 8, 0)) {
                 // 第一行：标题 + 小能量条 + 数值（右侧留边距防溢出）
@@ -152,12 +159,7 @@ class MetalFormerScreen(
                     )
                 })
                 }
-                // 第三行：输入/耗能速率
-                Text(
-                    "输入 ${formatEu(inputRate)} EU/t · 耗能 ${formatEu(consumeRate)} EU/t",
-                    color = 0xAAAAAA,
-                    shadow = false
-                )
+                // 第三行：留空（速度已移至UI左侧）
             }
         }
         drawMouseoverTooltip(context, mouseX, mouseY)

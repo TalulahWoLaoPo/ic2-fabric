@@ -53,13 +53,12 @@ class MetalFormerBlockEntity(
         const val SLOT_INPUT = 0
         const val SLOT_OUTPUT = 1
         const val SLOT_DISCHARGING = 2
-        const val SLOT_SECONDARY_INPUT = 3  // 挤压模式双输入配方的次要输入
-        const val SLOT_UPGRADE_0 = 4
-        const val SLOT_UPGRADE_1 = 5
-        const val SLOT_UPGRADE_2 = 6
-        const val SLOT_UPGRADE_3 = 7
+        const val SLOT_UPGRADE_0 = 3
+        const val SLOT_UPGRADE_1 = 4
+        const val SLOT_UPGRADE_2 = 5
+        const val SLOT_UPGRADE_3 = 6
         val SLOT_UPGRADE_INDICES = intArrayOf(SLOT_UPGRADE_0, SLOT_UPGRADE_1, SLOT_UPGRADE_2, SLOT_UPGRADE_3)
-        const val INVENTORY_SIZE = 8
+        const val INVENTORY_SIZE = 7
     }
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
@@ -177,9 +176,8 @@ class MetalFormerBlockEntity(
 
         val currentMode = sync.getMode()
 
-        // 检查配方（支持双输入配方）
-        val secondaryInput = if (needsSecondaryInput(currentMode)) getStack(SLOT_SECONDARY_INPUT) else null
-        val result = MetalFormerRecipes.getOutput(currentMode, input, secondaryInput) ?: run {
+        // 检查配方
+        val result = MetalFormerRecipes.getOutput(currentMode, input, null) ?: run {
             if (sync.progress != 0) sync.progress = 0
             setActiveState(world, pos, state, false)
             sync.syncCurrentTickFlow()
@@ -202,11 +200,6 @@ class MetalFormerBlockEntity(
         if (sync.progress >= MetalFormerSync.PROGRESS_MAX) {
             // 消耗输入物品
             input.decrement(1)
-
-            // 消耗次要输入物品（如果有）
-            if (secondaryInput != null && !secondaryInput.isEmpty) {
-                secondaryInput.decrement(1)
-            }
 
             // 输出结果
             if (outputSlot.isEmpty()) setStack(SLOT_OUTPUT, result)
@@ -231,14 +224,6 @@ class MetalFormerBlockEntity(
 
         // 同步当前 tick 的实际输入/耗能
         sync.syncCurrentTickFlow()
-    }
-
-    /**
-     * 检查当前模式是否需要次要输入（次级输入槽）
-     * 某些挤压模式配方需要两个输入
-     */
-    private fun needsSecondaryInput(mode: MetalFormerSync.Mode): Boolean {
-        return mode == MetalFormerSync.Mode.EXTRUDING
     }
 
     /**

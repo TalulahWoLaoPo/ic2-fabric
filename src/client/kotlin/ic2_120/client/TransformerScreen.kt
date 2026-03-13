@@ -92,6 +92,15 @@ class TransformerScreen(
             TransformerSync.Mode.STEP_DOWN -> 0xFFAAAA  // 红色表示降压
         }
 
+        // 在UI左侧绘制速度文本
+        val inputText = "输入 ${formatEu(filteredInputRate)} EU/t"
+        val outputText = "输出 ${formatEu(filteredOutputRate)} EU/t"
+        val inputTextWidth = inputText.length * 6
+        val outputTextWidth = outputText.length * 6
+        val textX = left - maxOf(inputTextWidth, outputTextWidth) - 4  // 留4像素边距
+        context.drawText(textRenderer, inputText, textX, top + 6, 0xFFFFAA, false)
+        context.drawText(textRenderer, outputText, textX, top + 18, 0xFFFFAA, false)
+
         ui.render(context, textRenderer, mouseX, mouseY) {
             Column(x = left + 8, y = top + 6, spacing = 4, modifier = Modifier.EMPTY.width(contentW).padding(0, 0, 8, 0)) {
                 // 标题行
@@ -128,13 +137,6 @@ class TransformerScreen(
                         )
                     })
                 }
-
-                // 电流显示（滤波平滑后的真实值）
-                Text(
-                    "输入 ${formatEu(filteredInputRate)} EU/t · 输出 ${formatEu(filteredOutputRate)} EU/t",
-                    color = 0xFFFFAA,
-                    shadow = false
-                )
 
                 // 说明文本
                 val description = when (currentMode) {

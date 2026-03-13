@@ -5,6 +5,7 @@ import ic2_120.client.ui.GuiBackground
 import ic2_120.client.ui.EnergyBar
 import ic2_120.content.sync.MfsuSync
 import ic2_120.content.block.MfsuBlock
+import ic2_120.content.block.machines.MfsuBlockEntity
 import ic2_120.content.screen.MfsuScreenHandler
 import ic2_120.registry.annotation.ModScreen
 import net.minecraft.client.gui.DrawContext
@@ -31,6 +32,16 @@ class MfsuScreen(
         val y = (height - backgroundHeight) / 2
         GuiBackground.draw(context, x, y, backgroundWidth, backgroundHeight)
         GuiBackground.drawPlayerInventorySlotBorders(context, x, y, 84, 142, 18)
+
+        // 绘制4个装备槽的边框（UI下方横向）
+        val borderColor = GuiBackground.BORDER_COLOR
+        val slotSize = 18
+        val borderOffset = 1
+        val armorSlotX = 8
+        val armorSlotY = 70
+        for (i in 0 until 4) {
+            context.drawBorder(x + armorSlotX + i * 18 - borderOffset, y + armorSlotY - borderOffset, slotSize, slotSize, borderColor)
+        }
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
@@ -39,15 +50,23 @@ class MfsuScreen(
         val left = (width - backgroundWidth) / 2
         val top = (height - backgroundHeight) / 2
 
+        // 计算数据
+        val energy = handler.sync.energy.toLong().coerceAtLeast(0)
+        val inputRate = handler.sync.getSyncedInsertedAmount()
+        val outputRate = handler.sync.getSyncedExtractedAmount()
+        val cap = MfsuSync.ENERGY_CAPACITY
+        val fraction = if (cap > 0) (energy.toFloat() / cap).coerceIn(0f, 1f) else 0f
+
+        // 在UI左侧绘制速度文本
+        val inputText = "输入 ${formatEu(inputRate)} EU/t"
+        val outputText = "输出 ${formatEu(outputRate)} EU/t"
+        val inputTextWidth = inputText.length * 6
+        val outputTextWidth = outputText.length * 6
+        val textX = left - maxOf(inputTextWidth, outputTextWidth) - 4  // 留4像素边距
+        context.drawText(textRenderer, inputText, textX, top + 8, 0xAAAAAA, false)
+        context.drawText(textRenderer, outputText, textX, top + 20, 0xAAAAAA, false)
+
         ui.render(context, textRenderer, mouseX, mouseY) {
-            val energy = handler.sync.energy.toLong().coerceAtLeast(0)
-            // 直接使用后端滤波后的值
-            val inputRate = handler.sync.getSyncedInsertedAmount()
-            val outputRate = handler.sync.getSyncedExtractedAmount()
-
-            val cap = MfsuSync.ENERGY_CAPACITY
-            val fraction = if (cap > 0) (energy.toFloat() / cap).coerceIn(0f, 1f) else 0f
-
             Column(x = left + 8, y = top + 8, spacing = 6) {
                 Text(title.string, color = 0xFFFFFF)
                 Flex(
@@ -67,11 +86,6 @@ class MfsuScreen(
                 Text(
                     "${formatEu(energy)} / ${formatEu(MfsuSync.ENERGY_CAPACITY)} EU",
                     color = 0xCCCCCC,
-                    shadow = false
-                )
-                Text(
-                    "输入 ${formatEu(inputRate)} EU/t · 输出 ${formatEu(outputRate)} EU/t",
-                    color = 0xAAAAAA,
                     shadow = false
                 )
             }

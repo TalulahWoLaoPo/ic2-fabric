@@ -7,6 +7,7 @@ import ic2_120.content.block.ElectricFurnaceBlock
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.screen.ElectricFurnaceScreenHandler
 import ic2_120.content.syncs.SyncedData
+import ic2_120.content.energy.charge.BatteryDischargerComponent
 import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.annotation.RegisterEnergy
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
@@ -40,11 +41,25 @@ class ElectricFurnaceBlockEntity(
 
     override val tier: Int = 1
 
-    private val inventory = DefaultedList.ofSize(2, ItemStack.EMPTY)  // 0: 输入, 1: 输出
+    companion object {
+        const val SLOT_INPUT = 0
+        const val SLOT_OUTPUT = 1
+        const val SLOT_DISCHARGING = 2
+        const val INVENTORY_SIZE = 3
+    }
+
+    private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)  // 0: 输入, 1: 输出, 2: 放电
 
     val syncedData = SyncedData(this)
     @RegisterEnergy
     val sync = ElectricFurnaceSync(syncedData) { world?.time }
+
+    private val batteryDischarger = BatteryDischargerComponent(
+        inventory = this,
+        batterySlot = SLOT_DISCHARGING,
+        machineTierProvider = { tier },
+        canDischargeNow = { sync.amount < ElectricFurnaceSync.ENERGY_CAPACITY }
+    )
 
     constructor(pos: BlockPos, state: BlockState) : this(
         ModBlockEntities.getType(ElectricFurnaceBlockEntity::class),
@@ -52,9 +67,12 @@ class ElectricFurnaceBlockEntity(
         state
     )
 
-    override fun size(): Int = 2
+    override fun size(): Int = INVENTORY_SIZE
     override fun getStack(slot: Int): ItemStack = inventory.getOrElse(slot) { ItemStack.EMPTY }
     override fun setStack(slot: Int, stack: ItemStack) {
+        if (slot == SLOT_DISCHARGING && stack.count > 1) {
+            stack.count = 1
+        }
         inventory[slot] = stack
         if (stack.count > maxCountPerStack) stack.count = maxCountPerStack
         markDirty()
@@ -100,6 +118,9 @@ class ElectricFurnaceBlockEntity(
         if (world.isClient) return
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
         pullEnergyFromNeighbors(world, pos, sync)
+
+        // 从放电槽提取能量
+        extractFromDischargingSlot()
 
         val input = getStack(0)
         if (input.isEmpty()) {
@@ -163,6 +184,22 @@ class ElectricFurnaceBlockEntity(
         if (state.get(ElectricFurnaceBlock.ACTIVE) != active) {
             world.setBlockState(pos, state.with(ElectricFurnaceBlock.ACTIVE, active))
         }
+    }
+
+    /**
+     * 从放电槽提取能量（如果需要）
+     */
+    private fun extractFromDischargingSlot() {
+        val space = (ElectricFurnaceSync.ENERGY_CAPACITY - sync.amount).coerceAtLeast(0L)
+        if (space <= 0L) return
+
+        val request = minOf(space, ElectricFurnaceSync.MAX_EXTRACT.toLong())
+        val extracted = batteryDischarger.tick(request)
+        if (extracted <= 0L) return
+
+        sync.insertEnergy(extracted)
+        sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
+        markDirty()
     }
 }
 

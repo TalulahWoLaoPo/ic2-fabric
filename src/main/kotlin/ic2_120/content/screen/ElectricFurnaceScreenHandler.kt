@@ -3,6 +3,10 @@ package ic2_120.content.screen
 import ic2_120.content.sync.ElectricFurnaceSync
 import ic2_120.content.syncs.SyncedDataView
 import ic2_120.content.block.ElectricFurnaceBlock
+import ic2_120.content.block.machines.ElectricFurnaceBlockEntity
+import ic2_120.content.item.energy.IBatteryItem
+import ic2_120.content.screen.slot.PredicateSlot
+import ic2_120.content.screen.slot.SlotSpec
 import ic2_120.registry.annotation.ModScreenHandler
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -31,12 +35,21 @@ class ElectricFurnaceScreenHandler(
 
     val sync = ElectricFurnaceSync(SyncedDataView(propertyDelegate))
 
+    private val inputSlotSpec = SlotSpec(canInsert = { stack -> stack.item !is IBatteryItem })
+    private val outputSlotSpec = SlotSpec(canInsert = { false }, canTake = { true })
+    private val dischargingSlotSpec = SlotSpec(
+        canInsert = { stack -> stack.item is IBatteryItem },
+        maxItemCount = 1
+    )
+
     init {
-        checkSize(blockInventory, 2)
+        checkSize(blockInventory, ElectricFurnaceBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
         // 输入槽（左侧）、输出槽（右侧），同一行，留出上方给标题与能量条
-        addSlot(Slot(blockInventory, 0, INPUT_SLOT_X, BLOCK_SLOTS_Y))
-        addSlot(Slot(blockInventory, 1, OUTPUT_SLOT_X, BLOCK_SLOTS_Y))
+        addSlot(PredicateSlot(blockInventory, ElectricFurnaceBlockEntity.SLOT_INPUT, INPUT_SLOT_X, BLOCK_SLOTS_Y, inputSlotSpec))
+        addSlot(PredicateSlot(blockInventory, ElectricFurnaceBlockEntity.SLOT_OUTPUT, OUTPUT_SLOT_X, BLOCK_SLOTS_Y, outputSlotSpec))
+        // 放电槽（第二行左侧）
+        addSlot(PredicateSlot(blockInventory, ElectricFurnaceBlockEntity.SLOT_DISCHARGING, INPUT_SLOT_X, BLOCK_SLOTS_Y + SLOT_SIZE, dischargingSlotSpec))
         // 玩家背包
         for (row in 0 until 3) {
             for (col in 0 until 9) {
@@ -55,15 +68,23 @@ class ElectricFurnaceScreenHandler(
             val stackInSlot = slot.stack
             stack = stackInSlot.copy()
             when {
-                index == 1 -> {
-                    if (!insertItem(stackInSlot, 2, 38, true)) return ItemStack.EMPTY
+                index == SLOT_OUTPUT_INDEX -> {
+                    if (!insertItem(stackInSlot, PLAYER_INV_START, HOTBAR_END, true)) return ItemStack.EMPTY
                     slot.onQuickTransfer(stackInSlot, stack)
                 }
-                index in 2..37 -> {
-                    if (!insertItem(stackInSlot, 0, 1, false)) return ItemStack.EMPTY
-                    if (!insertItem(stackInSlot, 1, 2, false)) return ItemStack.EMPTY
+                index == SLOT_DISCHARGING_INDEX -> {
+                    if (!insertItem(stackInSlot, PLAYER_INV_START, HOTBAR_END, true)) return ItemStack.EMPTY
+                    slot.onQuickTransfer(stackInSlot, stack)
                 }
-                else -> if (!insertItem(stackInSlot, 2, 38, false)) return ItemStack.EMPTY
+                index in PLAYER_INV_START until HOTBAR_END -> {
+                    // 优先移动到输入槽，其次移动到放电槽
+                    if (!insertItem(stackInSlot, SLOT_INPUT_INDEX, SLOT_INPUT_INDEX + 1, false)) {
+                        if (stackInSlot.item is IBatteryItem && !insertItem(stackInSlot, SLOT_DISCHARGING_INDEX, SLOT_DISCHARGING_INDEX + 1, false)) {
+                            if (!insertItem(stackInSlot, PLAYER_INV_START, HOTBAR_END, false)) return ItemStack.EMPTY
+                        }
+                    }
+                }
+                else -> if (!insertItem(stackInSlot, PLAYER_INV_START, HOTBAR_END, false)) return ItemStack.EMPTY
             }
             if (stackInSlot.isEmpty()) slot.stack = ItemStack.EMPTY
             else slot.markDirty()
@@ -96,12 +117,18 @@ class ElectricFurnaceScreenHandler(
         /** 槽尺寸（用于客户端绘制边框等） */
         const val SLOT_SIZE = 18
 
+        const val SLOT_INPUT_INDEX = 0
+        const val SLOT_OUTPUT_INDEX = 1
+        const val SLOT_DISCHARGING_INDEX = 2
+        const val PLAYER_INV_START = 3
+        const val HOTBAR_END = 39
+
         /** 客户端从 ExtendedScreenHandlerType 创建：从 buf 读取 pos，用临时 Inventory。 */
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): ElectricFurnaceScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()
             val context = ScreenHandlerContext.create(playerInventory.player.world, pos)
-            val blockInv = SimpleInventory(2)
+            val blockInv = SimpleInventory(ElectricFurnaceBlockEntity.INVENTORY_SIZE)
             return ElectricFurnaceScreenHandler(syncId, playerInventory, blockInv, context, ArrayPropertyDelegate(propertyCount))
         }
     }

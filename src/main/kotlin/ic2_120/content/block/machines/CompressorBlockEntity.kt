@@ -14,6 +14,7 @@ import ic2_120.content.upgrade.IOverclockerUpgradeSupport
 import ic2_120.content.upgrade.ITransformerUpgradeSupport
 import ic2_120.content.upgrade.OverclockerUpgradeComponent
 import ic2_120.content.upgrade.TransformerUpgradeComponent
+import ic2_120.content.energy.charge.BatteryDischargerComponent
 import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.annotation.RegisterEnergy
 import net.minecraft.block.BlockState
@@ -49,8 +50,9 @@ class CompressorBlockEntity(
         const val COMPRESSOR_TIER = 1
         const val SLOT_INPUT = 0
         const val SLOT_OUTPUT = 1
-        val SLOT_UPGRADE_INDICES = intArrayOf(2, 3, 4, 5)
-        const val INVENTORY_SIZE = 6
+        const val SLOT_DISCHARGING = 2
+        val SLOT_UPGRADE_INDICES = intArrayOf(3, 4, 5, 6)
+        const val INVENTORY_SIZE = 7
     }
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
@@ -64,6 +66,13 @@ class CompressorBlockEntity(
         { TransformerUpgradeComponent.maxInsertForTier(COMPRESSOR_TIER + voltageTierBonus) }
     )
 
+    private val batteryDischarger = BatteryDischargerComponent(
+        inventory = this,
+        batterySlot = SLOT_DISCHARGING,
+        machineTierProvider = { COMPRESSOR_TIER },
+        canDischargeNow = { sync.amount < sync.getEffectiveCapacity() }
+    )
+
     constructor(pos: BlockPos, state: BlockState) : this(
         ModBlockEntities.getType(CompressorBlockEntity::class),
         pos,
@@ -73,6 +82,9 @@ class CompressorBlockEntity(
     override fun size(): Int = INVENTORY_SIZE
     override fun getStack(slot: Int): ItemStack = inventory.getOrElse(slot) { ItemStack.EMPTY }
     override fun setStack(slot: Int, stack: ItemStack) {
+        if (slot == SLOT_DISCHARGING && stack.count > 1) {
+            stack.count = 1
+        }
         inventory[slot] = stack
         if (stack.count > maxCountPerStack) stack.count = maxCountPerStack
         markDirty()
@@ -122,6 +134,9 @@ class CompressorBlockEntity(
 
         pullEnergyFromNeighbors(world, pos, sync)
 
+        // 从放电槽提取能量
+        extractFromDischargingSlot()
+
         val input = getStack(SLOT_INPUT)
         val recipe = CompressorRecipes.getRecipe(input) ?: run {
             if (sync.progress != 0) sync.progress = 0
@@ -169,6 +184,22 @@ class CompressorBlockEntity(
         if (state.get(CompressorBlock.ACTIVE) != active) {
             world.setBlockState(pos, state.with(CompressorBlock.ACTIVE, active))
         }
+    }
+
+    /**
+     * 从放电槽提取能量（如果需要）
+     */
+    private fun extractFromDischargingSlot() {
+        val space = (sync.getEffectiveCapacity() - sync.amount).coerceAtLeast(0L)
+        if (space <= 0L) return
+
+        val request = minOf(space, sync.getEffectiveMaxInsertPerTick())
+        val extracted = batteryDischarger.tick(request)
+        if (extracted <= 0L) return
+
+        sync.insertEnergy(extracted)
+        sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
+        markDirty()
     }
 }
 

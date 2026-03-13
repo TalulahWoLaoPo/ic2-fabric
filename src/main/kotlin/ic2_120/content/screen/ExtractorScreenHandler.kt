@@ -41,12 +41,19 @@ class ExtractorScreenHandler(
 
     private val inputSlotSpec = SlotSpec(canInsert = { stack -> stack.item !is IBatteryItem && stack.item !is IUpgradeItem })
     private val outputSlotSpec = SlotSpec(canInsert = { false }, canTake = { true })
+    private val dischargingSlotSpec = SlotSpec(
+        canInsert = { stack -> stack.item is IBatteryItem },
+        maxItemCount = 1
+    )
 
     init {
         checkSize(blockInventory, ExtractorBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
         addSlot(PredicateSlot(blockInventory, ExtractorBlockEntity.SLOT_INPUT, INPUT_SLOT_X, BLOCK_SLOTS_Y, inputSlotSpec))
         addSlot(PredicateSlot(blockInventory, ExtractorBlockEntity.SLOT_OUTPUT, OUTPUT_SLOT_X, BLOCK_SLOTS_Y, outputSlotSpec))
+        // 放电槽（第二行左侧）
+        addSlot(PredicateSlot(blockInventory, ExtractorBlockEntity.SLOT_DISCHARGING, INPUT_SLOT_X, BLOCK_SLOTS_Y + SLOT_SIZE, dischargingSlotSpec))
+        // 升级槽（右侧纵向）
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
             addSlot(
                 PredicateSlot(
@@ -79,6 +86,10 @@ class ExtractorScreenHandler(
                     if (!insertItem(stackInSlot, PLAYER_INV_START, HOTBAR_END, true)) return ItemStack.EMPTY
                     slot.onQuickTransfer(stackInSlot, stack)
                 }
+                index == SLOT_DISCHARGING_INDEX -> {
+                    if (!insertItem(stackInSlot, PLAYER_INV_START, HOTBAR_END, true)) return ItemStack.EMPTY
+                    slot.onQuickTransfer(stackInSlot, stack)
+                }
                 index in SLOT_UPGRADE_INDEX_START..SLOT_UPGRADE_INDEX_END -> {
                     if (!insertItem(stackInSlot, PLAYER_INV_START, HOTBAR_END, true)) return ItemStack.EMPTY
                     slot.onQuickTransfer(stackInSlot, stack)
@@ -87,9 +98,10 @@ class ExtractorScreenHandler(
                     val upgradeTargets = (SLOT_UPGRADE_INDEX_START..SLOT_UPGRADE_INDEX_END).map {
                         SlotTarget(slots[it], upgradeSlotSpec)
                     }
+                    val dischargingTarget = SlotTarget(slots[SLOT_DISCHARGING_INDEX], dischargingSlotSpec)
                     val moved = SlotMoveHelper.insertIntoTargets(
                         stackInSlot,
-                        listOf(SlotTarget(slots[SLOT_INPUT_INDEX], inputSlotSpec)) + upgradeTargets
+                        listOf(SlotTarget(slots[SLOT_INPUT_INDEX], inputSlotSpec), dischargingTarget) + upgradeTargets
                     )
                     if (!moved) return ItemStack.EMPTY
                 }
@@ -120,10 +132,11 @@ class ExtractorScreenHandler(
 
         const val SLOT_INPUT_INDEX = 0
         const val SLOT_OUTPUT_INDEX = 1
-        const val SLOT_UPGRADE_INDEX_START = 2
-        const val SLOT_UPGRADE_INDEX_END = 5
-        const val PLAYER_INV_START = 6
-        const val HOTBAR_END = 42
+        const val SLOT_DISCHARGING_INDEX = 2
+        const val SLOT_UPGRADE_INDEX_START = 3
+        const val SLOT_UPGRADE_INDEX_END = 6
+        const val PLAYER_INV_START = 7
+        const val HOTBAR_END = 43
 
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): ExtractorScreenHandler {
             val pos = buf.readBlockPos()

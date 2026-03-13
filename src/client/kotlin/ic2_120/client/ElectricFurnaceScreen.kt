@@ -69,6 +69,15 @@ class ElectricFurnaceScreen(
         val contentW = (backgroundWidth - 16).coerceAtLeast(0)
         val barW = (contentW - 36).coerceAtLeast(0)
 
+        // 在UI左侧绘制速度文本
+        val inputText = "输入 ${formatEu(inputRate)} EU/t"
+        val consumeText = "耗能 ${formatEu(consumeRate)} EU/t"
+        val inputTextWidth = inputText.length * 6
+        val consumeTextWidth = consumeText.length * 6
+        val textX = left - maxOf(inputTextWidth, consumeTextWidth) - 4  // 留4像素边距
+        context.drawText(textRenderer, inputText, textX, top + 8, 0xAAAAAA, false)
+        context.drawText(textRenderer, consumeText, textX, top + 20, 0xAAAAAA, false)
+
         ui.render(context, textRenderer, mouseX, mouseY) {
             Column(x = left + 8, y = top + 8, spacing = 6) {
                 Text(title.string, color = 0xFFFFFF)
@@ -89,11 +98,6 @@ class ElectricFurnaceScreen(
                 Text(
                     "$energy / $cap EU",
                     color = 0xCCCCCC,
-                    shadow = false
-                )
-                Text(
-                    "输入 ${formatEu(inputRate)} EU/t · 耗能 ${formatEu(consumeRate)} EU/t",
-                    color = 0xAAAAAA,
                     shadow = false
                 )
             }
