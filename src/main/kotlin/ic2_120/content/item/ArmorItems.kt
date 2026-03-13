@@ -1,17 +1,23 @@
 package ic2_120.content.item
 
 import ic2_120.Ic2_120
+import ic2_120.content.item.energy.IBatteryItem
+import ic2_120.content.item.energy.IElectricTool
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.annotation.ModItem
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
+import net.minecraft.entity.EquipmentSlot
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ArmorItem
 import net.minecraft.item.ArmorMaterial
 import net.minecraft.item.Item
+import net.minecraft.item.ItemStack
 import net.minecraft.recipe.Ingredient
 import net.minecraft.registry.Registries
 import net.minecraft.sound.SoundEvent
 import net.minecraft.sound.SoundEvents
 import net.minecraft.util.Identifier
+import net.minecraft.world.World
 
 
 //todo 橡胶靴每行走5格发电1EU 
@@ -375,7 +381,94 @@ class BronzeBoots : ArmorItem(BRONZE_ARMOR, ArmorItem.Type.BOOTS, FabricItemSett
  * TODO: 实现每行走 5 格发电 1EU 的功能
  */
 @ModItem(name = "rubber_boots", tab = CreativeTab.IC2_MATERIALS, group = "hazmat_armor")
-class RubberBoots : ArmorItem(RUBBER_ARMOR, ArmorItem.Type.BOOTS, FabricItemSettings().maxCount(1))
+class RubberBoots : ArmorItem(RUBBER_ARMOR, ArmorItem.Type.BOOTS, FabricItemSettings().maxCount(1)) {
+    companion object {
+        private const val WALK_ACC_KEY = "Ic2RubberBootsWalkAcc"
+        private const val LAST_X_KEY = "Ic2RubberBootsLastX"
+        private const val LAST_Z_KEY = "Ic2RubberBootsLastZ"
+        private const val DISTANCE_PER_EU = 5.0
+    }
+
+    /**
+     * 每 tick 触发的物品回调。
+     * 仅在服务端、且靴子实际穿在脚部时统计水平移动距离：
+     * - 每行走 5 格尝试发 1 EU
+     * - 发出的 EU 会优先充入玩家背包中的可充电物品
+     */
+    override fun inventoryTick(stack: ItemStack, world: World, entity: net.minecraft.entity.Entity, slot: Int, selected: Boolean) {
+        super.inventoryTick(stack, world, entity, slot, selected)
+        if (world.isClient) return
+
+        val player = entity as? PlayerEntity ?: return
+        if (player.getEquippedStack(EquipmentSlot.FEET) !== stack) return
+
+        val nbt = stack.orCreateNbt
+        val hasLastPos = nbt.contains(LAST_X_KEY) && nbt.contains(LAST_Z_KEY)
+        if (!hasLastPos) {
+            nbt.putDouble(LAST_X_KEY, player.x)
+            nbt.putDouble(LAST_Z_KEY, player.z)
+            return
+        }
+
+        val lastX = nbt.getDouble(LAST_X_KEY)
+        val lastZ = nbt.getDouble(LAST_Z_KEY)
+        val dx = player.x - lastX
+        val dz = player.z - lastZ
+        nbt.putDouble(LAST_X_KEY, player.x)
+        nbt.putDouble(LAST_Z_KEY, player.z)
+
+        if (!player.isOnGround) return
+        val segment = kotlin.math.sqrt(dx * dx + dz * dz)
+        if (segment <= 0.0 || segment > 2.0) return
+
+        var acc = nbt.getDouble(WALK_ACC_KEY) + segment
+        val toGenerate = kotlin.math.floor(acc / DISTANCE_PER_EU).toLong()
+        if (toGenerate <= 0L) {
+            nbt.putDouble(WALK_ACC_KEY, acc)
+            return
+        }
+
+        var remaining = toGenerate
+        remaining -= chargePlayerInventory(player, remaining)
+        acc -= (toGenerate - remaining) * DISTANCE_PER_EU
+        nbt.putDouble(WALK_ACC_KEY, acc.coerceAtLeast(0.0))
+    }
+
+    /**
+     * 将指定 EU 充入玩家物品栏，返回实际充入量。
+     * 支持：电池（IBatteryItem）与电动工具（IElectricTool）。
+     */
+    private fun chargePlayerInventory(player: PlayerEntity, eu: Long): Long {
+        var remaining = eu
+        var charged = 0L
+
+        fun chargeStack(target: ItemStack) {
+            if (remaining <= 0L || target.isEmpty) return
+            when (val item = target.item) {
+                is IBatteryItem -> {
+                    val accepted = item.charge(target, remaining)
+                    charged += accepted
+                    remaining -= accepted
+                }
+
+                is IElectricTool -> {
+                    val current = item.getEnergy(target)
+                    val canAccept = (item.maxCapacity - current).coerceAtLeast(0L)
+                    if (canAccept <= 0L) return
+                    val accepted = minOf(remaining, canAccept)
+                    item.setEnergy(target, current + accepted)
+                    charged += accepted
+                    remaining -= accepted
+                }
+            }
+        }
+
+        for (target in player.inventory.main) chargeStack(target)
+        for (target in player.inventory.offHand) chargeStack(target)
+        for (target in player.inventory.armor) chargeStack(target)
+        return charged
+    }
+}
 
 // ========== 防化服 (Hazmat Suit) ==========
 /**
