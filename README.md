@@ -71,14 +71,21 @@ ic2-fabric/
 
 详细的技术文档请查看 [docs/](docs/) 目录：
 
-- [类级别注解注册系统](docs/class_based_registry.md) - 使用注解和枚举的自动注册系统
+- [类级别注解注册系统](docs/CLASS_BASED_REGISTRY.md) - 使用注解和枚举的自动注册系统
 - [同步系统](docs/sync-system.md) - 客户端/服务端属性同步
+- [能量流同步](docs/energy-flow-sync.md) - 机器间能量流动与同步逻辑
+- [能量网络系统](docs/energy-network.md) - EU 能量传输与存储
+- [升级系统](docs/upgrade-system.md) - 机器升级与效果机制
+- [槽位规格系统](docs/slot-spec-system.md) - 机器 GUI 槽位定义与约束
+- [机器组合复用](docs/machine-composition-reuse.md) - 机器逻辑组合与可复用设计
+- [核电系统](docs/nuclear-power.md) - 核能相关机制与实现说明
+- [已实现物品清单](docs/item-implemented.md) - 当前已落地的物品列表
 - [ComposeUI 声明式 GUI](docs/compose-ui.md) - GUI 布局与绘制系统
 - [DrawContext 绘制方法参考](docs/drawcontext-methods.md) - 绘制 API 说明
 - [Assets 清单](docs/assets-inventory.md) - 模组方块/物品资源清单
 - [生物群系颜色方块](docs/biome-colored-blocks.md) - 实现随生物群系变色的方块
 - [方块变体系统](docs/block-variants.md) - 方块状态与模型变体
-- [能量网络系统](docs/energy-network.md) - EU 能量传输与存储
+- [唯一礼物物品防复制 TODO](docs/unique-gift-item-anti-dup-todo.md) - 防复制方案草案与待办
 
 ## 贡献
 
@@ -90,9 +97,11 @@ ic2-fabric/
 
 本项目是基于 IndustrialCraft 2（IC2）的逆向工程项目。IC2 原版模组**并非开源软件**，其源代码和资源未经官方授权公开使用。
 
+本仓库中 `src/main/resources/assets/ic2` 与 `src/main/resources/assets/minecraft` 目录下的资产（包括但不限于模型、纹理、语言文件、配方与相关数据）均为通过逆向分析方式整理得到，仅用于兼容性研究与技术验证，不代表获得任何 IC2 原项目、Minecraft 原项目或相关权利人的授权。
+
 本项目仅供**学习和研究目的**，不得用于商业用途。如果您是 IC2 的版权持有者并认为本项目侵犯了您的权益，请联系我们进行处理。
 
-使用本项目可能存在的法律风险由使用者自行承担。
+除法律另有强制性规定外，本仓库作者与贡献者不对使用、分发、修改或二次发布本项目所产生的任何直接或间接法律后果承担责任；使用者应自行确认其行为在所在司法辖区内的合法性并自行承担全部风险。
 
 ## 相关链接
 
