@@ -114,25 +114,25 @@ abstract class TransformerBlock : DirectionalMachineBlock() {
     }
 }
 
-@ModBlock(name = "lv_transformer", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "transformer")
+@ModBlock(name = "lv_transformer", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "transformer")
 class LvTransformerBlock : TransformerBlock() {
     override fun createTransformerBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =
         LvTransformerBlockEntity(pos, state)
 }
 
-@ModBlock(name = "mv_transformer", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "transformer")
+@ModBlock(name = "mv_transformer", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "transformer")
 class MvTransformerBlock : TransformerBlock() {
     override fun createTransformerBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =
         MvTransformerBlockEntity(pos, state)
 }
 
-@ModBlock(name = "hv_transformer", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "transformer")
+@ModBlock(name = "hv_transformer", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "transformer")
 class HvTransformerBlock : TransformerBlock() {
     override fun createTransformerBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =
         HvTransformerBlockEntity(pos, state)
 }
 
-@ModBlock(name = "ev_transformer", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "transformer")
+@ModBlock(name = "ev_transformer", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "transformer")
 class EvTransformerBlock : TransformerBlock() {
     override fun createTransformerBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =
         EvTransformerBlockEntity(pos, state)
