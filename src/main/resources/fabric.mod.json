@@ -28,6 +28,12 @@
 				"adapter": "kotlin"
 			}
 		],
+		"jei_mod_plugin": [
+			{
+				"value": "ic2_120.integration.jei.Ic2JeiPlugin",
+				"adapter": "kotlin"
+			}
+		],
 		"fabric-datagen": [
 			{
 				"value": "ic2_120.Ic2_120DataGenerator",

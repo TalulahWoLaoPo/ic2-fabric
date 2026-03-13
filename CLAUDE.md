@@ -14,8 +14,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 1. `/websites/fabricmc_net_develop` - Fabric 开发文档（优先，533 个代码示例，基准分 76.18）
 2. `/fabricmc/fabric-docs` - 官方精选文档（2274 个代码示例）
 3. `/techreborn/energy` - Tech Reborn Energy API（能量存储与传输，基于 Fabric Transfer API 与 API Lookup，36 个代码示例，基准分 81.2）
+4. `/mezz/justenoughitems` - JEI (Just Enough Items) 配方查看器 API（80 个代码示例，基准分 High）- 用于注册物品子类型、配方分类等
 
-使用方法：通过 context7 的 `query-docs` 工具查询上述库 ID，获取对应 API 的类、方法和示例代码。开发电力相关功能（熔炉充能、电缆、发电机等）时优先查询 `/techreborn/energy`。
+使用方法：通过 context7 的 `query-docs` 工具查询上述库 ID，获取对应 API 的类、方法和示例代码。开发电力相关功能（熔炉充能、电缆、发电机等）时优先查询 `/techreborn/energy`。开发 JEI 集成（如显示不同电量的物品变体）时查询 `/mezz/justenoughitems`。
 
 ## 架构
 

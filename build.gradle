@@ -16,6 +16,7 @@ repositories {
 		dir 'libs'
 	}
 	// maven { url "https://maven.fabricmc.net/" }
+	maven { url "https://maven.blamejared.com/" } // JEI
 }
 
 loom {
@@ -57,6 +58,9 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
 	// Team Reborn Energy API（电力熔炉等与电缆/发电机互通）
 	modApi "teamreborn:energy:${project.energy_api_version}"
+	// compile against JEI API in intermediary namespace for Yarn dev env
+	modCompileOnlyApi("mezz.jei:jei-${project.minecraft_version}-common-api-intermediary:${project.jei_version}")
+	// runtime JEI is loaded from run/mods to avoid classpath mapping conflicts in dev
 }
 
 processResources {
