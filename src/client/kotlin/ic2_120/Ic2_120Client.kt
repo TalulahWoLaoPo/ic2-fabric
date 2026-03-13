@@ -11,6 +11,7 @@ import ic2_120.client.RubberLeavesColorProvider
 import ic2_120.client.RubberLogModelPlugin
 import ic2_120.client.StorageBoxColorProvider
 import ic2_120.client.ClientBlockEntityRenderers
+import ic2_120.client.NightVisionKeybinds
 import ic2_120.client.network.NetworkManager
 import net.fabricmc.api.ClientModInitializer
 
@@ -26,6 +27,7 @@ object Ic2_120Client : ClientModInitializer {
 
 		// 注册网络管理器
 		NetworkManager.register()
+		NightVisionKeybinds.register()
 
 		// 注册储物箱着色器
 		StorageBoxColorProvider.register()

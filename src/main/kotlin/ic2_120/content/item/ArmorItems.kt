@@ -2,6 +2,7 @@ package ic2_120.content.item
 
 import ic2_120.Ic2_120
 import ic2_120.content.effect.ModStatusEffects
+import ic2_120.content.item.energy.IBatteryItem
 import ic2_120.content.item.energy.chargePlayerInventory
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.annotation.ModItem
@@ -17,12 +18,14 @@ import net.minecraft.registry.Registries
 import net.minecraft.sound.SoundEvent
 import net.minecraft.sound.SoundEvents
 import net.minecraft.entity.effect.StatusEffectInstance
+import net.minecraft.entity.effect.StatusEffects
+import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 
 
-//todo 橡胶靴每行走5格发电1EU 
 //todo 全套防化服，防化三件套加橡胶靴 可免疫特斯拉线圈伤害 可免疫触电伤害，只要有单个防化头盔，物品栏有压缩空气单元，就可以在气泡值用尽时消耗压缩空气单元回满
 //todo 
 
@@ -356,6 +359,22 @@ private val CF_PACK_ARMOR = createArmorMaterial(
     repairIngredient = carbonFibre
 )
 
+private val NIGHT_VISION_ARMOR = createArmorMaterial(
+    name = "ic2_night_vision",
+    durabilityMultiplier = 5,
+    protection = mapOf(
+        ArmorItem.Type.HELMET to 1,
+        ArmorItem.Type.CHESTPLATE to 0,
+        ArmorItem.Type.LEGGINGS to 0,
+        ArmorItem.Type.BOOTS to 0
+    ),
+    enchantability = 10,
+    equipSound = SoundEvents.ITEM_ARMOR_EQUIP_LEATHER,
+    toughness = 0f,
+    knockbackResistance = 0f,
+    repairIngredient = carbonFibre
+)
+
 // ========== 护甲类实现 ==========
 
 // ========== 青铜护甲套装 (Bronze Armor Set) ==========
@@ -594,7 +613,91 @@ class ElectricJetpack : ArmorItem(JETPACK_ARMOR, ArmorItem.Type.CHESTPLATE, Fabr
  * 提供夜视效果的头戴式装备。
  */
 @ModItem(name = "night_vision_goggles", tab = CreativeTab.IC2_MATERIALS, group = "armor")
-class NightVisionGoggles : Item(FabricItemSettings().maxCount(1))
+class NightVisionGoggles : ArmorItem(NIGHT_VISION_ARMOR, ArmorItem.Type.HELMET, FabricItemSettings().maxCount(1)), IBatteryItem {
+    override val tier: Int = 2
+    override val maxCapacity: Long = 100_000L
+    override val transferSpeed: Int = 128
+    override val canChargeWireless: Boolean = false
+
+    companion object {
+        private const val ENERGY_KEY = "Energy"
+        private const val ENABLED_KEY = "NightVisionEnabled"
+        private const val ENERGY_PER_TICK = 1L
+        private const val BLINDNESS_DURATION_TICKS = 80
+        private const val NIGHT_VISION_DURATION_TICKS = 220
+
+        fun toggleEnabled(stack: ItemStack): Boolean {
+            val nbt = stack.orCreateNbt
+            val enabled = !nbt.getBoolean(ENABLED_KEY)
+            nbt.putBoolean(ENABLED_KEY, enabled)
+            return enabled
+        }
+    }
+
+    override fun getCurrentCharge(stack: ItemStack): Long = stack.orCreateNbt.getLong(ENERGY_KEY)
+
+    override fun setCurrentCharge(stack: ItemStack, charge: Long) {
+        stack.orCreateNbt.putLong(ENERGY_KEY, charge.coerceIn(0L, maxCapacity))
+    }
+
+    private fun isEnabled(stack: ItemStack): Boolean = stack.orCreateNbt.getBoolean(ENABLED_KEY)
+
+    override fun inventoryTick(stack: ItemStack, world: World, entity: net.minecraft.entity.Entity, slot: Int, selected: Boolean) {
+        super.inventoryTick(stack, world, entity, slot, selected)
+        if (world.isClient) return
+        val player = entity as? PlayerEntity ?: return
+        if (player.getEquippedStack(EquipmentSlot.HEAD) !== stack) return
+        if (!isEnabled(stack)) return
+
+        val energy = getCurrentCharge(stack)
+        if (energy < ENERGY_PER_TICK) {
+            setCurrentCharge(stack, 0)
+            player.removeStatusEffect(StatusEffects.NIGHT_VISION)
+            return
+        }
+
+        setCurrentCharge(stack, energy - ENERGY_PER_TICK)
+        val brightness = world.getLightLevel(player.blockPos)
+        if (brightness >= 8) {
+            player.removeStatusEffect(StatusEffects.NIGHT_VISION)
+            val blind = player.getStatusEffect(StatusEffects.BLINDNESS)
+            if (blind == null || blind.duration <= 0) {
+                player.addStatusEffect(
+                    StatusEffectInstance(StatusEffects.BLINDNESS, BLINDNESS_DURATION_TICKS, 0, true, false, true)
+                )
+            }
+        } else {
+            player.addStatusEffect(
+                StatusEffectInstance(StatusEffects.NIGHT_VISION, NIGHT_VISION_DURATION_TICKS, 0, true, false, true)
+            )
+        }
+    }
+
+    override fun appendTooltip(
+        stack: ItemStack,
+        world: World?,
+        tooltip: MutableList<Text>,
+        context: net.minecraft.client.item.TooltipContext
+    ) {
+        super.appendTooltip(stack, world, tooltip, context)
+        val energy = getCurrentCharge(stack)
+        val ratio = if (maxCapacity > 0) energy.toDouble() / maxCapacity else 0.0
+        val status = if (isEnabled(stack)) "ON" else "OFF"
+        tooltip.add(Text.literal("⚡ %,d / %,d EU (%.1f%%)".format(energy, maxCapacity, ratio * 100)))
+        tooltip.add(Text.literal("等级: $tier | 状态: $status").formatted(Formatting.GRAY))
+    }
+
+    override fun isItemBarVisible(stack: ItemStack): Boolean = true
+    override fun getItemBarStep(stack: ItemStack): Int = ((getCurrentCharge(stack).toDouble() / maxCapacity) * 13).toInt().coerceIn(0, 13)
+    override fun getItemBarColor(stack: ItemStack): Int {
+        val ratio = getCurrentCharge(stack).toDouble() / maxCapacity
+        return when {
+            ratio > 0.5 -> 0x4AFF4A
+            ratio > 0.2 -> 0xFFFF4A
+            else -> 0xFF4A4A
+        }
+    }
+}
 
 /**
  * 电池背包 (BatPack)

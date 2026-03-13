@@ -417,6 +417,10 @@
   "item.ic2_120.advanced_batpack": "Advanced BatPack",
   "item.ic2_120.energy_pack": "Energy Pack",
   "item.ic2_120.lappack": "Lapotron Pack",
+  "message.ic2_120.night_vision_goggles.enabled": "Night vision enabled",
+  "message.ic2_120.night_vision_goggles.disabled": "Night vision disabled",
+  "key.ic2_120.night_vision_toggle": "Toggle Night Vision Goggles",
+  "category.ic2_120.ic2": "IC2",
   "effect.ic2_120.solar_generating": "Solar Charging",
   "effect.ic2_120.solar_generating.description": "Solar helmet is generating 1 EU/t"
 }

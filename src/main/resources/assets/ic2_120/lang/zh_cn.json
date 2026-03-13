@@ -417,6 +417,10 @@
   "item.ic2_120.advanced_batpack": "高级电池背包",
   "item.ic2_120.energy_pack": "能量背包",
   "item.ic2_120.lappack": "兰波顿背包",
+  "message.ic2_120.night_vision_goggles.enabled": "夜视仪已开启",
+  "message.ic2_120.night_vision_goggles.disabled": "夜视仪已关闭",
+  "key.ic2_120.night_vision_toggle": "切换夜视仪",
+  "category.ic2_120.ic2": "IC2",
   "effect.ic2_120.solar_generating": "正在发电",
   "effect.ic2_120.solar_generating.description": "太阳能头盔正在输出 1 EU/t"
 }
