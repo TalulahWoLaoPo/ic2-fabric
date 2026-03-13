@@ -7,6 +7,7 @@ import ic2_120.content.block.ReactorChamberEnergyProvider
 import ic2_120.content.block.energy.EnergyNetworkManager
 import ic2_120.content.fluid.ModFluids
 import ic2_120.content.network.NetworkManager
+import ic2_120.content.effect.ModStatusEffects
 import ic2_120.content.worldgen.OreGeneration
 import ic2_120.content.worldgen.RubberTreeGeneration
 import ic2_120.content.item.CellAndBucketFluidRegistration
@@ -50,6 +51,8 @@ object Ic2_120 : ModInitializer {
     private val logger = LoggerFactory.getLogger(MOD_ID)
 
     override fun onInitialize() {
+        ModStatusEffects.register()
+
         // 流体需在 ClassScanner 之前注册（流体、方块、桶）
         ModFluids.register()
 

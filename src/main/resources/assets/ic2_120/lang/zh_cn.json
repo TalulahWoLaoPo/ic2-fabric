@@ -300,7 +300,6 @@
   "item.ic2_120.biofuel_bucket": "生物燃料桶",
   "item.ic2_120.biomass_bucket": "生物质桶",
   "item.ic2_120.construct_foam_bucket": "建筑泡沫桶",
-  "item.ic2_120.coolant_bucket": "冷却液桶",
   "item.ic2_120.cf_powder": "建筑泡沫粉",
   "item.ic2_120.pellet": "建筑泡沫颗粒",
   "item.ic2_120.overclocker_upgrade": "超频升级",
@@ -417,5 +416,7 @@
   "item.ic2_120.batpack": "电池背包",
   "item.ic2_120.advanced_batpack": "高级电池背包",
   "item.ic2_120.energy_pack": "能量背包",
-  "item.ic2_120.lappack": "兰波顿背包"
+  "item.ic2_120.lappack": "兰波顿背包",
+  "effect.ic2_120.solar_generating": "正在发电",
+  "effect.ic2_120.solar_generating.description": "太阳能头盔正在输出 1 EU/t"
 }

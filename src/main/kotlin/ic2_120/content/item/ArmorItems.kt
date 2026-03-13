@@ -1,8 +1,8 @@
 package ic2_120.content.item
 
 import ic2_120.Ic2_120
-import ic2_120.content.item.energy.IBatteryItem
-import ic2_120.content.item.energy.IElectricTool
+import ic2_120.content.effect.ModStatusEffects
+import ic2_120.content.item.energy.chargePlayerInventory
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.annotation.ModItem
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
@@ -16,7 +16,9 @@ import net.minecraft.recipe.Ingredient
 import net.minecraft.registry.Registries
 import net.minecraft.sound.SoundEvent
 import net.minecraft.sound.SoundEvents
+import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 
 
@@ -438,36 +440,6 @@ class RubberBoots : ArmorItem(RUBBER_ARMOR, ArmorItem.Type.BOOTS, FabricItemSett
      * 将指定 EU 充入玩家物品栏，返回实际充入量。
      * 支持：电池（IBatteryItem）与电动工具（IElectricTool）。
      */
-    private fun chargePlayerInventory(player: PlayerEntity, eu: Long): Long {
-        var remaining = eu
-        var charged = 0L
-
-        fun chargeStack(target: ItemStack) {
-            if (remaining <= 0L || target.isEmpty) return
-            when (val item = target.item) {
-                is IBatteryItem -> {
-                    val accepted = item.charge(target, remaining)
-                    charged += accepted
-                    remaining -= accepted
-                }
-
-                is IElectricTool -> {
-                    val current = item.getEnergy(target)
-                    val canAccept = (item.maxCapacity - current).coerceAtLeast(0L)
-                    if (canAccept <= 0L) return
-                    val accepted = minOf(remaining, canAccept)
-                    item.setEnergy(target, current + accepted)
-                    charged += accepted
-                    remaining -= accepted
-                }
-            }
-        }
-
-        for (target in player.inventory.main) chargeStack(target)
-        for (target in player.inventory.offHand) chargeStack(target)
-        for (target in player.inventory.armor) chargeStack(target)
-        return charged
-    }
 }
 
 // ========== 防化服 (Hazmat Suit) ==========
@@ -532,7 +504,55 @@ class QuantumBoots : ArmorItem(QUANTUM_ARMOR, ArmorItem.Type.BOOTS, FabricItemSe
  * 可在日光下自动为玩家装备中的电池物品充电的头盔。
  */
 @ModItem(name = "solar_helmet", tab = CreativeTab.IC2_MATERIALS, group = "solar_armor")
-class SolarHelmet : ArmorItem(SOLAR_ARMOR, ArmorItem.Type.HELMET, FabricItemSettings().maxCount(1))
+class SolarHelmet : ArmorItem(SOLAR_ARMOR, ArmorItem.Type.HELMET, FabricItemSettings().maxCount(1)) {
+    companion object {
+        private const val EU_PER_TICK = 1L
+    }
+
+    override fun inventoryTick(stack: ItemStack, world: World, entity: net.minecraft.entity.Entity, slot: Int, selected: Boolean) {
+        super.inventoryTick(stack, world, entity, slot, selected)
+        if (world.isClient) return
+
+        val player = entity as? PlayerEntity ?: return
+        if (player.getEquippedStack(EquipmentSlot.HEAD) !== stack) {
+            player.removeStatusEffect(ModStatusEffects.SOLAR_GENERATING)
+            return
+        }
+
+        val generating = canGenerate(world, player)
+        if (!generating) {
+            player.removeStatusEffect(ModStatusEffects.SOLAR_GENERATING)
+            return
+        }
+
+        chargePlayerInventory(player, EU_PER_TICK)
+        player.addStatusEffect(
+            StatusEffectInstance(
+                ModStatusEffects.SOLAR_GENERATING,
+                40,
+                0,
+                true,
+                false,
+                true
+            )
+        )
+    }
+
+    private fun canGenerate(world: World, player: PlayerEntity): Boolean {
+        if (!world.isDay) return false
+        val startY = player.blockY + 1
+        val topY = world.topY
+        val mutablePos = BlockPos.Mutable(player.blockX, startY, player.blockZ)
+        for (y in startY..topY) {
+            mutablePos.set(player.blockX, y, player.blockZ)
+            val state = world.getBlockState(mutablePos)
+            if (!state.isAir && !state.isTransparent(world, mutablePos)) {
+                return false
+            }
+        }
+        return true
+    }
+}
 
 // ========== 复合胸甲 (Alloy Chestplate) ==========
 /**
