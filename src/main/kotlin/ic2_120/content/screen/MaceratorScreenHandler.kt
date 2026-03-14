@@ -3,8 +3,10 @@ package ic2_120.content.screen
 import ic2_120.content.sync.MaceratorSync
 import ic2_120.content.block.MaceratorBlock
 import ic2_120.content.block.machines.MaceratorBlockEntity
+import ic2_120.content.item.IUpgradeItem
 import ic2_120.content.item.energy.IBatteryItem
 import ic2_120.content.screen.slot.PredicateSlot
+import ic2_120.content.screen.slot.UpgradeSlotLayout
 import ic2_120.content.screen.slot.SlotMoveHelper
 import ic2_120.content.screen.slot.SlotSpec
 import ic2_120.content.screen.slot.SlotTarget
@@ -33,14 +35,43 @@ class MaceratorScreenHandler(
 
     val sync = MaceratorSync(SyncedDataView(propertyDelegate))
 
+    private val upgradeSlotSpec: SlotSpec by lazy {
+        UpgradeSlotLayout.slotSpec { context.get({ world, pos -> world.getBlockEntity(pos) }, null) }
+    }
+
     init {
         checkSize(blockInventory, MaceratorBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
 
         // 机器槽位
         addSlot(PredicateSlot(blockInventory, MaceratorBlockEntity.SLOT_INPUT, INPUT_SLOT_X, INPUT_SLOT_Y, INPUT_SLOT_SPEC))
+
+        // 左下：放电槽（放置电池）
+        addSlot(
+            PredicateSlot(
+                blockInventory,
+                MaceratorBlockEntity.SLOT_DISCHARGING,
+                DISCHARGING_SLOT_X,
+                DISCHARGING_SLOT_Y,
+                DISCHARGING_SLOT_SPEC
+            )
+        )
+
+        // 中间右侧：输出槽
         addSlot(PredicateSlot(blockInventory, MaceratorBlockEntity.SLOT_OUTPUT, OUTPUT_SLOT_X, OUTPUT_SLOT_Y, OUTPUT_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, MaceratorBlockEntity.SLOT_DISCHARGING, DISCHARGING_SLOT_X, DISCHARGING_SLOT_Y, DISCHARGING_SLOT_SPEC))
+
+        // 最右侧：4 个升级槽（纵向排列，紧贴原版 UI 右侧）
+        for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
+            addSlot(
+                PredicateSlot(
+                    blockInventory,
+                    MaceratorBlockEntity.SLOT_UPGRADE_INDICES[i],
+                    UpgradeSlotLayout.SLOT_X,
+                    UpgradeSlotLayout.slotY(i),
+                    upgradeSlotSpec
+                )
+            )
+        }
 
         // 玩家物品栏
         for (row in 0 until 3) {
@@ -70,15 +101,23 @@ class MaceratorScreenHandler(
                     if (!insertItem(stackInSlot, PLAYER_INV_START, HOTBAR_END, true)) return ItemStack.EMPTY
                     slot.onQuickTransfer(stackInSlot, stack)
                 }
+                // 升级槽 -> 玩家物品栏
+                in SLOT_UPGRADE_INDEX_START..SLOT_UPGRADE_INDEX_END -> {
+                    if (!insertItem(stackInSlot, PLAYER_INV_START, HOTBAR_END, true)) return ItemStack.EMPTY
+                    slot.onQuickTransfer(stackInSlot, stack)
+                }
                 else -> {
                     if (index in PLAYER_INV_START..HOTBAR_END) {
-                        // 玩家物品栏 -> 机器
+                        // 玩家物品栏 -> 机器（放电 -> 输入 -> 升级槽）
+                        val upgradeTargets = (SLOT_UPGRADE_INDEX_START..SLOT_UPGRADE_INDEX_END).map {
+                            SlotTarget(slots[it], upgradeSlotSpec)
+                        }
                         val moved = SlotMoveHelper.insertIntoTargets(
                             stackInSlot,
                             listOf(
                                 SlotTarget(slots[SLOT_DISCHARGING_INDEX], DISCHARGING_SLOT_SPEC),
                                 SlotTarget(slots[SLOT_INPUT_INDEX], INPUT_SLOT_SPEC)
-                            )
+                            ) + upgradeTargets
                         )
                         if (!moved) {
                             return ItemStack.EMPTY
@@ -107,38 +146,40 @@ class MaceratorScreenHandler(
         // 机器槽位位置
         const val INPUT_SLOT_X = 56
         const val INPUT_SLOT_Y = 35
-        const val OUTPUT_SLOT_X = 116
-        const val OUTPUT_SLOT_Y = 35
+
         const val DISCHARGING_SLOT_X = 56
         const val DISCHARGING_SLOT_Y = 59
+
+        const val OUTPUT_SLOT_X = 116
+        const val OUTPUT_SLOT_Y = 47
+
+        const val SLOT_SIZE = 18
+        private val INPUT_SLOT_SPEC = SlotSpec(
+            // 避免电池被误放入加工输入槽，优先进入放电槽。
+            canInsert = { stack -> stack.item !is IBatteryItem }
+        )
+        private val DISCHARGING_SLOT_SPEC = SlotSpec(
+            maxItemCount = 1,
+            canInsert = { stack -> stack.item is IBatteryItem }
+        )
+        private val OUTPUT_SLOT_SPEC = SlotSpec(
+            canInsert = { false },
+            canTake = { true }
+        )
 
         // 玩家物品栏位置
         const val PLAYER_INV_X = 8
         const val PLAYER_INV_Y = 108
         const val HOTBAR_Y = 166
 
-        // 槽位大小
-        const val SLOT_SIZE = 18
-
-        // 槽位规范
-        private val INPUT_SLOT_SPEC = SlotSpec(
-            canInsert = { stack -> stack.item !is IBatteryItem }
-        )
-        private val OUTPUT_SLOT_SPEC = SlotSpec(
-            canInsert = { false },
-            canTake = { true }
-        )
-        private val DISCHARGING_SLOT_SPEC = SlotSpec(
-            maxItemCount = 1,
-            canInsert = { stack -> stack.item is IBatteryItem }
-        )
-
         // 槽位索引常量
         const val SLOT_INPUT_INDEX = 0
-        const val SLOT_OUTPUT_INDEX = 1
-        const val SLOT_DISCHARGING_INDEX = 2
-        const val PLAYER_INV_START = 3
-        const val HOTBAR_END = 39
+        const val SLOT_DISCHARGING_INDEX = 1
+        const val SLOT_OUTPUT_INDEX = 2
+        const val SLOT_UPGRADE_INDEX_START = 3
+        const val SLOT_UPGRADE_INDEX_END = 6
+        const val PLAYER_INV_START = 7
+        const val HOTBAR_END = 43
 
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): MaceratorScreenHandler {
             val pos = buf.readBlockPos()

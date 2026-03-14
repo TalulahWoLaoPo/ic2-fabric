@@ -3,8 +3,14 @@ package ic2_120.content.block.machines
 import ic2_120.content.recipes.MaceratorRecipes
 import ic2_120.content.sync.MaceratorSync
 import ic2_120.content.ModBlockEntities
-import ic2_120.content.pullEnergyFromNeighbors
 import ic2_120.content.energy.charge.BatteryDischargerComponent
+import ic2_120.content.upgrade.EnergyStorageUpgradeComponent
+import ic2_120.content.upgrade.IEnergyStorageUpgradeSupport
+import ic2_120.content.upgrade.IOverclockerUpgradeSupport
+import ic2_120.content.upgrade.OverclockerUpgradeComponent
+import ic2_120.content.upgrade.ITransformerUpgradeSupport
+import ic2_120.content.upgrade.TransformerUpgradeComponent
+import ic2_120.content.pullEnergyFromNeighbors
 import ic2_120.content.block.MaceratorBlock
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.screen.MaceratorScreenHandler
@@ -33,28 +39,44 @@ class MaceratorBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, ITieredMachine, net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
+) : BlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport, IEnergyStorageUpgradeSupport,
+    ITransformerUpgradeSupport, net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
 
     override val tier: Int = MACERATOR_TIER
+
+    override var speedMultiplier: Float = 1f
+    override var energyMultiplier: Float = 1f
+    override var capacityBonus: Long = 0L
+    override var voltageTierBonus: Int = 0
 
     companion object {
         const val MACERATOR_TIER = 1
         const val SLOT_INPUT = 0
         const val SLOT_OUTPUT = 1
         const val SLOT_DISCHARGING = 2
-        const val INVENTORY_SIZE = 3
+        const val SLOT_UPGRADE_0 = 3
+        const val SLOT_UPGRADE_1 = 4
+        const val SLOT_UPGRADE_2 = 5
+        const val SLOT_UPGRADE_3 = 6
+        val SLOT_UPGRADE_INDICES = intArrayOf(SLOT_UPGRADE_0, SLOT_UPGRADE_1, SLOT_UPGRADE_2, SLOT_UPGRADE_3)
+        const val INVENTORY_SIZE = 7
     }
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
 
     val syncedData = SyncedData(this)
     @RegisterEnergy
-    val sync = MaceratorSync(syncedData) { world?.time }
+    val sync = MaceratorSync(
+        syncedData,
+        { world?.time },
+        { capacityBonus },
+        { TransformerUpgradeComponent.maxInsertForTier(MACERATOR_TIER + voltageTierBonus) }
+    )
     private val batteryDischarger = BatteryDischargerComponent(
         inventory = this,
         batterySlot = SLOT_DISCHARGING,
         machineTierProvider = { MACERATOR_TIER },
-        canDischargeNow = { sync.amount < MaceratorSync.ENERGY_CAPACITY }
+        canDischargeNow = { sync.amount < sync.getEffectiveCapacity() }
     )
 
     constructor(pos: BlockPos, state: BlockState) : this(
@@ -110,7 +132,13 @@ class MaceratorBlockEntity(
         if (world.isClient) return
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
 
-        // 从相邻方块或物品栏电池提取能量
+        // 应用升级效果（加速、储能、高压等）
+        OverclockerUpgradeComponent.apply(this, SLOT_UPGRADE_INDICES, this)
+        EnergyStorageUpgradeComponent.apply(this, SLOT_UPGRADE_INDICES, this)
+        TransformerUpgradeComponent.apply(this, SLOT_UPGRADE_INDICES, this)
+        sync.energyCapacity = sync.getEffectiveCapacity().toInt().coerceIn(0, Int.MAX_VALUE)
+
+        // 从相邻方块或导线提取能量（maxPull 随高压升级提高）
         pullEnergyFromNeighbors(world, pos, sync)
 
         // 从放电槽提取能量
@@ -128,7 +156,7 @@ class MaceratorBlockEntity(
             sync.syncCurrentTickFlow()
             return
         }
-        val outputSlot = getStack(1)
+        val outputSlot = getStack(SLOT_OUTPUT)
         val maxStack = result.maxCount
         val canAccept = outputSlot.isEmpty() ||
             (ItemStack.areItemsEqual(outputSlot, result) && outputSlot.count + result.count <= maxStack)
@@ -141,7 +169,7 @@ class MaceratorBlockEntity(
 
         if (sync.progress >= MaceratorSync.PROGRESS_MAX) {
             input.decrement(1)
-            if (outputSlot.isEmpty()) setStack(1, result)
+            if (outputSlot.isEmpty()) setStack(SLOT_OUTPUT, result)
             else outputSlot.increment(result.count)
             sync.progress = 0
             markDirty()
@@ -149,10 +177,11 @@ class MaceratorBlockEntity(
             return
         }
 
-        val need = MaceratorSync.ENERGY_PER_TICK
+        val progressIncrement = speedMultiplier.toInt().coerceAtLeast(1)
+        val need = (MaceratorSync.ENERGY_PER_TICK * energyMultiplier).toLong().coerceAtLeast(1L)
         if (sync.consumeEnergy(need) > 0L) {
             sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
-            sync.progress += 1
+            sync.progress += progressIncrement
             markDirty()
         }
 
@@ -166,10 +195,10 @@ class MaceratorBlockEntity(
      * 从放电槽提取能量（如果需要）
      */
     private fun extractFromDischargingSlot() {
-        val space = (MaceratorSync.ENERGY_CAPACITY - sync.amount).coerceAtLeast(0L)
+        val space = (sync.getEffectiveCapacity() - sync.amount).coerceAtLeast(0L)
         if (space <= 0L) return
 
-        val request = minOf(space, MaceratorSync.MAX_INSERT)
+        val request = minOf(space, sync.getEffectiveMaxInsertPerTick())
         val extracted = batteryDischarger.tick(request)
         if (extracted <= 0L) return
 

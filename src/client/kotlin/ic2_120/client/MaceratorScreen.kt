@@ -7,6 +7,7 @@ import ic2_120.client.ui.ProgressBar
 import ic2_120.content.sync.MaceratorSync
 import ic2_120.content.block.MaceratorBlock
 import ic2_120.content.screen.MaceratorScreenHandler
+import ic2_120.content.screen.slot.UpgradeSlotLayout
 import ic2_120.registry.annotation.ModScreen
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.ingame.HandledScreen
@@ -25,6 +26,7 @@ class MaceratorScreen(
     init {
         backgroundWidth = PANEL_WIDTH
         backgroundHeight = PANEL_HEIGHT
+        titleY = 4
     }
 
     override fun drawBackground(context: DrawContext, delta: Float, mouseX: Int, mouseY: Int) {
@@ -35,13 +37,26 @@ class MaceratorScreen(
             MaceratorScreenHandler.HOTBAR_Y,
             MaceratorScreenHandler.SLOT_SIZE
         )
+
         val borderColor = GuiBackground.BORDER_COLOR
         val slotSize = MaceratorScreenHandler.SLOT_SIZE
         val borderOffset = 1
-        val inputSlot = handler.slots[0]
-        val outputSlot = handler.slots[1]
+
+        // 绘制所有机器槽位的边框
+        val inputSlot = handler.slots[MaceratorScreenHandler.SLOT_INPUT_INDEX]
+        val dischargingSlot = handler.slots[MaceratorScreenHandler.SLOT_DISCHARGING_INDEX]
+        val outputSlot = handler.slots[MaceratorScreenHandler.SLOT_OUTPUT_INDEX]
+
         context.drawBorder(x + inputSlot.x - borderOffset, y + inputSlot.y - borderOffset, slotSize, slotSize, borderColor)
+        context.drawBorder(x + dischargingSlot.x - borderOffset, y + dischargingSlot.y - borderOffset, slotSize, slotSize, borderColor)
         context.drawBorder(x + outputSlot.x - borderOffset, y + outputSlot.y - borderOffset, slotSize, slotSize, borderColor)
+
+        // 绘制升级槽的边框
+        for (i in MaceratorScreenHandler.SLOT_UPGRADE_INDEX_START..MaceratorScreenHandler.SLOT_UPGRADE_INDEX_END) {
+            val slot = handler.slots[i]
+            context.drawBorder(x + slot.x - borderOffset, y + slot.y - borderOffset, slotSize, slotSize, borderColor)
+        }
+
         val progress = handler.sync.progress.coerceIn(0, MaceratorSync.PROGRESS_MAX)
         val progressFrac = if (MaceratorSync.PROGRESS_MAX > 0) (progress.toFloat() / MaceratorSync.PROGRESS_MAX).coerceIn(0f, 1f) else 0f
         val barX = x + inputSlot.x + slotSize + 2
@@ -58,7 +73,7 @@ class MaceratorScreen(
         val energy = handler.sync.energy.toLong().coerceAtLeast(0)
         val inputRate = handler.sync.getSyncedInsertedAmount()
         val consumeRate = handler.sync.getSyncedConsumedAmount()
-        val cap = MaceratorSync.ENERGY_CAPACITY
+        val cap = handler.sync.energyCapacity.toLong().coerceAtLeast(1)
         val energyFraction = if (cap > 0) (energy.toFloat() / cap).coerceIn(0f, 1f) else 0f
         val contentW = (backgroundWidth - 16).coerceAtLeast(0)
         val barW = (contentW - 36).coerceAtLeast(0)
@@ -103,8 +118,9 @@ class MaceratorScreen(
         ui.mouseClicked(mouseX, mouseY, button) || super.mouseClicked(mouseX, mouseY, button)
 
     companion object {
-        private const val PANEL_WIDTH = 176
-        private const val PANEL_HEIGHT = 166
+        /** 原版 UI 宽度 + 升级槽列宽度 */
+        private val PANEL_WIDTH = UpgradeSlotLayout.VANILLA_UI_WIDTH + UpgradeSlotLayout.SLOT_SPACING
+        private const val PANEL_HEIGHT = 184
     }
 
     private fun formatEu(value: Long): String {
