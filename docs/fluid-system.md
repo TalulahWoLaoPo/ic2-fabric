@@ -130,6 +130,18 @@
 - 升级驱动参与逻辑闭环（provider/receiver + NBT 过滤）。
 - `SolarDistiller` 接入。
 
+## 10. 事务约束（排障记录）
+
+Fabric Transfer 的 `Transaction.openOuter()` 在同一线程上不允许嵌套开启“外层事务”。
+
+结论：
+- 物品/方块自定义交互逻辑里，不要用“全局外层事务对象”作为哨兵。
+- 任何 `Storage.insert/extract` 实现都应直接使用调用方传入的 `TransactionContext`。
+- 与第三方模组（例如 AE2）交互时，优先走标准 `FluidStorage` 能力路径，避免额外拦截层重复开事务。
+
+备注：
+- 本仓库已修复一次由全局事务泄漏导致的跨模组流体交互崩溃（表现为“outer transaction already active”）。
+
 待扩展：
 - 将 `IFluidPipeUpgradeSupport` 扩展到更多流体机器（Geo/Water/OreWashing 等）。
 - Jade 管道实时流量与停机原因渲染。

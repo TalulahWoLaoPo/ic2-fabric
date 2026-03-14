@@ -11,6 +11,13 @@ import net.minecraft.util.Identifier
 object FluidPipeUpgradeComponent {
     private const val NBT_FILTER = "PipeFluidFilter"
 
+    /**
+     * 统一入口：机器同时具备 Inventory 与 IFluidPipeUpgradeSupport 时，按升级槽应用流体管道升级。
+     */
+    fun <T> apply(machine: T, upgradeSlotIndices: IntArray) where T : Inventory, T : IFluidPipeUpgradeSupport {
+        apply(machine as Inventory, upgradeSlotIndices, machine as Any)
+    }
+
     fun apply(inventory: Inventory, upgradeSlotIndices: IntArray, machine: Any) {
         if (machine !is IFluidPipeUpgradeSupport) return
 

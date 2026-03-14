@@ -50,7 +50,7 @@
 | `TransformerUpgrade` | `ITransformerUpgradeSupport` | 提高电压等级，增加输入速度 |
 | `EnergyStorageUpgrade` | `IEnergyStorageUpgradeSupport` | 增加能量缓冲容量 |
 | `RedstoneInverterUpgrade` | `IRedstoneInverterUpgradeSupport` | 红石反转（待实现） |
-| `EjectorUpgrade` / `AdvancedEjectorUpgrade` / `PullingUpgrade` / `AdvancedPullingUpgrade` / `FluidEjectorUpgrade` / `FluidPullingUpgrade` | `IEjectorUpgradeSupport` | 弹出/抽入（待实现） |
+| `EjectorUpgrade` / `AdvancedEjectorUpgrade` / `PullingUpgrade` / `AdvancedPullingUpgrade` / `FluidEjectorUpgrade` / `FluidPullingUpgrade` | `IEjectorUpgradeSupport` | 弹出/抽入（流体管道已实现） |
 
 ### 2. UpgradeItemRegistry
 
@@ -74,11 +74,19 @@ UpgradeItemRegistry.getRequiredInterface(item)
 | `ITransformerUpgradeSupport` | `voltageTierBonus` | 电压等级加成 |
 | `IEnergyStorageUpgradeSupport` | `capacityBonus` | 储能容量加成 |
 | `IRedstoneInverterUpgradeSupport` | `redstoneInverted`（继承自 `IRedstoneControlSupport`） | 红石反转（按需接入） |
-| `IEjectorUpgradeSupport` | — | 弹出/抽入（待实现） |
+| `IEjectorUpgradeSupport` | — | 弹出/抽入能力标记接口（流体管道由 `IFluidPipeUpgradeSupport` + `FluidPipeUpgradeComponent` 实现） |
 
 ### 4. 升级组件（*UpgradeComponent）
 
 单例对象，负责从升级槽统计升级数量，计算效果，并写入实现对应接口的机器。
+
+流体抽入/弹出升级复用入口：
+
+```kotlin
+FluidPipeUpgradeComponent.apply(this, SLOT_UPGRADE_INDICES)
+```
+
+适用前提：机器同时实现 `Inventory` 与 `IFluidPipeUpgradeSupport`。
 
 ### 5. 红石控制组件（RedstoneControlComponent）
 
