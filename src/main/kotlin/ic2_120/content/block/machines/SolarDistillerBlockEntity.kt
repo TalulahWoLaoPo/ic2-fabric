@@ -76,6 +76,8 @@ class SolarDistillerBlockEntity(
     override var fluidPipeReceiverEnabled: Boolean = false  // 是否作为 receiver 从管道接收流体
     override var fluidPipeProviderFilter: Fluid? = null     // provider 流体过滤器（null = 不过滤）
     override var fluidPipeReceiverFilter: Fluid? = null    // receiver 流体过滤器（null = 不过滤）
+    override var fluidPipeProviderSide: Direction? = null   // provider 工作面（null = 任意面）
+    override var fluidPipeReceiverSide: Direction? = null   // receiver 工作面（null = 任意面）
 
     companion object {
         // 物品槽位索引定义

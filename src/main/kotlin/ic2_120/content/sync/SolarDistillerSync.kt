@@ -17,8 +17,7 @@ class SolarDistillerSync(
 
         const val TANK_CAPACITY_MB = 10_000
         const val PRODUCE_INTERVAL_TICKS = 80
-        //todo 暂时放大，因为我要测试管道
-        const val PRODUCE_MB_PER_CYCLE = 1000
+        const val PRODUCE_MB_PER_CYCLE = 1
     }
 
     var waterInputMb by schema.int(NBT_WATER_INPUT)

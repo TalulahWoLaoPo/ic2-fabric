@@ -53,14 +53,23 @@ class PipeNetwork {
             val block = world.getBlockState(neighborPos).block
             val be = world.getBlockEntity(neighborPos) as? IFluidPipeUpgradeSupport
             val storage = FluidStorage.SIDED.find(world, neighborPos, edge.lookupFromNeighborSide) ?: continue
+            val machineSide = edge.lookupFromNeighborSide
 
-            if (be != null && be.fluidPipeProviderEnabled && storage.supportsExtraction()) {
+            if (
+                be != null &&
+                be.fluidPipeProviderEnabled &&
+                (be.fluidPipeProviderSide == null || be.fluidPipeProviderSide == machineSide) &&
+                storage.supportsExtraction()
+            ) {
                 val variant = resolveProviderVariant(storage, be.fluidPipeProviderFilter) ?: continue
                 providers.add(ProviderEndpoint(storage, edge.cablePosLong, variant))
             }
             if (storage.supportsInsertion()) {
                 if (block is MachineBlock) {
-                    if (be?.fluidPipeReceiverEnabled == true) {
+                    if (
+                        be?.fluidPipeReceiverEnabled == true &&
+                        (be.fluidPipeReceiverSide == null || be.fluidPipeReceiverSide == machineSide)
+                    ) {
                         receivers.add(ReceiverEndpoint(storage, edge.cablePosLong, be.fluidPipeReceiverFilter))
                     }
                 } else {

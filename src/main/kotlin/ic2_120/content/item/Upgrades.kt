@@ -16,6 +16,7 @@ import net.minecraft.util.ActionResult
 import net.minecraft.util.Formatting
 import net.minecraft.util.Hand
 import net.minecraft.util.TypedActionResult
+import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 
 // ========== 升级物品接口 ==========
@@ -38,6 +39,8 @@ abstract class FluidFilterUpgradeItem : Item(FabricItemSettings()), IUpgradeItem
         } else {
             tooltip.add(Text.literal("过滤: 未设置").formatted(Formatting.GRAY))
         }
+        val side = FluidPipeUpgradeComponent.readDirection(stack)
+        tooltip.add(Text.literal("方向: ${directionLabel(side)}").formatted(Formatting.GRAY))
     }
 
     override fun use(world: World, user: net.minecraft.entity.player.PlayerEntity, hand: Hand): TypedActionResult<ItemStack> {
@@ -45,9 +48,10 @@ abstract class FluidFilterUpgradeItem : Item(FabricItemSettings()), IUpgradeItem
         if (world.isClient) return TypedActionResult.success(stack)
 
         if (user.isSneaking) {
-            FluidPipeUpgradeComponent.writeFilter(stack, null)
+            val next = FluidPipeUpgradeComponent.nextDirection(FluidPipeUpgradeComponent.readDirection(stack))
+            FluidPipeUpgradeComponent.writeDirection(stack, next)
             if (user is ServerPlayerEntity) {
-                user.sendMessage(Text.literal("已清除流体过滤"), true)
+                user.sendMessage(Text.literal("已设置工作方向: ${directionLabel(next)}"), true)
             }
             return TypedActionResult.success(stack)
         }
@@ -69,6 +73,16 @@ abstract class FluidFilterUpgradeItem : Item(FabricItemSettings()), IUpgradeItem
             user.sendMessage(Text.literal("已设置过滤流体: ${fluid.defaultState.blockState.block.name.string}"), true)
         }
         return TypedActionResult.success(stack)
+    }
+
+    private fun directionLabel(side: Direction?): String = when (side) {
+        null -> "任意"
+        Direction.DOWN -> "下"
+        Direction.UP -> "上"
+        Direction.NORTH -> "北"
+        Direction.SOUTH -> "南"
+        Direction.WEST -> "西"
+        Direction.EAST -> "东"
     }
 }
 

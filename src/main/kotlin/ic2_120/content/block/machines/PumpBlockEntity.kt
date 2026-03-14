@@ -70,6 +70,8 @@ class PumpBlockEntity(
     override var fluidPipeReceiverEnabled: Boolean = false
     override var fluidPipeProviderFilter: Fluid? = null
     override var fluidPipeReceiverFilter: Fluid? = null
+    override var fluidPipeProviderSide: Direction? = null
+    override var fluidPipeReceiverSide: Direction? = null
 
     override val tier: Int = PUMP_TIER
     override var speedMultiplier: Float = 1f

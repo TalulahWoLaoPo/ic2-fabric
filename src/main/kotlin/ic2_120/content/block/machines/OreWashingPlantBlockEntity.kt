@@ -78,6 +78,8 @@ class OreWashingPlantBlockEntity(
     override var fluidPipeReceiverEnabled: Boolean = false  // 是否作为 receiver 从管道接收流体
     override var fluidPipeProviderFilter: net.minecraft.fluid.Fluid? = null     // provider 流体过滤器（null = 不过滤）
     override var fluidPipeReceiverFilter: net.minecraft.fluid.Fluid? = null    // receiver 流体过滤器（null = 不过滤）
+    override var fluidPipeProviderSide: net.minecraft.util.math.Direction? = null    // provider 工作面（null = 任意面）
+    override var fluidPipeReceiverSide: net.minecraft.util.math.Direction? = null    // receiver 工作面（null = 任意面）
 
     override val tier: Int = ORE_WASHING_PLANT_TIER
 
