@@ -14,6 +14,7 @@ import ic2_120.content.item.CellAndBucketFluidRegistration
 import ic2_120.content.block.MfsuBlock
 import ic2_120.content.block.cables.CableBlockEntity
 import ic2_120.content.block.machines.GeoGeneratorBlockEntity
+import ic2_120.content.block.machines.FluidHeatGeneratorBlockEntity
 import ic2_120.content.block.machines.OreWashingPlantBlockEntity
 import ic2_120.content.block.machines.PumpBlockEntity
 import ic2_120.content.block.machines.ReactorChamberBlockEntity
@@ -101,6 +102,7 @@ object Ic2_120 : ModInitializer {
 
         // 地热/水力/洗矿发电机流体能力注册（Fabric Transfer API）
         GeoGeneratorBlockEntity.registerFluidStorageLookup()
+        FluidHeatGeneratorBlockEntity.registerFluidStorageLookup()
         SemifluidGeneratorBlockEntity.registerFluidStorageLookup()
         WaterGeneratorBlockEntity.registerFluidStorageLookup()
         OreWashingPlantBlockEntity.registerFluidStorageLookup()
