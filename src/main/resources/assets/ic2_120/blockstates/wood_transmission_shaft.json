@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "axis=x": { "model": "ic2_120:block/transmission/wood_transmission_shaft" },
+    "axis=y": { "model": "ic2_120:block/transmission/wood_transmission_shaft" },
+    "axis=z": { "model": "ic2_120:block/transmission/wood_transmission_shaft" }
+  }
+}
+

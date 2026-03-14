@@ -1,6 +1,7 @@
 package ic2_120.client
 
 import ic2_120.content.ModBlockEntities
+import ic2_120.content.block.transmission.TransmissionBlockEntity
 import ic2_120.content.block.machines.WindGeneratorBlockEntity
 import ic2_120.content.block.machines.WindKineticGeneratorBlockEntity
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories
@@ -14,6 +15,10 @@ object ClientBlockEntityRenderers {
         BlockEntityRendererFactories.register(
             ModBlockEntities.getType(WindKineticGeneratorBlockEntity::class),
             ::WindKineticGeneratorBlockEntityRenderer
+        )
+        BlockEntityRendererFactories.register(
+            ModBlockEntities.getType(TransmissionBlockEntity::class),
+            ::TransmissionBlockEntityRenderer
         )
     }
 }
