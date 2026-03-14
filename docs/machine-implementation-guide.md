@@ -792,6 +792,21 @@ object XxxRecipes {
 
 确保编译无错误。
 
+**重要（必须执行）**：
+- 机器实现完成后，不能只跑 `compileKotlin`，必须同时跑 `compileClientKotlin`。
+- 原因：机器通常包含 `Screen/Renderer/客户端同步字段`，这些只在客户端源码中编译，`compileKotlin` 无法覆盖。
+- 实践中应将 `compileClientKotlin` 视为机器开发的硬性验收项，任一失败都不应合并。
+
+**建议最小验收命令**：
+```bash
+./gradlew compileKotlin compileClientKotlin
+```
+
+**建议发布前命令**：
+```bash
+./gradlew clean compileKotlin compileClientKotlin
+```
+
 ---
 
 ## 附录：槽位位置参考
