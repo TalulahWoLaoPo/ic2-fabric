@@ -12,6 +12,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemPlacementContext
 import net.minecraft.state.StateManager
 import net.minecraft.state.property.BooleanProperty
+import net.minecraft.state.property.Properties
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
@@ -39,7 +40,9 @@ class ElectricHeatGeneratorBlock : MachineBlock() {
     }
 
     override fun getPlacementState(ctx: ItemPlacementContext): BlockState? =
-        super.getPlacementState(ctx)?.with(ACTIVE, false)
+        defaultState
+            .with(Properties.HORIZONTAL_FACING, ctx.horizontalPlayerFacing)
+            .with(ACTIVE, false)
 
     override fun createScreenHandlerFactory(state: BlockState, world: World, pos: BlockPos): net.minecraft.screen.NamedScreenHandlerFactory? {
         val be = world.getBlockEntity(pos)

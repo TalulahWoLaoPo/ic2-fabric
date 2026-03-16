@@ -44,6 +44,14 @@ class ElectricHeatGeneratorScreen(
         val generatedRate = handler.sync.getSyncedGeneratedHeat()
         val outputRate = handler.sync.getSyncedOutputHeat()
 
+        val generatedText = "产热 $generatedRate HU/t"
+        val outputText = "输出 $outputRate HU/t"
+        val generatedTextWidth = generatedText.length * 6
+        val outputTextWidth = outputText.length * 6
+        val textX = x - maxOf(generatedTextWidth, outputTextWidth) - 4
+        context.drawText(textRenderer, generatedText, textX, y + 8, 0xAAAAAA, false)
+        context.drawText(textRenderer, outputText, textX, y + 20, 0xAAAAAA, false)
+
         ui.render(context, textRenderer, mouseX, mouseY) {
             Column(x = x + 8, y = y + 8, spacing = 6) {
                 Text(title.string, color = 0xFFFFFF)
@@ -53,12 +61,7 @@ class ElectricHeatGeneratorScreen(
                 }
                 Row(spacing = 8) {
                     Text("$energy / $cap EU", color = 0xCCCCCC, shadow = false)
-                    if (generatedRate > 0L || outputRate > 0L) {
-                        Text("线圈 $coils/10  产热 $generatedRate HU/t · 输出 $outputRate HU/t", color = 0xAAAAAA, shadow = false)
-                    } else {
-                        val hu = coils * 10
-                        Text("线圈 $coils/10  产热 $hu HU/t", color = 0xAAAAAA, shadow = false)
-                    }
+                    Text("线圈 $coils/10", color = 0xAAAAAA, shadow = false)
                 }
             }
         }

@@ -50,7 +50,7 @@ class SolidHeatGeneratorBlockEntity(
     private var burnTime = 0
     private var burnTotal = 0
     val syncedData = SyncedData(this)
-    private val heatFlow = HeatFlowSync(syncedData, this)
+    override val heatFlow = HeatFlowSync(syncedData, this)
     val sync = SolidHeatGeneratorSync(syncedData, heatFlow)
 
     constructor(pos: BlockPos, state: BlockState) : this(
@@ -106,11 +106,7 @@ class SolidHeatGeneratorBlockEntity(
         nbt.putInt("BurnTotal", burnTotal)
     }
 
-    fun tick(world: World, pos: BlockPos, state: BlockState) {
-        if (world.isClient) return
-
-        resetHeatTracking()
-
+    override fun generateHeat(world: World, pos: BlockPos, state: BlockState): Long {
         if (burnTime <= 0) {
             val fuel = getStack(SLOT_FUEL)
             if (!fuel.isEmpty && isSupportedFuel(fuel)) {
@@ -125,21 +121,28 @@ class SolidHeatGeneratorBlockEntity(
         var generatedThisTick = 0L
         if (burnTime > 0) {
             generatedThisTick = HU_PER_TICK
-            transferHeatToBack(HU_PER_TICK)
             burnTime--
         }
+        return generatedThisTick
+    }
 
-        recordGeneratedHeat(generatedThisTick)
-
+    override fun syncAdditionalData() {
         sync.burnTime = burnTime
         sync.burnTotal = burnTotal
+    }
 
-        heatFlow.syncCurrentTickFlow()
+    override fun shouldActivate(generatedHeat: Long, hasValidConsumer: Boolean): Boolean =
+        burnTime > 0 && hasValidConsumer
 
-        val active = burnTime > 0
-        if (state.get(SolidHeatGeneratorBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(SolidHeatGeneratorBlock.ACTIVE, active))
-        }
+    override fun getActiveState(state: BlockState): Boolean =
+        state.get(SolidHeatGeneratorBlock.ACTIVE)
+
+    override fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
+        world.setBlockState(pos, state.with(SolidHeatGeneratorBlock.ACTIVE, active))
+    }
+
+    fun tick(world: World, pos: BlockPos, state: BlockState) {
+        tickHeatMachine(world, pos, state)
     }
 
     private fun isSupportedFuel(stack: ItemStack): Boolean =

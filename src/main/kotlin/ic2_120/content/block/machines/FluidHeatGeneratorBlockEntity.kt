@@ -37,7 +37,7 @@ import net.minecraft.world.World
 
 /**
  * 流体加热机（Liquid Fuel Firebox）。
- * - 仅接受沼气（Biofuel）
+ * - 支持沼气（Biofuel）和岩浆（Lava）
  * - 每秒结算：消耗 10mB/s，产 32HU/t（等价 640HU/s）
  * - 仅背面单面传热
  */
@@ -48,13 +48,35 @@ class FluidHeatGeneratorBlockEntity(
     state: BlockState
 ) : HeatGeneratorBlockEntityBase(type, pos, state), Inventory, ExtendedScreenHandlerFactory {
 
+    enum class FuelType(
+        val fluid: net.minecraft.fluid.Fluid,
+        val heatPerTick: Long,
+        val mbPerSecond: Long,
+        private val matcher: (net.minecraft.fluid.Fluid) -> Boolean
+    ) {
+        BIOFUEL(ModFluids.BIOFUEL_STILL, 32L, 10L, { fluid ->
+            fluid == ModFluids.BIOFUEL_STILL || fluid == ModFluids.BIOFUEL_FLOWING
+        }),
+        LAVA(net.minecraft.fluid.Fluids.LAVA, 32L, 10L, { fluid ->
+            fluid == net.minecraft.fluid.Fluids.LAVA || fluid == net.minecraft.fluid.Fluids.FLOWING_LAVA
+        });
+
+        val heatPerSecond = heatPerTick * 20L
+
+        fun matches(fluid: net.minecraft.fluid.Fluid): Boolean = matcher(fluid)
+
+        companion object {
+            fun fromFluid(fluid: net.minecraft.fluid.Fluid?): FuelType? {
+                if (fluid == null) return null
+                return values().firstOrNull { it.matches(fluid) }
+            }
+        }
+    }
+
     companion object {
         private const val NBT_FUEL_AMOUNT = "FuelAmount"
         private const val NBT_BUFFERED_HEAT = "BufferedHeat"
-
-        private const val HU_PER_TICK = 32L
-        private const val MB_PER_SECOND = 10L
-        private const val HEAT_PER_SECOND = HU_PER_TICK * 20L
+        private const val NBT_FUEL_TYPE = "FuelType"
 
         const val FUEL_SLOT = 0
         const val EMPTY_CONTAINER_SLOT = 1
@@ -74,8 +96,10 @@ class FluidHeatGeneratorBlockEntity(
     override val tier: Int = 1
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
     val syncedData = SyncedData(this)
-    private val heatFlow = HeatFlowSync(syncedData, this)
+    override val heatFlow = HeatFlowSync(syncedData, this)
     val sync = FluidHeatGeneratorSync(syncedData, heatFlow)
+
+    private var currentFuelType: FuelType? = null
 
     private val fuelTankInternal = object : SingleVariantStorage<FluidVariant>() {
         private val tankCapacity = FluidConstants.BUCKET * 8
@@ -217,6 +241,8 @@ class FluidHeatGeneratorBlockEntity(
         val fluidId = nbt.getString("FuelFluid")
         val fluid = if (fluidId.isNullOrBlank()) null else Registries.FLUID.get(Identifier(fluidId))
         fuelTankInternal.setStoredFuel(nbt.getLong(NBT_FUEL_AMOUNT), fluid)
+        val fuelTypeName = nbt.getString(NBT_FUEL_TYPE)
+        currentFuelType = if (fuelTypeName.isNotBlank()) FuelType.valueOf(fuelTypeName) else null
     }
 
     override fun writeNbt(nbt: NbtCompound) {
@@ -227,14 +253,45 @@ class FluidHeatGeneratorBlockEntity(
         if (fuelTankInternal.amount > 0L && !fuelTankInternal.variant.isBlank) {
             nbt.putString("FuelFluid", Registries.FLUID.getId(fuelTankInternal.variant.fluid).toString())
         }
+        currentFuelType?.let { nbt.putString(NBT_FUEL_TYPE, it.name) }
+    }
+
+    override fun generateHeat(world: World, pos: BlockPos, state: BlockState): Long {
+        var generatedThisTick = 0L
+        if (world.time % 20L == 0L) {
+            val fuelType = currentFuelType ?: FuelType.fromFluid(fuelTankInternal.variant.fluid)
+            if (fuelType != null) {
+                currentFuelType = fuelType
+                val consumeAmount = FluidConstants.BUCKET * fuelType.mbPerSecond / 1000L
+                if (fuelTankInternal.tryConsume(consumeAmount) > 0L) {
+                    generatedThisTick = fuelType.heatPerSecond
+                    markDirty()
+                } else {
+                    currentFuelType = null
+                }
+            }
+        }
+        return generatedThisTick
+    }
+
+    override fun shouldActivate(generatedHeat: Long, hasValidConsumer: Boolean): Boolean =
+        fuelTankInternal.amount > 0L && hasValidConsumer
+
+    override fun getActiveState(state: BlockState): Boolean =
+        state.get(FluidHeatGeneratorBlock.ACTIVE)
+
+    override fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
+        world.setBlockState(pos, state.with(FluidHeatGeneratorBlock.ACTIVE, active))
     }
 
     fun tick(world: World, pos: BlockPos, state: BlockState) {
         if (world.isClient) return
 
-        resetHeatTracking()
+        processFuelContainers()
+        tickHeatMachine(world, pos, state)
+    }
 
-        // 处理燃料容器
+    private fun processFuelContainers() {
         val fuelStack = getStack(FUEL_SLOT)
         when {
             fuelStack.item == Registries.ITEM.get(Identifier("ic2_120", "biofuel_bucket")) -> {
@@ -274,24 +331,6 @@ class FluidHeatGeneratorBlockEntity(
                 }
             }
         }
-
-        var generatedThisTick = 0L
-        // 每秒结算一次燃料与产热，并直接传输
-        if (world.time % 20L == 0L) {
-            if (fuelTankInternal.tryConsume(FluidConstants.BUCKET * MB_PER_SECOND / 1000L) > 0L) {
-                generatedThisTick = HEAT_PER_SECOND
-                transferHeatToBack(HEAT_PER_SECOND)
-                markDirty()
-            }
-        }
-
-        recordGeneratedHeat(generatedThisTick)
-        heatFlow.syncCurrentTickFlow()
-
-        val active = fuelTankInternal.amount > 0L
-        if (state.get(FluidHeatGeneratorBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(FluidHeatGeneratorBlock.ACTIVE, active))
-        }
     }
 
     private fun getFluidStorageForSide(side: Direction?): Storage<FluidVariant>? {
@@ -303,6 +342,7 @@ class FluidHeatGeneratorBlockEntity(
         world?.getBlockState(pos)?.get(Properties.HORIZONTAL_FACING) ?: Direction.NORTH
 
     private fun isSupportedFuelFluid(fluid: net.minecraft.fluid.Fluid): Boolean {
-        return fluid == ModFluids.BIOFUEL_STILL || fluid == ModFluids.BIOFUEL_FLOWING
+        return fluid == ModFluids.BIOFUEL_STILL || fluid == ModFluids.BIOFUEL_FLOWING ||
+            fluid == net.minecraft.fluid.Fluids.LAVA || fluid == net.minecraft.fluid.Fluids.FLOWING_LAVA
     }
 }

@@ -139,23 +139,24 @@ class TransformerScreen(
                 }
 
                 // 说明文本
-                val description = when (currentMode) {
+                val (inputDesc, outputDesc) = when (currentMode) {
                     TransformerSync.Mode.STEP_UP -> {
                         val inputTier = handler.sync.lowTier
                         val outputTier = handler.sync.highTier
                         val inputEu = handler.sync.getLowEuPerTick()
                         val outputEu = handler.sync.getHighEuPerTick()
-                        "正面接收 $inputEu EU/t (级${inputTier})，其他面输出 $outputEu EU/t (级${outputTier})"
+                        "正面接收: $inputEu EU/t (级${inputTier})" to "其他面输出: $outputEu EU/t (级${outputTier})"
                     }
                     TransformerSync.Mode.STEP_DOWN -> {
                         val inputTier = handler.sync.highTier
                         val outputTier = handler.sync.lowTier
                         val inputEu = handler.sync.getHighEuPerTick()
                         val outputEu = handler.sync.getLowEuPerTick()
-                        "其他面接收 $inputEu EU/t (级${inputTier})，正面输出 $outputEu EU/t (级${outputTier})"
+                        "其他面接收: $inputEu EU/t (级${inputTier})" to "正面输出: $outputEu EU/t (级${outputTier})"
                     }
                 }
-                Text(description, color = 0x999999, shadow = false)
+                Text(inputDesc, color = 0x999999, shadow = false)
+                Text(outputDesc, color = 0x999999, shadow = false)
             }
         }
         drawMouseoverTooltip(context, mouseX, mouseY)

@@ -469,6 +469,18 @@ class ModRecipeProvider(output: FabricDataOutput) : FabricRecipeProvider(output)
                 .criterion(hasItem(ironPlate), conditionsFromItem(ironPlate))
                 .offerTo(recipeExporter, Identifier(Ic2_120.MOD_ID, "iron_furnace"))
         }
+
+        // ==================== 斯特林发电机配方 ====================
+        // 7个铁质外壳U形 + 1个火力发电机 + 1个热传导器3 -> 斯特林发电机
+        val stirlingGenerator = item("ic2_120:stirling_generator")
+        val heatConductor = item("ic2_120:heat_conductor")
+        if (stirlingGenerator != Items.AIR && ironCasing != Items.AIR && generator != Items.AIR && heatConductor != Items.AIR) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, stirlingGenerator, 1)
+                .pattern("ICI").pattern("IGI").pattern("III")
+                .input('I', ironCasing).input('G', generator).input('C', heatConductor)
+                .criterion(hasItem(ironCasing), conditionsFromItem(ironCasing))
+                .offerTo(recipeExporter, Identifier(Ic2_120.MOD_ID, "stirling_generator"))
+        }
     }
 
     private fun createShapeless(

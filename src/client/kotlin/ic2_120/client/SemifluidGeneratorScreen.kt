@@ -91,6 +91,15 @@ class SemifluidGeneratorScreen(
         val rightBarsWidth = 12 + 8
         val contentW = (backgroundWidth - 16 - rightBarsWidth).coerceAtLeast(0)
         val barW = (contentW - 36).coerceAtLeast(0)
+
+        val generatedText = "发电 ${formatEu(inputRate)} EU/t"
+        val outputText = "输出 ${formatEu(filteredOutputRate)} EU/t"
+        val generatedTextWidth = generatedText.length * 6
+        val outputTextWidth = outputText.length * 6
+        val textX = left - maxOf(generatedTextWidth, outputTextWidth) - 4
+        context.drawText(textRenderer, generatedText, textX, top + 8, 0xAAAAAA, false)
+        context.drawText(textRenderer, outputText, textX, top + 20, 0xAAAAAA, false)
+
         ui.render(context, textRenderer, mouseX, mouseY) {
             Column(x = left + 8, y = top + 8, spacing = 6) {
                 Text(title.string, color = 0xFFFFFF)
@@ -108,10 +117,7 @@ class SemifluidGeneratorScreen(
                         modifier = Modifier.EMPTY.width(barW)
                     )
                 }
-                Row(spacing = 8) {
-                    Text("${formatEu(energy)} / ${formatEu(cap)} EU", color = 0xCCCCCC, shadow = false)
-                    Text("发电 ${formatEu(inputRate)} EU/t · 输出 ${formatEu(filteredOutputRate)} EU/t", color = 0xAAAAAA, shadow = false)
-                }
+                Text("${formatEu(energy)} / ${formatEu(cap)} EU", color = 0xCCCCCC, shadow = false)
             }
         }
         drawMouseoverTooltip(context, mouseX, mouseY)

@@ -237,7 +237,7 @@ class PumpBlockEntity(
         if (sync.amount < euNeed) return false
 
         val front = state.get(Properties.HORIZONTAL_FACING)
-        val positions = arrayOf(pos.offset(front, 1), pos.offset(front, 3))
+        val positions = (1..3).map { pos.offset(front, it) }
         for (target in positions) {
             val drained = tryDrainFromStorage(world, target, front.opposite)
             if (drained > 0L) {

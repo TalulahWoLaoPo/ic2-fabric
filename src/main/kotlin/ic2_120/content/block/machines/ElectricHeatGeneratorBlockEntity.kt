@@ -57,7 +57,7 @@ class ElectricHeatGeneratorBlockEntity(
     private val coilItem by lazy { Registries.ITEM.get(Identifier("ic2_120", "coil")) }
 
     val syncedData = SyncedData(this)
-    private val heatFlow = HeatFlowSync(syncedData, this)
+    override val heatFlow = HeatFlowSync(syncedData, this)
     @RegisterEnergy
     val sync = ElectricHeatGeneratorSync(
         schema = syncedData,
@@ -128,11 +128,7 @@ class ElectricHeatGeneratorBlockEntity(
         nbt.putBoolean("RedstoneInverted", redstoneInverted)
     }
 
-    fun tick(world: World, pos: BlockPos, state: BlockState) {
-        if (world.isClient) return
-
-        resetHeatTracking()
-
+    override fun generateHeat(world: World, pos: BlockPos, state: BlockState): Long {
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
         pullEnergyFromNeighbors(world, pos, sync)
 
@@ -141,23 +137,31 @@ class ElectricHeatGeneratorBlockEntity(
         val maxHuPerTick = coilCount * HU_PER_COIL_PER_TICK
 
         var generatedThisTick = 0L
-        var active = false
         if (redstoneAllowsRun && maxHuPerTick > 0L) {
             val euNeed = maxHuPerTick
             val consumed = sync.consumeEnergy(minOf(euNeed, sync.amount))
             if (consumed > 0L) {
-                // 直接将 EU 转换为 HU 并传输，不缓存
-                generatedThisTick = transferHeatToBack(consumed)
-                active = generatedThisTick > 0L
+                generatedThisTick = consumed
             }
         }
+        return generatedThisTick
+    }
 
-        recordGeneratedHeat(generatedThisTick)
-
-        if (state.get(ElectricHeatGeneratorBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(ElectricHeatGeneratorBlock.ACTIVE, active))
-        }
+    override fun syncAdditionalData() {
         sync.syncCurrentTickFlow()
-        heatFlow.syncCurrentTickFlow()
+    }
+
+    override fun shouldActivate(generatedHeat: Long, hasValidConsumer: Boolean): Boolean =
+        generatedHeat > 0L && hasValidConsumer
+
+    override fun getActiveState(state: BlockState): Boolean =
+        state.get(ElectricHeatGeneratorBlock.ACTIVE)
+
+    override fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
+        world.setBlockState(pos, state.with(ElectricHeatGeneratorBlock.ACTIVE, active))
+    }
+
+    fun tick(world: World, pos: BlockPos, state: BlockState) {
+        tickHeatMachine(world, pos, state)
     }
 }

@@ -1,7 +1,7 @@
 package ic2_120.content.block
 
 import ic2_120.content.ModBlockEntities
-import ic2_120.content.block.machines.SolidHeatGeneratorBlockEntity
+import ic2_120.content.block.machines.StirlingGeneratorBlockEntity
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.annotation.ModBlock
 import net.minecraft.block.BlockState
@@ -12,17 +12,17 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemPlacementContext
 import net.minecraft.state.StateManager
 import net.minecraft.state.property.BooleanProperty
-import net.minecraft.state.property.Properties
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 
-@ModBlock(name = "solid_heat_generator", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "heat")
-class SolidHeatGeneratorBlock : MachineBlock() {
+@ModBlock(name = "stirling_generator", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+class StirlingGeneratorBlock : MachineBlock() {
+
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =
-        SolidHeatGeneratorBlockEntity(pos, state)
+        StirlingGeneratorBlockEntity(pos, state)
 
     override fun <T : BlockEntity> getTicker(
         world: World,
@@ -30,8 +30,8 @@ class SolidHeatGeneratorBlock : MachineBlock() {
         type: BlockEntityType<T>
     ): BlockEntityTicker<T>? =
         if (world.isClient) null
-        else checkType(type, ModBlockEntities.getType(SolidHeatGeneratorBlockEntity::class)) { w, p, s, be ->
-            (be as SolidHeatGeneratorBlockEntity).tick(w, p, s)
+        else checkType(type, ModBlockEntities.getType(StirlingGeneratorBlockEntity::class)) { w, p, s, be ->
+            (be as StirlingGeneratorBlockEntity).tick(w, p, s)
         }
 
     override fun appendProperties(builder: StateManager.Builder<net.minecraft.block.Block, BlockState>) {
@@ -40,9 +40,7 @@ class SolidHeatGeneratorBlock : MachineBlock() {
     }
 
     override fun getPlacementState(ctx: ItemPlacementContext): BlockState? =
-        defaultState
-            .with(Properties.HORIZONTAL_FACING, ctx.horizontalPlayerFacing)
-            .with(ACTIVE, false)
+        super.getPlacementState(ctx)?.with(ACTIVE, false)
 
     override fun createScreenHandlerFactory(state: BlockState, world: World, pos: BlockPos): net.minecraft.screen.NamedScreenHandlerFactory? {
         val be = world.getBlockEntity(pos)
