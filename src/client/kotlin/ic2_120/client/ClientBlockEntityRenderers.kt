@@ -1,5 +1,8 @@
 package ic2_120.client
 
+import ic2_120.client.renderers.TransmissionBlockEntityRenderer
+import ic2_120.client.renderers.WindGeneratorBlockEntityRenderer
+import ic2_120.client.renderers.WindKineticGeneratorBlockEntityRenderer
 import ic2_120.content.block.transmission.TransmissionBlockEntity
 import ic2_120.content.block.machines.WindGeneratorBlockEntity
 import ic2_120.content.block.machines.WindKineticGeneratorBlockEntity

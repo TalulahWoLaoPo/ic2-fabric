@@ -8,11 +8,11 @@ import ic2_120.client.ModFluidClient
 import ic2_120.client.ClientBlockRenderLayers
 import ic2_120.client.ClientEntityRenderers
 import ic2_120.client.ClientScreenRegistrar
-import ic2_120.client.FluidCellColorProvider
-import ic2_120.client.RubberLeavesColorProvider
+import ic2_120.client.colorprovider.FluidCellColorProvider
+import ic2_120.client.colorprovider.RubberLeavesColorProvider
 import ic2_120.client.RubberLogModelPlugin
-import ic2_120.client.StorageBoxColorProvider
-import ic2_120.client.PipeColorProvider
+import ic2_120.client.colorprovider.StorageBoxColorProvider
+import ic2_120.client.colorprovider.PipeColorProvider
 import ic2_120.client.ClientBlockEntityRenderers
 import ic2_120.client.network.NetworkManager
 import net.fabricmc.api.ClientModInitializer

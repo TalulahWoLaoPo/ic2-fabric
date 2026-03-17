@@ -1,5 +1,6 @@
 package ic2_120.client
 
+import ic2_120.client.renderers.Ic2BoatEntityRenderer
 import ic2_120.content.entity.ModEntities
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry
 
