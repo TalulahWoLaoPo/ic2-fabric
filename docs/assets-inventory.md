@@ -125,10 +125,10 @@
 |  | ID | 名称 |
 |--|----|------|
 | - [x] | block.ic2.nuclear_reactor | 核反应堆 |
-| - [ ] | block.ic2.reactor_access_hatch | 反应堆访问接口 |
+| - [x] | block.ic2.reactor_access_hatch | 反应堆访问接口 |
 | - [x] | block.ic2.reactor_chamber | 核反应仓 |
-| - [ ] | block.ic2.reactor_fluid_port | 反应堆流体接口 |
-| - [ ] | block.ic2.reactor_redstone_port | 反应堆红石接口 |
+| - [x] | block.ic2.reactor_fluid_port | 反应堆流体接口 |
+| - [x] | block.ic2.reactor_redstone_port | 反应堆红石接口 |
 
 ### 机器 - 基础加工类
 |  | ID | 名称 |
@@ -196,7 +196,7 @@
 |--|----|------|
 | - [x] | block.ic2.machine | 基础机械外壳 |
 | - [x] | block.ic2.advanced_machine | 高级机械外壳 |
-| - [ ] | block.ic2.reactor_vessel | 核反应堆压力容器 |
+| - [x] | block.ic2.reactor_vessel | 核反应堆压力容器 |
 
 ### 机器 - 储能设备类
 |  | ID | 名称 |

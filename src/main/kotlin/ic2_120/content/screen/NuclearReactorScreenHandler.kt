@@ -1,7 +1,7 @@
 package ic2_120.content.screen
 
-import ic2_120.content.block.NuclearReactorBlock
-import ic2_120.content.block.machines.NuclearReactorBlockEntity
+import ic2_120.content.block.nuclear.NuclearReactorBlock
+import ic2_120.content.block.nuclear.NuclearReactorBlockEntity
 import ic2_120.content.reactor.IBaseReactorComponent
 import ic2_120.content.screen.slot.PredicateSlot
 import ic2_120.content.screen.slot.SlotMoveHelper

@@ -2,6 +2,7 @@ package ic2_120.content.block
 
 import ic2_120.Ic2_120
 import ic2_120.content.block.machines.RtGeneratorBlockEntity
+import ic2_120.content.block.nuclear.ReactorChamberBlock
 import ic2_120.content.item.IronCasing
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.annotation.ModBlock

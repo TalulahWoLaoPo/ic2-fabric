@@ -2,7 +2,7 @@ package ic2_120.client
 
 import ic2_120.client.compose.*
 import ic2_120.client.ui.GuiBackground
-import ic2_120.content.block.NuclearReactorBlock
+import ic2_120.content.block.nuclear.NuclearReactorBlock
 import ic2_120.content.network.SlotHeatEnergyInfo
 import ic2_120.content.screen.NuclearReactorScreenHandler
 import ic2_120.content.sync.NuclearReactorSync

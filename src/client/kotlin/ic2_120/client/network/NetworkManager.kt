@@ -16,7 +16,7 @@ object NetworkManager {
             client.execute { 
                 // 处理客户端接收到的数据包
                 val blockEntity = client.world?.getBlockEntity(packet.pos)
-                if (blockEntity is ic2_120.content.block.machines.NuclearReactorBlockEntity) {
+                if (blockEntity is ic2_120.content.block.nuclear.NuclearReactorBlockEntity) {
                     blockEntity.slotHeatInfo.clear()
                     blockEntity.slotHeatInfo.putAll(packet.slotHeatInfo)
                 }

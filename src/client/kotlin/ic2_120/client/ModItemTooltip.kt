@@ -2,7 +2,7 @@ package ic2_120.client
 
 import ic2_120.Ic2_120
 import ic2_120.content.block.cables.BaseCableBlock
-import ic2_120.content.block.machines.NuclearReactorBlockEntity
+import ic2_120.content.block.nuclear.NuclearReactorBlockEntity
 import ic2_120.content.block.machines.TransformerBlockEntity
 import ic2_120.content.item.getFluidCellVariant
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback

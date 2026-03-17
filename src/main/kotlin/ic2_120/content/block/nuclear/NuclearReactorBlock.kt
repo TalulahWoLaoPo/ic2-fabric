@@ -1,20 +1,17 @@
-package ic2_120.content.block
+package ic2_120.content.block.nuclear
 
 import ic2_120.Ic2_120
-import ic2_120.content.block.MachineCasingBlock
-import ic2_120.content.block.machines.NuclearReactorBlockEntity
-import ic2_120.content.block.machines.ReactorChamberBlockEntity
+import ic2_120.content.block.GeneratorBlock
+import ic2_120.content.block.MachineBlock
 import ic2_120.registry.CreativeTab
+import ic2_120.registry.annotation.ModBlock
 import ic2_120.registry.instance
 import ic2_120.registry.item
-import ic2_120.registry.type
-import ic2_120.registry.annotation.ModBlock
 import ic2_120.registry.type
 import net.minecraft.block.AbstractBlock
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
-import net.minecraft.block.BlockWithEntity
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityTicker
 import net.minecraft.block.entity.BlockEntityType
@@ -29,77 +26,14 @@ import net.minecraft.state.property.BooleanProperty
 import net.minecraft.state.property.Properties
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
-import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.Identifier
+import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
 import java.util.function.Consumer
-
-/**
- * 核反应仓。单独放置无 UI、无容量。
- * 与核反应堆相邻时，右键等效于右键反应堆，打开反应堆的 UI。
- */
-@ModBlock(name = "reactor_chamber", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "reactor")
-class ReactorChamberBlock(settings: AbstractBlock.Settings = AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(5.0f, 6.0f)) : MachineBlock(settings) {
-
-    override fun onUse(
-        state: BlockState,
-        world: World,
-        pos: BlockPos,
-        player: PlayerEntity,
-        hand: Hand,
-        hit: BlockHitResult
-    ): ActionResult {
-        if (world.isClient) return ActionResult.SUCCESS
-        // 查找相邻核反应堆，打开其 UI
-        for (dir in Direction.values()) {
-            val neighborPos = pos.offset(dir)
-            val neighborState = world.getBlockState(neighborPos)
-            if (neighborState.block is NuclearReactorBlock) {
-                val be = world.getBlockEntity(neighborPos)
-                if (be is net.minecraft.screen.NamedScreenHandlerFactory) {
-                    player.openHandledScreen(be)
-                    return ActionResult.SUCCESS
-                }
-            }
-        }
-        return ActionResult.PASS
-    }
-
-    override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? {
-        return ReactorChamberBlockEntity(pos, state)
-    }
-
-    override fun <T : BlockEntity> getTicker(
-        world: World,
-        state: BlockState,
-        type: BlockEntityType<T>
-    ): BlockEntityTicker<T>? {
-        return if (world.isClient) null
-        else BlockEntityTicker { world, pos, state, blockEntity ->
-            if (blockEntity is ReactorChamberBlockEntity) {
-                ReactorChamberBlockEntity.tick(world, pos, state, blockEntity)
-            }
-        }
-    }
-
-    companion object {
-        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            val machine = MachineCasingBlock::class.item()
-            val leadPlate = ic2_120.content.item.LeadPlate::class.instance()
-            if (machine != Items.AIR && leadPlate != Items.AIR) {
-                ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, ReactorChamberBlock::class.item(), 1)
-                    .pattern("L L").pattern(" M ").pattern("L L")
-                    .input('L', leadPlate).input('M', machine)
-                    .criterion(hasItem(leadPlate), conditionsFromItem(leadPlate))
-                    .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "reactor_chamber"))
-            }
-        }
-    }
-}
 
 /**
  * 核反应堆。中心方块，六面可各接触 0 或 1 个核反应仓扩展容量。
@@ -156,14 +90,11 @@ class NuclearReactorBlock(settings: AbstractBlock.Settings = AbstractBlock.Setti
         return ActionResult.SUCCESS
     }
 
-    /**
-     * 相邻方块变化时（如反应仓被拆），立即掉落超出新容量的物品。
-     */
     override fun neighborUpdate(
         state: BlockState,
         world: World,
         pos: BlockPos,
-        sourceBlock: Block,
+        sourceBlock: net.minecraft.block.Block,
         sourcePos: BlockPos,
         notify: Boolean
     ) {

@@ -1,26 +1,22 @@
-package ic2_120.content.block.machines
+package ic2_120.content.block.nuclear
 
+import ic2_120.Ic2_120
 import ic2_120.content.block.IGenerator
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.block.MachineBlock
-import ic2_120.content.block.NuclearReactorBlock
-import ic2_120.Ic2_120
-import ic2_120.content.block.ReactorChamberBlock
 import ic2_120.content.block.cables.BaseCableBlock
-import ic2_120.content.reactor.IReactor
 import ic2_120.content.reactor.IBaseReactorComponent
+import ic2_120.content.reactor.IReactor
 import ic2_120.content.reactor.IReactorComponent
 import ic2_120.content.network.NetworkManager
 import ic2_120.content.network.ReactorHeatInfoPacket
 import ic2_120.content.network.SlotHeatEnergyInfo
 import ic2_120.content.screen.NuclearReactorScreenHandler
 import ic2_120.content.sync.NuclearReactorSync
+import ic2_120.content.syncs.SyncedData
 import ic2_120.content.upgrade.IRedstoneControlSupport
 import ic2_120.content.upgrade.RedstoneControlComponent
-import net.minecraft.registry.Registries
-import ic2_120.content.syncs.SyncedData
 import ic2_120.registry.annotation.ModBlockEntity
-import ic2_120.registry.type
 import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
@@ -38,13 +34,14 @@ import net.minecraft.item.ArmorItem
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
+import net.minecraft.registry.Registries
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.state.property.Properties
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.collection.DefaultedList
-import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
+import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 
@@ -68,27 +65,20 @@ class NuclearReactorBlockEntity(
 
     private val inventory = DefaultedList.ofSize(MAX_SLOTS, ItemStack.EMPTY)
 
-    /** 计算周期偏移（0..19），使 (world.time + tickOffset) % 20 == 0 时执行 */
     private var tickOffset: Int = 0
 
-    /** 本周期组件散热蒸发累加（负值表示降温），Pass 1 结束后加回堆温 */
     private var emitHeatBuffer: Int = 0
 
-    /** 本周期发电累加（每脉冲 1.0），周期结束后转为 EU */
     private var outputAccumulator: Float = 0f
 
-    /** 本周期总发电量（EU），将均摊到20个tick中输出 */
     private var pendingEnergyOutput: Long = 0L
 
     override var redstoneInverted: Boolean = false
 
-    /** 本周期总产热 */
     private var totalHeatProduced: Int = 0
 
-    /** 本周期总散热 */
     private var totalHeatDissipated: Int = 0
 
-    /** 每个槽位的产热、散热和发电 */
     val slotHeatInfo = mutableMapOf<Int, SlotHeatEnergyInfo>()
 
     val syncedData = SyncedData(this)
@@ -116,7 +106,7 @@ class NuclearReactorBlockEntity(
                     this
                 )
             ) return
-            if (slot >= currentCapacity()) return  // 防止物流 mod 向超出容量的槽位强制插入
+            if (slot >= currentCapacity()) return
         }
         inventory[slot] = stack
         if (stack.count > maxCountPerStack) stack.count = maxCountPerStack
@@ -157,7 +147,6 @@ class NuclearReactorBlockEntity(
         Inventories.readNbt(nbt, inventory)
         syncedData.readNbt(nbt)
         sync.amount = nbt.getLong(NuclearReactorSync.NBT_ENERGY_STORED).coerceIn(0L, NuclearReactorSync.ENERGY_CAPACITY)
-        // sync.syncCommittedAmount()
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
         sync.temperature = nbt.getInt(NuclearReactorSync.NBT_HEAT_STORED).coerceIn(0, NuclearReactorSync.HEAT_CAPACITY)
         tickOffset = if (nbt.contains("TickOffset")) nbt.getInt("TickOffset").coerceIn(0, 19) else -1
@@ -176,7 +165,6 @@ class NuclearReactorBlockEntity(
         nbt.putBoolean("RedstoneInverted", redstoneInverted)
     }
 
-    /** 当前有效容量（27 + 相邻反应仓数 * 9），供 setStack 等服务端逻辑校验 */
     private fun currentCapacity(): Int {
         val w = world ?: return NuclearReactorSync.BASE_SLOTS
         var chamberCount = 0
@@ -186,7 +174,6 @@ class NuclearReactorBlockEntity(
         return NuclearReactorSync.BASE_SLOTS + chamberCount * NuclearReactorSync.SLOTS_PER_CHAMBER
     }
 
-    // ---------- IReactor ----------
     override fun getWorld(): World? = world
     override fun getPos(): BlockPos = pos
     override fun getHeat(): Int = sync.temperature
@@ -200,7 +187,7 @@ class NuclearReactorBlockEntity(
     }
 
     override fun getMaxHeat(): Int = NuclearReactorSync.HEAT_CAPACITY
-    override fun setMaxHeat(maxHeat: Int) {} // 暂不动态修改
+    override fun setMaxHeat(maxHeat: Int) {}
     override fun addEmitHeat(heat: Int) {
         emitHeatBuffer += heat
     }
@@ -209,8 +196,7 @@ class NuclearReactorBlockEntity(
     override fun setHeatEffectModifier(hem: Float) {}
     override fun getReactorEnergyOutput(): Float = outputAccumulator
     override fun addOutput(energy: Float): Float {
-        // println("addOutput: $energy")
-        outputAccumulator += energy;
+        outputAccumulator += energy
         return outputAccumulator
     }
 
@@ -249,10 +235,6 @@ class NuclearReactorBlockEntity(
         )
     }
 
-    /**
-     * 容量减少时，将超出新容量的槽位物品散落掉落。
-     * 在 tick 与 neighborUpdate（反应仓被拆）时调用。
-     */
     fun dropOverflowItems(world: World, pos: BlockPos) {
         val cap = currentCapacity()
         if (cap >= MAX_SLOTS) return
@@ -277,16 +259,13 @@ class NuclearReactorBlockEntity(
         val newCapacity = currentCapacity()
         sync.capacity1 = newCapacity
 
-        // 容量减少时，溢出槽位的物品掉落
         dropOverflowItems(world, pos)
 
-        // 初始化 tickOffset（首次加载时）
         if (tickOffset < 0) {
             tickOffset = world.random.nextBetween(0, 19)
             markDirty()
         }
 
-        // 仅当 (world.time + tickOffset) % 20 == 0 时执行核电计算（每秒一次）
         val shouldTick = (world.time + tickOffset) % 20L == 0L
         val redstoneAllowsRun = RedstoneControlComponent.canRun(world, pos, this)
         if (shouldTick && redstoneAllowsRun) {
@@ -299,18 +278,14 @@ class NuclearReactorBlockEntity(
 
             processChambers()
 
-            // 将 emitHeatBuffer 加回堆温（组件散热蒸发为负值，即降温）
             sync.temperature = (sync.temperature + emitHeatBuffer).coerceIn(0, NuclearReactorSync.HEAT_CAPACITY)
 
-            // 将 output 转为 EU 并存储到 pendingEnergyOutput，将在后续20个tick中均摊输出
             val euTotal = (outputAccumulator * NuclearReactorSync.EU_PER_OUTPUT).toLong()
             pendingEnergyOutput = euTotal.coerceIn(0L, NuclearReactorSync.ENERGY_CAPACITY)
 
-            // 同步产热和散热数据
             sync.totalHeatProduced = totalHeatProduced
             sync.totalHeatDissipated = totalHeatDissipated
 
-            // 发送槽位产热散热信息到客户端（发电数值乘以5用于显示）
             val displaySlotHeatInfo = slotHeatInfo.mapValues { (_, info) ->
                 SlotHeatEnergyInfo(info.heatProduced, info.heatDissipated, info.energyOutput * 5)
             }
@@ -333,16 +308,12 @@ class NuclearReactorBlockEntity(
             applyHeatEffects(world, pos)
         }
 
-        // 每个tick都输出 pendingEnergyOutput 的 1/20（向下取整）
         if (pendingEnergyOutput > 0) {
             val euToAdd = pendingEnergyOutput / 20
             if (euToAdd > 0) {
                 sync.generateEnergy(euToAdd)
-                // println("add $euToAdd EU")
-                // println("avg: ${sync.flow.getSyncedInsertedAmount()}")
                 pendingEnergyOutput -= euToAdd
             }
-            // 最后一次剩下的全部输出
             if ((world.time + tickOffset) % 20L == 19L) {
                 if (pendingEnergyOutput > 0) {
                     sync.generateEnergy(pendingEnergyOutput)
@@ -361,7 +332,6 @@ class NuclearReactorBlockEntity(
         sync.syncCurrentTickFlow()
     }
 
-    /** 移除无效组件、超出容量的物品 */
     private fun dropAllUnfittingStuff(world: World, pos: BlockPos) {
         val cap = currentCapacity()
         for (i in 0 until cap) {
@@ -396,23 +366,20 @@ class NuclearReactorBlockEntity(
         }
     }
 
-    /** 双阶段 processChambers：Pass 0 发电，Pass 1 热量分配 */
     private fun processChambers() {
         val cols = getReactorCols()
         for (pass in 0..1) {
-            val heatRun = pass == 1
             for (y in 0 until 9) {
                 for (x in 0 until cols) {
                     val stack = getItemAt(x, y) ?: continue
                     if (stack.item is IReactorComponent) {
-                        (stack.item as IReactorComponent).processChamber(stack, this, x, y, heatRun)
+                        (stack.item as IReactorComponent).processChamber(stack, this, x, y, pass == 1)
                     }
                 }
             }
         }
     }
 
-    /** 堆温对环境的影响，返回 true 表示已爆炸 */
     private fun calculateHeatEffects(world: World, pos: BlockPos): Boolean {
         if (sync.temperature < NuclearReactorSync.HEAT_FIRE_THRESHOLD) return false
         val power = sync.temperature.toFloat() / NuclearReactorSync.HEAT_CAPACITY
@@ -455,14 +422,10 @@ class NuclearReactorBlockEntity(
         w.createExplosion(null, cx, cy, cz, boomPower.coerceAtMost(20f), true, World.ExplosionSourceType.BLOCK)
     }
 
-    /**
-     * 根据堆温对周围环境施加影响：着火、水蒸发、生物受伤、方块变岩浆。
-     */
     private fun applyHeatEffects(world: World, pos: BlockPos) {
         val heat = sync.temperature
         val rng = world.random
 
-        // 堆温 > 4000：5×5×5 方块有几率着火
         if (heat > NuclearReactorSync.HEAT_FIRE_THRESHOLD) {
             for (dx in -2..2) for (dy in -2..2) for (dz in -2..2) {
                 if (rng.nextFloat() > 0.02f) continue
@@ -474,7 +437,6 @@ class NuclearReactorBlockEntity(
             }
         }
 
-        // 堆温 > 5000：5×5×5 水有几率蒸发
         if (heat > NuclearReactorSync.HEAT_EVAPORATE_THRESHOLD) {
             for (dx in -2..2) for (dy in -2..2) for (dz in -2..2) {
                 if (rng.nextFloat() > 0.02f) continue
@@ -486,7 +448,6 @@ class NuclearReactorBlockEntity(
             }
         }
 
-        // 堆温 > 7000：7×7×7 生物有几率受伤（防化服可挡）
         if (heat > NuclearReactorSync.HEAT_DAMAGE_THRESHOLD) {
             val box = Box(pos).expand(3.5)
             val entities = world.getEntitiesByClass(LivingEntity::class.java, box) { true }
@@ -499,7 +460,6 @@ class NuclearReactorBlockEntity(
             }
         }
 
-        // 堆温 > 8500：5×5×5 方块有几率变岩浆
         if (heat > NuclearReactorSync.HEAT_LAVA_THRESHOLD) {
             for (dx in -2..2) for (dy in -2..2) for (dz in -2..2) {
                 if (rng.nextFloat() > 0.01f) continue
@@ -547,4 +507,3 @@ class NuclearReactorBlockEntity(
         const val MAX_SLOTS = 81
     }
 }
-

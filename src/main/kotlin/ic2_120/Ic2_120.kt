@@ -2,8 +2,9 @@ package ic2_120
 
 import ic2_120.content.RubberTreetapHandler
 import ic2_120.content.WrenchHandler
-import ic2_120.content.block.ReactorChamberBlock
-import ic2_120.content.block.ReactorChamberEnergyProvider
+import ic2_120.content.block.nuclear.ReactorChamberBlock
+import ic2_120.content.block.nuclear.ReactorChamberBlockEntity
+import ic2_120.content.block.nuclear.ReactorChamberEnergyProvider
 import ic2_120.content.block.energy.EnergyNetworkManager
 import ic2_120.content.fluid.ModFluids
 import ic2_120.content.network.NetworkManager
@@ -18,7 +19,6 @@ import ic2_120.content.block.machines.FluidHeatGeneratorBlockEntity
 import ic2_120.content.block.machines.FluidHeatExchangerBlockEntity
 import ic2_120.content.block.machines.OreWashingPlantBlockEntity
 import ic2_120.content.block.machines.PumpBlockEntity
-import ic2_120.content.block.machines.ReactorChamberBlockEntity
 import ic2_120.content.block.machines.SemifluidGeneratorBlockEntity
 import ic2_120.content.block.machines.SolarDistillerBlockEntity
 import ic2_120.content.block.machines.WaterGeneratorBlockEntity
