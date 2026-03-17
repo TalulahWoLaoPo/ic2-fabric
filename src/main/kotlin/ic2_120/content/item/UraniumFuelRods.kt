@@ -61,14 +61,10 @@ abstract class AbstractUraniumFuelRodItem(settings: FabricItemSettings, maxUse: 
         if (!heatRun) {
             // 一次性计算总发电量
             val totalPulses = (basePulses + neighborPulses) * numberOfCells
-            // for (p in 0 until totalPulses) {
-            //     acceptUraniumPulse(stack, reactor, stack, x, y, x, y, heatRun)
-            // }
             reactor.addOutput(totalPulses.toFloat())
         } else {
             // 一次性计算总热量
             val totalPulses = (basePulses + neighborPulses)
-            // println("totalPulses: $totalPulses")
             var heat = triangularNumber(basePulses + neighborPulses) * numberOfCells
             // 报告总产热
             reactor.addHeatProduced(heat)

@@ -28,6 +28,9 @@ class NuclearReactorScreen(
     /** 能量条/温度条宽度 */
     private val barWidth = 14
 
+    /** 左侧文本边距 */
+    private val leftTextMargin = 4
+
     init {
         backgroundWidth = NuclearReactorScreenHandler.FRAME_WIDTH
         backgroundHeight = handler.hotbarY + 18 + 8
@@ -53,7 +56,7 @@ class NuclearReactorScreen(
         val gridY = y + NuclearReactorScreenHandler.SLOT_GRID_Y - borderOffset
         val gridW = 9 * slotSize + borderOffset * 2
         val gridH = 9 * slotSize + borderOffset * 2
-        context.drawBorder(gridX, gridY, gridW, gridH, borderColor)
+        // context.drawBorder(gridX, gridY, gridW, gridH, borderColor)
 
         // 为每个反应堆槽位绘制外边框（参考 GeneratorScreen），让用户清楚实际有多少 slot
         for (i in 0 until handler.reactorSlotCount) {
@@ -146,59 +149,21 @@ class NuclearReactorScreen(
         val temp = handler.sync.temperature.coerceIn(0, NuclearReactorSync.HEAT_CAPACITY)
         val inputRate = handler.sync.getSyncedInsertedAmount()
         val outputRate = handler.sync.getSyncedExtractedAmount()
-        val slotSize = NuclearReactorScreenHandler.SLOT_SIZE
-        val barH = 9 * slotSize
 
-        // 标题（下移避免溢出） 暂不渲染
-        // ui.render(context, textRenderer, mouseX, mouseY) {
-        //     Column(x = left + 8, y = top + 8, spacing = 2, absolute = true) {
-        //         Text(title.string, color = 0xFFFFFF)
-        //         Text(
-        //             "输出 ${NuclearReactorSync.MAX_EXTRACT} EU/t",
-        //             color = 0xCCCCCC,
-        //             shadow = false
-        //         )
-        //     }
-        // }
+        // 在 GUI 左侧外部绘制状态信息（参考 MfsuScreen）
+        val lines = mutableListOf<String>()
+        lines.add("能量: ${formatEu(energy)}")
+        lines.add("容量: ${formatEu(cap)}")
+        lines.add("发电: ${formatEu(inputRate)} EU/t")
+        lines.add("输出: ${formatEu(outputRate)} EU/t")
+        lines.add("")
+        lines.add("堆温: $temp HU")
 
-        // 能量数值与输出速率竖排叠加在能量条上（条与 drawBackground 同位置）
-        val energyBarX = left + 9
-        val energyBarY = y + NuclearReactorScreenHandler.SLOT_GRID_Y
-        drawVerticalTextOnBar(
-            context,
-            energyBarX,
-            energyBarY,
-            barWidth,
-            barH,
-            listOf(
-                formatEu(energy),
-                formatEu(cap),
-                "EU",
-                "发电 ${formatEu(inputRate)} EU/t",
-                "输出 ${formatEu(outputRate)} EU/t"
-            )
-        )
-
-        // 温度数值竖排叠加在温度条上
-        val tempBarX = left + NuclearReactorScreenHandler.SLOT_GRID_X + 9 * slotSize + 4
-        val tempBarY = y + NuclearReactorScreenHandler.SLOT_GRID_Y
-        drawVerticalTextOnBar(context, tempBarX, tempBarY, barWidth, barH, listOf("$temp", "堆温"))
-
-        // 在能量条下方显示产热/散热信息（左边，右边留给JEI）
-        val heatInfoY = energyBarY + barH -32
-
-        // 总产热/总散热：一直显示
         val heatProduced = handler.sync.totalHeatProduced
         val heatDissipated = handler.sync.totalHeatDissipated
-        context.drawText(textRenderer, "总产热: $heatProduced", left, heatInfoY, 0xFFFFFF, false)
-        context.drawText(
-            textRenderer,
-            "总散热: $heatDissipated",
-            left,
-            heatInfoY + textRenderer.fontHeight + 2,
-            0xFFFFFF,
-            false
-        )
+        lines.add("")
+        lines.add("总产热: $heatProduced")
+        lines.add("总散热: $heatDissipated")
 
         // 槽位产热/散热/发电：只在鼠标悬停时显示
         val hoveredSlotIndex = findHoveredReactorSlot(mouseX, mouseY)
@@ -207,29 +172,31 @@ class NuclearReactorScreen(
             reactor?.let {
                 val heatInfo = it.slotHeatInfo[hoveredSlotIndex]
                 heatInfo?.let { info ->
-                    val slotInfoY = heatInfoY + textRenderer.fontHeight * 2 + 6
-                    context.drawText(textRenderer, "槽位产热: ${info.heatProduced}", left, slotInfoY, 0xFFFFAA, false)
-                    context.drawText(
-                        textRenderer,
-                        "槽位散热: ${info.heatDissipated}",
-                        left,
-                        slotInfoY + textRenderer.fontHeight + 2,
-                        0xFFFFAA,
-                        false
-                    )
-                    // 如果有发电输出，则显示
+                    lines.add("")
+                    lines.add("§e槽位产热: ${info.heatProduced}")
+                    lines.add("§e槽位散热: ${info.heatDissipated}")
                     if (info.energyOutput > 0) {
-                        context.drawText(
-                            textRenderer,
-                            "槽位发电: ${"%.2f".format(info.energyOutput)}",
-                            left,
-                            slotInfoY + (textRenderer.fontHeight + 2) * 2,
-                            0xAAFFAA,
-                            false
-                        )
+                        lines.add("§a槽位发电: ${"%.2f".format(info.energyOutput)}")
                     }
                 }
             }
+        }
+
+        // 绘制所有文本在 GUI 左侧外部
+        var textY = y + 42
+        val maxWidth = lines.maxOf { textRenderer.getWidth(it) }
+        val textX = left - maxWidth - leftTextMargin
+
+        for (line in lines) {
+            val color = when {
+                line.startsWith("§e") -> 0xFFFFAA
+                line.startsWith("§a") -> 0xAAFFAA
+                line.isBlank() -> 0xFFFFFF
+                else -> 0xFFFFFF
+            }
+            val displayLine = line.replace("§e", "").replace("§a", "")
+            context.drawText(textRenderer, displayLine, textX, textY, color, false)
+            textY += textRenderer.fontHeight + 2
         }
 
         // 手动调用 tooltip 绘制，确保物品 tooltip 显示在最上层
@@ -256,26 +223,6 @@ class NuclearReactorScreen(
         val slotX = x + slot.x
         val slotY = y + slot.y
         return mouseX >= slotX && mouseX < slotX + 18 && mouseY >= slotY && mouseY < slotY + 18
-    }
-
-    /** 在竖条上竖排叠加显示文本（多行居中） */
-    private fun drawVerticalTextOnBar(
-        context: DrawContext,
-        barX: Int,
-        barY: Int,
-        barW: Int,
-        barH: Int,
-        lines: List<String>
-    ) {
-        val lineH = textRenderer.fontHeight
-        val totalH = lines.size * lineH + (lines.size - 1) * 2
-        var y = barY + (barH - totalH) / 2
-        for (line in lines) {
-            val lineW = textRenderer.getWidth(line)
-            val x = barX + (barW - lineW) / 2
-            context.drawText(textRenderer, line, x, y, 0xFFFFFF, false)
-            y += lineH + 2
-        }
     }
 
     private fun formatEu(value: Long): String = when {
