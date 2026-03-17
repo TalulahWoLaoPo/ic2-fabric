@@ -1,23 +1,32 @@
 package ic2_120.content.block
 
+import ic2_120.Ic2_120
 import ic2_120.content.block.machines.WindGeneratorBlockEntity
 import ic2_120.registry.CreativeTab
-import ic2_120.registry.type
 import ic2_120.registry.annotation.ModBlock
+import ic2_120.registry.item
 import ic2_120.registry.type
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityTicker
 import net.minecraft.block.entity.BlockEntityType
+import net.minecraft.data.server.recipe.RecipeJsonProvider
+import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemPlacementContext
+import net.minecraft.item.Items
+import net.minecraft.recipe.book.RecipeCategory
 import net.minecraft.state.StateManager
 import net.minecraft.state.property.BooleanProperty
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
+import net.minecraft.util.Identifier
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
+import java.util.function.Consumer
 
 /**
  * 风力发电机方块。
@@ -72,5 +81,16 @@ class WindGeneratorBlock : MachineBlock() {
 
     companion object {
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")
+
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val generator = GeneratorBlock::class.item()
+            if (generator != Items.AIR) {
+                ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, WindGeneratorBlock::class.item(), 1)
+                    .pattern("I I").pattern(" G ").pattern("I I")
+                    .input('I', Items.IRON_INGOT).input('G', generator)
+                    .criterion(hasItem(generator), conditionsFromItem(generator))
+                    .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "wind_generator"))
+            }
+        }
     }
 }

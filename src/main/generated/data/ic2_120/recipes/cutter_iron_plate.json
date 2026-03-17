@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "P": {
+      "item": "ic2_120:iron_plate"
+    }
+  },
+  "pattern": [
+    "P P",
+    " P ",
+    "I I"
+  ],
+  "result": {
+    "item": "ic2_120:cutter"
+  },
+  "show_notification": true
+}

@@ -6,6 +6,20 @@ import ic2_120.registry.type
 import ic2_120.registry.annotation.ModBlock
 import ic2_120.registry.type
 import net.minecraft.block.AbstractBlock
+import net.minecraft.item.Item
+import net.minecraft.item.Items
+import net.minecraft.data.server.recipe.ShapelessRecipeJsonBuilder
+import net.minecraft.data.server.recipe.RecipeJsonProvider
+import net.minecraft.recipe.book.RecipeCategory
+import net.minecraft.util.Identifier
+import java.util.function.Consumer
+import ic2_120.Ic2_120
+import ic2_120.content.item.*
+import ic2_120.registry.instance
+import ic2_120.registry.item
+import ic2_120.registry.id
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
 
 /**
  * 锡质导线。低压传输，32 EU/t，损耗 0.2 EU/格。
@@ -16,6 +30,16 @@ class TinCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : Base
     override val tier: Int = 1
     override fun getTransferRate(): Long = 32L
     override fun getEnergyLoss(): Long = 200L
+
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, TinCableBlock::class.item(), 2)
+                .input(Cutter::class.instance())
+                .input(TinPlate::class.instance())
+                .criterion(hasItem(TinPlate::class.instance()), conditionsFromItem(TinPlate::class.instance()))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "tin_cable_from_plate"))
+        }
+    }
 }
 
 /**
@@ -27,6 +51,16 @@ class CopperCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : B
     override val tier: Int = 2
     override fun getTransferRate(): Long = 128L
     override fun getEnergyLoss(): Long = 200L
+
+    companion object {
+        fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, CopperCableBlock::class.item(), 2)
+                .input(Cutter::class.instance())
+                .input(CopperPlate::class.instance())
+                .criterion(hasItem(CopperPlate::class.instance()), conditionsFromItem(CopperPlate::class.instance()))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "copper_cable_from_plate"))
+        }
+    }
 }
 
 /**
@@ -41,6 +75,16 @@ class GoldCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : Bas
 
     override fun getCableMin(): Double = 6.5 / 16.0
     override fun getCableMax(): Double = 9.5 / 16.0
+
+    companion object {
+        fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, GoldCableBlock::class.item(), 2)
+                .input(Cutter::class.instance())
+                .input(GoldPlate::class.instance())
+                .criterion(hasItem(GoldPlate::class.instance()), conditionsFromItem(GoldPlate::class.instance()))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "gold_cable_from_plate"))
+        }
+    }
 }
 
 /**
@@ -55,6 +99,16 @@ class IronCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : Bas
 
     override fun getCableMin(): Double = 5.0 / 16.0
     override fun getCableMax(): Double = 11.0 / 16.0
+
+    companion object {
+        fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, IronCableBlock::class.item(), 2)
+                .input(Cutter::class.instance())
+                .input(IronPlate::class.instance())
+                .criterion(hasItem(IronPlate::class.instance()), conditionsFromItem(IronPlate::class.instance()))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "iron_cable_from_plate"))
+        }
+    }
 }
 
 /**
@@ -67,6 +121,16 @@ class GlassFibreCableBlock(settings: AbstractBlock.Settings = defaultSettings().
     override fun getTransferRate(): Long = 8192L
     override fun getEnergyLoss(): Long = 25L
     override val insulationLevel: Int = 5
+
+    companion object {
+        fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, GlassFibreCableBlock::class.item(), 2)
+                .input(Cutter::class.instance())
+                .input(Items.GLASS)
+                .criterion(hasItem(Items.GLASS), conditionsFromItem(Items.GLASS))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "glass_fibre_cable"))
+        }
+    }
 }
 
 // ── 绝缘导线（损耗与裸线相同，传输率与对应裸线相同，仅防止触电） ────────────────────────
@@ -81,6 +145,16 @@ class InsulatedCopperCableBlock(settings: AbstractBlock.Settings = defaultSettin
     override fun getTransferRate(): Long = 128L
     override fun getEnergyLoss(): Long = 200L
     override val insulationLevel: Int = 2
+
+    companion object {
+        fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, InsulatedCopperCableBlock::class.item(), 1)
+                .input(CopperCableBlock::class.item())
+                .input(RubberItem::class.instance())
+                .criterion(hasItem(CopperCableBlock::class.item()), conditionsFromItem(CopperCableBlock::class.item()))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "insulated_copper_cable"))
+        }
+    }
 }
 
 /**
@@ -93,6 +167,16 @@ class InsulatedTinCableBlock(settings: AbstractBlock.Settings = defaultSettings(
     override fun getTransferRate(): Long = 32L
     override fun getEnergyLoss(): Long = 200L
     override val insulationLevel: Int = 2
+
+    companion object {
+        fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, InsulatedTinCableBlock::class.item(), 1)
+                .input(TinCableBlock::class.item())
+                .input(RubberItem::class.instance())
+                .criterion(hasItem(TinCableBlock::class.item()), conditionsFromItem(TinCableBlock::class.item()))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "insulated_tin_cable"))
+        }
+    }
 }
 
 /**
@@ -108,6 +192,16 @@ class InsulatedGoldCableBlock(settings: AbstractBlock.Settings = defaultSettings
 
     override fun getCableMin(): Double = 6.5 / 16.0
     override fun getCableMax(): Double = 9.5 / 16.0
+
+    companion object {
+        fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, InsulatedGoldCableBlock::class.item(), 1)
+                .input(GoldCableBlock::class.item())
+                .input(RubberItem::class.instance())
+                .criterion(hasItem(GoldCableBlock::class.item()), conditionsFromItem(GoldCableBlock::class.item()))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "insulated_gold_cable"))
+        }
+    }
 }
 
 /**
@@ -123,6 +217,17 @@ class DoubleInsulatedGoldCableBlock(settings: AbstractBlock.Settings = defaultSe
 
     override fun getCableMin(): Double = 6.5 / 16.0
     override fun getCableMax(): Double = 9.5 / 16.0
+
+    companion object {
+        fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, DoubleInsulatedGoldCableBlock::class.item(), 1)
+                .input(GoldCableBlock::class.item())
+                .input(RubberItem::class.instance())
+                .input(RubberItem::class.instance())
+                .criterion(hasItem(GoldCableBlock::class.item()), conditionsFromItem(GoldCableBlock::class.item()))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "double_insulated_gold_cable"))
+        }
+    }
 }
 
 /**
@@ -138,6 +243,16 @@ class InsulatedIronCableBlock(settings: AbstractBlock.Settings = defaultSettings
 
     override fun getCableMin(): Double = 5.0 / 16.0
     override fun getCableMax(): Double = 11.0 / 16.0
+
+    companion object {
+        fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, InsulatedIronCableBlock::class.item(), 1)
+                .input(IronCableBlock::class.item())
+                .input(RubberItem::class.instance())
+                .criterion(hasItem(IronCableBlock::class.item()), conditionsFromItem(IronCableBlock::class.item()))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "insulated_iron_cable"))
+        }
+    }
 }
 
 /**
@@ -153,6 +268,17 @@ class DoubleInsulatedIronCableBlock(settings: AbstractBlock.Settings = defaultSe
 
     override fun getCableMin(): Double = 5.0 / 16.0
     override fun getCableMax(): Double = 11.0 / 16.0
+
+    companion object {
+        fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, DoubleInsulatedIronCableBlock::class.item(), 1)
+                .input(IronCableBlock::class.item())
+                .input(RubberItem::class.instance())
+                .input(RubberItem::class.instance())
+                .criterion(hasItem(IronCableBlock::class.item()), conditionsFromItem(IronCableBlock::class.item()))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "double_insulated_iron_cable"))
+        }
+    }
 }
 
 /**
@@ -168,4 +294,16 @@ class TripleInsulatedIronCableBlock(settings: AbstractBlock.Settings = defaultSe
 
     override fun getCableMin(): Double = 5.0 / 16.0
     override fun getCableMax(): Double = 11.0 / 16.0
+
+    companion object {
+        fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, TripleInsulatedIronCableBlock::class.item(), 1)
+                .input(IronCableBlock::class.item())
+                .input(RubberItem::class.instance())
+                .input(RubberItem::class.instance())
+                .input(RubberItem::class.instance())
+                .criterion(hasItem(IronCableBlock::class.item()), conditionsFromItem(IronCableBlock::class.item()))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "triple_insulated_iron_cable"))
+        }
+    }
 }

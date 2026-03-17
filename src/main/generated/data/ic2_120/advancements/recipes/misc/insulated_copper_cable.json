@@ -1,12 +1,12 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_insulated_copper_cable": {
+    "has_copper_cable": {
       "conditions": {
         "items": [
           {
             "items": [
-              "ic2_120:insulated_copper_cable"
+              "ic2_120:copper_cable"
             ]
           }
         ]
@@ -22,7 +22,7 @@
   },
   "requirements": [
     [
-      "has_insulated_copper_cable",
+      "has_copper_cable",
       "has_the_recipe"
     ]
   ],

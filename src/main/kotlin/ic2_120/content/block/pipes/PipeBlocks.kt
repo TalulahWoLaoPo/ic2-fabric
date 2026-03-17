@@ -29,6 +29,18 @@ import ic2_120.registry.CreativeTab
 import ic2_120.registry.type
 import ic2_120.registry.annotation.ModBlock
 import ic2_120.registry.type
+import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
+import net.minecraft.data.server.recipe.RecipeJsonProvider
+import net.minecraft.recipe.book.RecipeCategory
+import net.minecraft.util.Identifier
+import java.util.function.Consumer
+import ic2_120.Ic2_120
+import ic2_120.content.item.*
+import ic2_120.registry.instance
+import ic2_120.registry.item
+import ic2_120.registry.id
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
 
 enum class PipeSize(val baseBucketsPerSecond: Double, val radius: Double) {
     TINY(0.4, 2.0 / 16.0),
@@ -265,31 +277,133 @@ abstract class PumpAttachmentBlock(material: PipeMaterial) : BasePipeBlock(PipeS
 }
 
 @ModBlock(name = "bronze_pipe_tiny", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "pipe")
-class BronzePipeTinyBlock : BasePipeBlock(PipeSize.TINY, PipeMaterial.BRONZE)
+class BronzePipeTinyBlock : BasePipeBlock(PipeSize.TINY, PipeMaterial.BRONZE) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, BronzePipeTinyBlock::class.item(), 6)
+                .pattern("XXX").pattern("   ").pattern("XXX")
+                .input('X', BronzeCasing::class.instance())
+                .criterion(hasItem(BronzeCasing::class.instance()), conditionsFromItem(BronzeCasing::class.instance()))
+                .offerTo(exporter, BronzePipeTinyBlock::class.id())
+        }
+    }
+}
 
 @ModBlock(name = "bronze_pipe_small", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "pipe")
-class BronzePipeSmallBlock : BasePipeBlock(PipeSize.SMALL, PipeMaterial.BRONZE)
+class BronzePipeSmallBlock : BasePipeBlock(PipeSize.SMALL, PipeMaterial.BRONZE) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, BronzePipeSmallBlock::class.item(), 3)
+                .pattern("X X").pattern("X X").pattern("X X")
+                .input('X', BronzeCasing::class.instance())
+                .criterion(hasItem(BronzeCasing::class.instance()), conditionsFromItem(BronzeCasing::class.instance()))
+                .offerTo(exporter, BronzePipeSmallBlock::class.id())
+        }
+    }
+}
 
 @ModBlock(name = "bronze_pipe_medium", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "pipe")
-class BronzePipeMediumBlock : BasePipeBlock(PipeSize.MEDIUM, PipeMaterial.BRONZE)
+class BronzePipeMediumBlock : BasePipeBlock(PipeSize.MEDIUM, PipeMaterial.BRONZE) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, BronzePipeMediumBlock::class.item(), 2)
+                .pattern("XXX").pattern("   ").pattern("XXX")
+                .input('X', BronzePlate::class.instance())
+                .criterion(hasItem(BronzePlate::class.instance()), conditionsFromItem(BronzePlate::class.instance()))
+                .offerTo(exporter, BronzePipeMediumBlock::class.id())
+        }
+    }
+}
 
 @ModBlock(name = "bronze_pipe_large", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "pipe")
-class BronzePipeLargeBlock : BasePipeBlock(PipeSize.LARGE, PipeMaterial.BRONZE)
+class BronzePipeLargeBlock : BasePipeBlock(PipeSize.LARGE, PipeMaterial.BRONZE) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, BronzePipeLargeBlock::class.item(), 1)
+                .pattern("X X").pattern("X X").pattern("X X")
+                .input('X', BronzePlate::class.instance())
+                .criterion(hasItem(BronzePlate::class.instance()), conditionsFromItem(BronzePlate::class.instance()))
+                .offerTo(exporter, BronzePipeLargeBlock::class.id())
+        }
+    }
+}
 
 @ModBlock(name = "carbon_pipe_tiny", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "pipe")
-class CarbonPipeTinyBlock : BasePipeBlock(PipeSize.TINY, PipeMaterial.CARBON)
+class CarbonPipeTinyBlock : BasePipeBlock(PipeSize.TINY, PipeMaterial.CARBON) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, CarbonPipeTinyBlock::class.item(), 6)
+                .pattern("XXX").pattern("   ").pattern("XXX")
+                .input('X', CarbonFibre::class.instance())
+                .criterion(hasItem(CarbonFibre::class.instance()), conditionsFromItem(CarbonFibre::class.instance()))
+                .offerTo(exporter, CarbonPipeTinyBlock::class.id())
+        }
+    }
+}
 
 @ModBlock(name = "carbon_pipe_small", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "pipe")
-class CarbonPipeSmallBlock : BasePipeBlock(PipeSize.SMALL, PipeMaterial.CARBON)
+class CarbonPipeSmallBlock : BasePipeBlock(PipeSize.SMALL, PipeMaterial.CARBON) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, CarbonPipeSmallBlock::class.item(), 3)
+                .pattern("X X").pattern("X X").pattern("X X")
+                .input('X', CarbonFibre::class.instance())
+                .criterion(hasItem(CarbonFibre::class.instance()), conditionsFromItem(CarbonFibre::class.instance()))
+                .offerTo(exporter, CarbonPipeSmallBlock::class.id())
+        }
+    }
+}
 
 @ModBlock(name = "carbon_pipe_medium", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "pipe")
-class CarbonPipeMediumBlock : BasePipeBlock(PipeSize.MEDIUM, PipeMaterial.CARBON)
+class CarbonPipeMediumBlock : BasePipeBlock(PipeSize.MEDIUM, PipeMaterial.CARBON) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, CarbonPipeMediumBlock::class.item(), 2)
+                .pattern("XXX").pattern("   ").pattern("XXX")
+                .input('X', CarbonMesh::class.instance())
+                .criterion(hasItem(CarbonMesh::class.instance()), conditionsFromItem(CarbonMesh::class.instance()))
+                .offerTo(exporter, CarbonPipeMediumBlock::class.id())
+        }
+    }
+}
 
 @ModBlock(name = "carbon_pipe_large", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "pipe")
-class CarbonPipeLargeBlock : BasePipeBlock(PipeSize.LARGE, PipeMaterial.CARBON)
+class CarbonPipeLargeBlock : BasePipeBlock(PipeSize.LARGE, PipeMaterial.CARBON) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, CarbonPipeLargeBlock::class.item(), 1)
+                .pattern("X X").pattern("X X").pattern("X X")
+                .input('X', CarbonMesh::class.instance())
+                .criterion(hasItem(CarbonMesh::class.instance()), conditionsFromItem(CarbonMesh::class.instance()))
+                .offerTo(exporter, CarbonPipeLargeBlock::class.id())
+        }
+    }
+}
 
 @ModBlock(name = "bronze_pump_attachment", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "pipe")
-class BronzePumpAttachmentBlock : PumpAttachmentBlock(PipeMaterial.BRONZE)
+class BronzePumpAttachmentBlock : PumpAttachmentBlock(PipeMaterial.BRONZE) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, BronzePumpAttachmentBlock::class.item(), 1)
+                .pattern(" P ").pattern(" T ").pattern(" P ")
+                .input('P', BronzePlate::class.instance())
+                .input('T', BronzePipeTinyBlock::class.item())
+                .criterion(hasItem(BronzePipeTinyBlock::class.item()), conditionsFromItem(BronzePipeTinyBlock::class.item()))
+                .offerTo(exporter, BronzePumpAttachmentBlock::class.id())
+        }
+    }
+}
 
 @ModBlock(name = "carbon_pump_attachment", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "pipe")
-class CarbonPumpAttachmentBlock : PumpAttachmentBlock(PipeMaterial.CARBON)
+class CarbonPumpAttachmentBlock : PumpAttachmentBlock(PipeMaterial.CARBON) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, CarbonPumpAttachmentBlock::class.item(), 1)
+                .pattern(" P ").pattern(" T ").pattern(" P ")
+                .input('P', CarbonPlate::class.instance())
+                .input('T', CarbonPipeTinyBlock::class.item())
+                .criterion(hasItem(CarbonPipeTinyBlock::class.item()), conditionsFromItem(CarbonPipeTinyBlock::class.item()))
+                .offerTo(exporter, CarbonPumpAttachmentBlock::class.id())
+        }
+    }
+}

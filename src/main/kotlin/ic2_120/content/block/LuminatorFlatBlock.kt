@@ -1,7 +1,12 @@
 package ic2_120.content.block
 
+import ic2_120.Ic2_120
+import ic2_120.content.block.cables.InsulatedCopperCableBlock
+import ic2_120.content.block.cables.TinCableBlock
 import ic2_120.content.block.machines.LuminatorFlatBlockEntity
 import ic2_120.registry.CreativeTab
+import ic2_120.registry.instance
+import ic2_120.registry.item
 import ic2_120.registry.type
 import ic2_120.registry.annotation.ModBlock
 import ic2_120.registry.type
@@ -15,16 +20,24 @@ import net.minecraft.block.Blocks
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityTicker
 import net.minecraft.block.entity.BlockEntityType
+import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
+import net.minecraft.data.server.recipe.RecipeJsonProvider
 import net.minecraft.item.ItemPlacementContext
+import net.minecraft.item.Items
+import net.minecraft.recipe.book.RecipeCategory
 import net.minecraft.state.StateManager
 import net.minecraft.state.property.BooleanProperty
 import net.minecraft.state.property.Properties
+import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.util.shape.VoxelShape
 import net.minecraft.util.shape.VoxelShapes
 import net.minecraft.world.BlockView
 import net.minecraft.world.World
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
+import java.util.function.Consumer
 
 /**
  * 日光灯方块。支持 6 方向 facing 与 active 状态。
@@ -108,5 +121,17 @@ class LuminatorFlatBlock : BlockWithEntity(
         private val SHAPE_WEST = VoxelShapes.cuboid(1.0 - THICK, 0.0, 0.0, 1.0, 1.0, 1.0)
         private val SHAPE_UP = VoxelShapes.cuboid(0.0, 0.0, 0.0, 1.0, THICK, 1.0)
         private val SHAPE_DOWN = VoxelShapes.cuboid(0.0, 1.0 - THICK, 0.0, 1.0, 1.0, 1.0)
+
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val insulatedCopperCable = InsulatedCopperCableBlock::class.item()
+            val tinCable = TinCableBlock::class.item()
+            if (insulatedCopperCable != Items.AIR && tinCable != Items.AIR) {
+                ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, LuminatorFlatBlock::class.item(), 8)
+                    .pattern(" C ").pattern("GTG").pattern("GGG")
+                    .input('C', insulatedCopperCable).input('G', Items.GLASS).input('T', tinCable)
+                    .criterion(hasItem(insulatedCopperCable), conditionsFromItem(insulatedCopperCable))
+                    .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "luminator_flat"))
+            }
+        }
     }
 }

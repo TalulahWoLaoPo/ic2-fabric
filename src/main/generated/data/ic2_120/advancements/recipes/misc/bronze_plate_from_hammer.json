@@ -1,12 +1,12 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_bronze_plate": {
+    "has_bronze_ingot": {
       "conditions": {
         "items": [
           {
             "items": [
-              "ic2_120:bronze_plate"
+              "ic2_120:bronze_ingot"
             ]
           }
         ]
@@ -22,7 +22,7 @@
   },
   "requirements": [
     [
-      "has_bronze_plate",
+      "has_bronze_ingot",
       "has_the_recipe"
     ]
   ],

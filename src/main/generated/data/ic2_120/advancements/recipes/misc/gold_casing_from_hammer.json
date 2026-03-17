@@ -1,12 +1,12 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_gold_casing": {
+    "has_gold_plate": {
       "conditions": {
         "items": [
           {
             "items": [
-              "ic2_120:gold_casing"
+              "ic2_120:gold_plate"
             ]
           }
         ]
@@ -22,7 +22,7 @@
   },
   "requirements": [
     [
-      "has_gold_casing",
+      "has_gold_plate",
       "has_the_recipe"
     ]
   ],

@@ -1,12 +1,12 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_copper_casing": {
+    "has_copper_plate": {
       "conditions": {
         "items": [
           {
             "items": [
-              "ic2_120:copper_casing"
+              "ic2_120:copper_plate"
             ]
           }
         ]
@@ -22,7 +22,7 @@
   },
   "requirements": [
     [
-      "has_copper_casing",
+      "has_copper_plate",
       "has_the_recipe"
     ]
   ],

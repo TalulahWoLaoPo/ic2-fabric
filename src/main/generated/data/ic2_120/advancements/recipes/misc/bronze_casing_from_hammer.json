@@ -1,12 +1,12 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_bronze_casing": {
+    "has_bronze_plate": {
       "conditions": {
         "items": [
           {
             "items": [
-              "ic2_120:bronze_casing"
+              "ic2_120:bronze_plate"
             ]
           }
         ]
@@ -22,7 +22,7 @@
   },
   "requirements": [
     [
-      "has_bronze_casing",
+      "has_bronze_plate",
       "has_the_recipe"
     ]
   ],

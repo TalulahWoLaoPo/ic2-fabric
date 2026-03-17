@@ -1,28 +1,28 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_the_recipe": {
-      "conditions": {
-        "recipe": "ic2_120:triple_insulated_iron_cable"
-      },
-      "trigger": "minecraft:recipe_unlocked"
-    },
-    "has_triple_insulated_iron_cable": {
+    "has_iron_cable": {
       "conditions": {
         "items": [
           {
             "items": [
-              "ic2_120:triple_insulated_iron_cable"
+              "ic2_120:iron_cable"
             ]
           }
         ]
       },
       "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "ic2_120:triple_insulated_iron_cable"
+      },
+      "trigger": "minecraft:recipe_unlocked"
     }
   },
   "requirements": [
     [
-      "has_triple_insulated_iron_cable",
+      "has_iron_cable",
       "has_the_recipe"
     ]
   ],

@@ -1,12 +1,12 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_lead_casing": {
+    "has_lead_plate": {
       "conditions": {
         "items": [
           {
             "items": [
-              "ic2_120:lead_casing"
+              "ic2_120:lead_plate"
             ]
           }
         ]
@@ -22,7 +22,7 @@
   },
   "requirements": [
     [
-      "has_lead_casing",
+      "has_lead_plate",
       "has_the_recipe"
     ]
   ],

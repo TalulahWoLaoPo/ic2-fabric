@@ -7,12 +7,12 @@
       },
       "trigger": "minecraft:recipe_unlocked"
     },
-    "has_tin_cable": {
+    "has_tin_plate": {
       "conditions": {
         "items": [
           {
             "items": [
-              "ic2_120:tin_cable"
+              "ic2_120:tin_plate"
             ]
           }
         ]
@@ -22,7 +22,7 @@
   },
   "requirements": [
     [
-      "has_tin_cable",
+      "has_tin_plate",
       "has_the_recipe"
     ]
   ],

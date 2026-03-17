@@ -3,10 +3,10 @@
   "category": "misc",
   "ingredients": [
     {
-      "item": "ic2_120:forge_hammer"
+      "item": "minecraft:gold_ingot"
     },
     {
-      "item": "minecraft:gold_ingot"
+      "item": "ic2_120:forge_hammer"
     }
   ],
   "result": {

@@ -1,12 +1,12 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_double_insulated_gold_cable": {
+    "has_gold_cable": {
       "conditions": {
         "items": [
           {
             "items": [
-              "ic2_120:double_insulated_gold_cable"
+              "ic2_120:gold_cable"
             ]
           }
         ]
@@ -22,7 +22,7 @@
   },
   "requirements": [
     [
-      "has_double_insulated_gold_cable",
+      "has_gold_cable",
       "has_the_recipe"
     ]
   ],

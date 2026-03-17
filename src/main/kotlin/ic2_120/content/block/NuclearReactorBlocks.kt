@@ -1,8 +1,12 @@
 package ic2_120.content.block
 
+import ic2_120.Ic2_120
+import ic2_120.content.block.MachineCasingBlock
 import ic2_120.content.block.machines.NuclearReactorBlockEntity
 import ic2_120.content.block.machines.ReactorChamberBlockEntity
 import ic2_120.registry.CreativeTab
+import ic2_120.registry.instance
+import ic2_120.registry.item
 import ic2_120.registry.type
 import ic2_120.registry.annotation.ModBlock
 import ic2_120.registry.type
@@ -14,17 +18,25 @@ import net.minecraft.block.BlockWithEntity
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityTicker
 import net.minecraft.block.entity.BlockEntityType
+import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
+import net.minecraft.data.server.recipe.RecipeJsonProvider
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemPlacementContext
+import net.minecraft.item.Items
+import net.minecraft.recipe.book.RecipeCategory
 import net.minecraft.state.StateManager
 import net.minecraft.state.property.BooleanProperty
 import net.minecraft.state.property.Properties
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
+import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
+import java.util.function.Consumer
 
 /**
  * 核反应仓。单独放置无 UI、无容量。
@@ -70,6 +82,20 @@ class ReactorChamberBlock(settings: AbstractBlock.Settings = AbstractBlock.Setti
         else BlockEntityTicker { world, pos, state, blockEntity ->
             if (blockEntity is ReactorChamberBlockEntity) {
                 ReactorChamberBlockEntity.tick(world, pos, state, blockEntity)
+            }
+        }
+    }
+
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val machine = MachineCasingBlock::class.item()
+            val leadPlate = ic2_120.content.item.LeadPlate::class.instance()
+            if (machine != Items.AIR && leadPlate != Items.AIR) {
+                ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, ReactorChamberBlock::class.item(), 1)
+                    .pattern("L L").pattern(" M ").pattern("L L")
+                    .input('L', leadPlate).input('M', machine)
+                    .criterion(hasItem(leadPlate), conditionsFromItem(leadPlate))
+                    .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "reactor_chamber"))
             }
         }
     }
@@ -150,5 +176,20 @@ class NuclearReactorBlock(settings: AbstractBlock.Settings = AbstractBlock.Setti
 
     companion object {
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")
+
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val generator = GeneratorBlock::class.item()
+            val denseLeadPlate = ic2_120.content.item.DenseLeadPlate::class.instance()
+            val advancedCircuit = ic2_120.content.item.AdvancedCircuit::class.instance()
+            val reactorChamber = ReactorChamberBlock::class.item()
+            if (generator != Items.AIR && denseLeadPlate != Items.AIR && advancedCircuit != Items.AIR &&
+                reactorChamber != Items.AIR) {
+                ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, NuclearReactorBlock::class.item(), 1)
+                    .pattern("DCD").pattern("RRR").pattern("DGD")
+                    .input('D', denseLeadPlate).input('C', advancedCircuit).input('R', reactorChamber).input('G', generator)
+                    .criterion(hasItem(reactorChamber), conditionsFromItem(reactorChamber))
+                    .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "nuclear_reactor"))
+            }
+        }
     }
 }

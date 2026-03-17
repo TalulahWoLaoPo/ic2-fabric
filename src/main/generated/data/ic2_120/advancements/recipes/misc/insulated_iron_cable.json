@@ -1,12 +1,12 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_insulated_iron_cable": {
+    "has_iron_cable": {
       "conditions": {
         "items": [
           {
             "items": [
-              "ic2_120:insulated_iron_cable"
+              "ic2_120:iron_cable"
             ]
           }
         ]
@@ -22,7 +22,7 @@
   },
   "requirements": [
     [
-      "has_insulated_iron_cable",
+      "has_iron_cable",
       "has_the_recipe"
     ]
   ],

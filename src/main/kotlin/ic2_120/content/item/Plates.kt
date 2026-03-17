@@ -6,35 +6,127 @@ import ic2_120.registry.annotation.ModItem
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
 import net.minecraft.item.Item
+import net.minecraft.item.Items
+import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
+import net.minecraft.data.server.recipe.ShapelessRecipeJsonBuilder
+import net.minecraft.data.server.recipe.RecipeJsonProvider
+import net.minecraft.recipe.book.RecipeCategory
+import net.minecraft.util.Identifier
+import java.util.function.Consumer
+import ic2_120.Ic2_120
+import ic2_120.registry.instance
+import ic2_120.registry.item
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
 
 // ========== 板类（金属成型机切割：1 锭 -> 1 板；青金石/黑曜石见配方） ==========
 
 @ModItem(name = "bronze_plate", tab = CreativeTab.IC2_MATERIALS, group = "plates")
-class BronzePlate : Item(FabricItemSettings())
+class BronzePlate : Item(FabricItemSettings()) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, BronzePlate::class.instance(), 1)
+                .input(ForgeHammer::class.instance())
+                .input(BronzeIngot::class.instance())
+                .criterion(hasItem(BronzeIngot::class.instance()), conditionsFromItem(BronzeIngot::class.instance()))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "bronze_plate_from_hammer"))
+        }
+    }
+}
 
 @ModItem(name = "copper_plate", tab = CreativeTab.IC2_MATERIALS, group = "plates")
-class CopperPlate : Item(FabricItemSettings())
+class CopperPlate : Item(FabricItemSettings()) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, CopperPlate::class.instance(), 1)
+                .input(Items.COPPER_INGOT)
+                .input(ForgeHammer::class.instance())
+                .criterion(hasItem(Items.COPPER_INGOT), conditionsFromItem(Items.COPPER_INGOT))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "copper_plate_from_hammer"))
+        }
+    }
+}
 
 @ModItem(name = "gold_plate", tab = CreativeTab.IC2_MATERIALS, group = "plates")
-class GoldPlate : Item(FabricItemSettings())
+class GoldPlate : Item(FabricItemSettings()) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, GoldPlate::class.instance(), 1)
+                .input(Items.GOLD_INGOT)
+                .input(ForgeHammer::class.instance())
+                .criterion(hasItem(Items.GOLD_INGOT), conditionsFromItem(Items.GOLD_INGOT))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "gold_plate_from_hammer"))
+        }
+    }
+}
 
 @ModItem(name = "iron_plate", tab = CreativeTab.IC2_MATERIALS, group = "plates")
-class IronPlate : Item(FabricItemSettings())
+class IronPlate : Item(FabricItemSettings()) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, IronPlate::class.instance(), 1)
+                .input(ForgeHammer::class.instance())
+                .input(Items.IRON_INGOT)
+                .criterion(hasItem(Items.IRON_INGOT), conditionsFromItem(Items.IRON_INGOT))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "iron_plate_from_hammer"))
+        }
+    }
+}
 
 @ModItem(name = "lapis_plate", tab = CreativeTab.IC2_MATERIALS, group = "plates")
-class LapisPlate : Item(FabricItemSettings())
+class LapisPlate : Item(FabricItemSettings()) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, LapisPlate::class.instance(), 1)
+                .input(ForgeHammer::class.instance())
+                .input(Items.LAPIS_LAZULI)
+                .criterion(hasItem(Items.LAPIS_LAZULI), conditionsFromItem(Items.LAPIS_LAZULI))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "lapis_plate_from_hammer"))
+        }
+    }
+}
 
 @ModItem(name = "lead_plate", tab = CreativeTab.IC2_MATERIALS, group = "plates")
-class LeadPlate : Item(FabricItemSettings())
+class LeadPlate : Item(FabricItemSettings()) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, LeadPlate::class.instance(), 1)
+                .input(ForgeHammer::class.instance())
+                .input(LeadIngot::class.instance())
+                .criterion(hasItem(LeadIngot::class.instance()), conditionsFromItem(LeadIngot::class.instance()))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "lead_plate_from_hammer"))
+        }
+    }
+}
 
 @ModItem(name = "obsidian_plate", tab = CreativeTab.IC2_MATERIALS, group = "plates")
 class ObsidianPlate : Item(FabricItemSettings())
 
 @ModItem(name = "steel_plate", tab = CreativeTab.IC2_MATERIALS, group = "plates")
-class SteelPlate : Item(FabricItemSettings())
+class SteelPlate : Item(FabricItemSettings()) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, SteelPlate::class.instance(), 1)
+                .input(ForgeHammer::class.instance())
+                .input(SteelIngot::class.instance())
+                .criterion(hasItem(SteelIngot::class.instance()), conditionsFromItem(SteelIngot::class.instance()))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "steel_plate_from_hammer"))
+        }
+    }
+}
 
 @ModItem(name = "tin_plate", tab = CreativeTab.IC2_MATERIALS, group = "plates")
-class TinPlate : Item(FabricItemSettings())
+class TinPlate : Item(FabricItemSettings()) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, TinPlate::class.instance(), 1)
+                .input(ForgeHammer::class.instance())
+                .input(TinIngot::class.instance())
+                .criterion(hasItem(TinIngot::class.instance()), conditionsFromItem(TinIngot::class.instance()))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "tin_plate_from_hammer"))
+        }
+    }
+}
 
 // ========== 致密板类（压缩机：9 板 -> 1 致密板） ==========
 

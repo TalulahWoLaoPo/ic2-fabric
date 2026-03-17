@@ -639,8 +639,19 @@ object ClassScanner {
      */
     fun generateAllRecipes(recipeExporter: Consumer<RecipeJsonProvider>) {
         logger.info("开始生成配方...")
-        recipeGenerators.forEach { it(recipeExporter) }
-        logger.info("配方生成完成，共生成 {} 个配方", recipeGenerators.size)
+        var successCount = 0
+        var failCount = 0
+
+        recipeGenerators.forEach { generator ->
+            try {
+                generator(recipeExporter)
+                successCount++
+            } catch (e: Exception) {
+                logger.error("配方生成失败: {}", e.message, e)
+                failCount++
+            }
+        }
+        logger.info("配方生成完成 - 成功: {}, 失败: {}, 总计: {}", successCount, failCount, recipeGenerators.size)
     }
 
     /**

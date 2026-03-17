@@ -1,7 +1,11 @@
 package ic2_120.content.block
 
+import ic2_120.Ic2_120
+import ic2_120.content.block.MachineCasingBlock
 import ic2_120.content.block.machines.PumpBlockEntity
 import ic2_120.registry.CreativeTab
+import ic2_120.registry.instance
+import ic2_120.registry.item
 import ic2_120.registry.type
 import ic2_120.registry.annotation.ModBlock
 import ic2_120.registry.type
@@ -11,15 +15,23 @@ import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityTicker
 import net.minecraft.block.entity.BlockEntityType
+import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
+import net.minecraft.data.server.recipe.RecipeJsonProvider
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemPlacementContext
+import net.minecraft.item.Items
+import net.minecraft.recipe.book.RecipeCategory
 import net.minecraft.state.StateManager
 import net.minecraft.state.property.BooleanProperty
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
+import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
+import java.util.function.Consumer
 
 @ModBlock(name = "pump", registerItem = true, tab = CreativeTab.IC2_MACHINES)
 class PumpBlock : MachineBlock() {
@@ -74,6 +86,21 @@ class PumpBlock : MachineBlock() {
 
     companion object {
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")
+
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val machine = MachineCasingBlock::class.item()
+            val circuit = ic2_120.content.item.Circuit::class.instance()
+            val emptyCell = ic2_120.content.item.EmptyCell::class.instance()
+            val miningPipe = MiningPipeBlock::class.item()
+            val treetap = ic2_120.content.item.Treetap::class.instance()
+            if (machine != Items.AIR && emptyCell != Items.AIR && miningPipe != Items.AIR && treetap != Items.AIR && circuit != Items.AIR) {
+                ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, PumpBlock::class.item(), 1)
+                    .pattern("ECE").pattern(" M ").pattern("PTP")
+                    .input('E', emptyCell).input('C', circuit).input('M', machine).input('P', miningPipe).input('T', treetap)
+                    .criterion(hasItem(machine), conditionsFromItem(machine))
+                    .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "pump"))
+            }
+        }
     }
 }
 

@@ -6,11 +6,39 @@ import ic2_120.registry.annotation.ModItem
 import ic2_120.registry.type
 import net.minecraft.item.Item
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
+import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
+import net.minecraft.data.server.recipe.RecipeJsonProvider
+import net.minecraft.recipe.book.RecipeCategory
+import net.minecraft.util.Identifier
+import java.util.function.Consumer
+import ic2_120.Ic2_120
+import ic2_120.registry.instance
+import ic2_120.registry.item
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
 
 // ========== 金属成型机制品 ==========
 
 @ModItem(name = "tin_can", tab = CreativeTab.IC2_MATERIALS, group = "parts")
-class EmptyTinCanItem : Item(FabricItemSettings())
+class EmptyTinCanItem : Item(FabricItemSettings()) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val tinIngot = TinIngot::class.instance()
+
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, EmptyTinCanItem::class.instance(), 16)
+                .pattern("TTT").pattern("T T").pattern("TTT")
+                .input('T', tinIngot)
+                .criterion(hasItem(tinIngot), conditionsFromItem(tinIngot))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "tin_can_from_ingots_8"))
+
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, EmptyTinCanItem::class.instance(), 4)
+                .pattern(" T ").pattern("T T").pattern("TTT")
+                .input('T', tinIngot)
+                .criterion(hasItem(tinIngot), conditionsFromItem(tinIngot))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "tin_can_from_ingots_6"))
+        }
+    }
+}
 
 @ModItem(name = "filled_tin_can", tab = CreativeTab.IC2_MATERIALS, group = "parts")
 class FilledTinCanItem : Item(FabricItemSettings())

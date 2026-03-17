@@ -1,12 +1,12 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_glass_fibre_cable": {
+    "has_glass": {
       "conditions": {
         "items": [
           {
             "items": [
-              "ic2_120:glass_fibre_cable"
+              "minecraft:glass"
             ]
           }
         ]
@@ -22,7 +22,7 @@
   },
   "requirements": [
     [
-      "has_glass_fibre_cable",
+      "has_glass",
       "has_the_recipe"
     ]
   ],

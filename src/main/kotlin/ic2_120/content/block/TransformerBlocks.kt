@@ -1,28 +1,44 @@
 package ic2_120.content.block
 
+import ic2_120.content.block.MachineCasingBlock
+import ic2_120.content.block.cables.InsulatedTinCableBlock
+import ic2_120.content.block.cables.InsulatedCopperCableBlock
+import ic2_120.content.block.cables.InsulatedGoldCableBlock
+import ic2_120.content.block.cables.TripleInsulatedIronCableBlock
 import ic2_120.content.block.machines.LvTransformerBlockEntity
 import ic2_120.content.block.machines.MvTransformerBlockEntity
 import ic2_120.content.block.machines.HvTransformerBlockEntity
 import ic2_120.content.block.machines.EvTransformerBlockEntity
+import ic2_120.Ic2_120
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.type
+import ic2_120.registry.instance
+import ic2_120.registry.item
 import ic2_120.registry.annotation.ModBlock
 import ic2_120.registry.type
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityTicker
 import net.minecraft.block.entity.BlockEntityType
+import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
+import net.minecraft.data.server.recipe.RecipeJsonProvider
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemPlacementContext
+import net.minecraft.item.Items
+import net.minecraft.recipe.book.RecipeCategory
 import net.minecraft.state.StateManager
 import net.minecraft.state.property.Properties
 import net.minecraft.state.property.BooleanProperty
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
+import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
+import java.util.function.Consumer
 
 /**
  * 变压器方块基类。
@@ -119,22 +135,81 @@ abstract class TransformerBlock : DirectionalMachineBlock() {
 class LvTransformerBlock : TransformerBlock() {
     override fun createTransformerBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =
         LvTransformerBlockEntity(pos, state)
+
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val insulatedTinCable = InsulatedTinCableBlock::class.item()
+            val coil = ic2_120.content.item.Coil::class.instance()
+            val planks = Items.OAK_PLANKS
+            if (coil != Items.AIR) {
+                ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, LvTransformerBlock::class.item(), 1)
+                    .pattern("PWP").pattern("PCP").pattern("PWP")
+                    .input('P', planks).input('W', insulatedTinCable).input('C', coil)
+                    .criterion(hasItem(coil), conditionsFromItem(coil))
+                    .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "lv_transformer"))
+            }
+        }
+    }
 }
 
 @ModBlock(name = "mv_transformer", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "transformer")
 class MvTransformerBlock : TransformerBlock() {
     override fun createTransformerBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =
         MvTransformerBlockEntity(pos, state)
+
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val insulatedCopperCable = InsulatedCopperCableBlock::class.item()
+            val machine = MachineCasingBlock::class.item()
+            if (machine != Items.AIR) {
+                ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, MvTransformerBlock::class.item(), 1)
+                    .pattern(" W ").pattern(" M ").pattern(" W ")
+                    .input('W', insulatedCopperCable).input('M', machine)
+                    .criterion(hasItem(machine), conditionsFromItem(machine))
+                    .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "mv_transformer"))
+            }
+        }
+    }
 }
 
 @ModBlock(name = "hv_transformer", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "transformer")
 class HvTransformerBlock : TransformerBlock() {
     override fun createTransformerBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =
         HvTransformerBlockEntity(pos, state)
+
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val insulatedGoldCable = InsulatedGoldCableBlock::class.item()
+            val circuit = ic2_120.content.item.Circuit::class.instance()
+            val advancedReBattery = ic2_120.content.item.energy.AdvancedReBatteryItem::class.instance()
+            if (MvTransformerBlock::class.item() != Items.AIR) {
+                ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, HvTransformerBlock::class.item(), 1)
+                    .pattern(" W ").pattern("CTB").pattern(" W ")
+                    .input('W', insulatedGoldCable).input('C', circuit).input('T', MvTransformerBlock::class.item()).input('B', advancedReBattery)
+                    .criterion(hasItem(MvTransformerBlock::class.item()), conditionsFromItem(MvTransformerBlock::class.item()))
+                    .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "hv_transformer"))
+            }
+        }
+    }
 }
 
 @ModBlock(name = "ev_transformer", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "transformer")
 class EvTransformerBlock : TransformerBlock() {
     override fun createTransformerBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =
         EvTransformerBlockEntity(pos, state)
+
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val insulatedIronCable = TripleInsulatedIronCableBlock::class.item()
+            val advancedCircuit = ic2_120.content.item.AdvancedCircuit::class.instance()
+            val lapotronCrystal = ic2_120.content.item.energy.LapotronCrystalItem::class.instance()
+            if (HvTransformerBlock::class.item() != Items.AIR) {
+                ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, EvTransformerBlock::class.item(), 1)
+                    .pattern(" W ").pattern("CTL").pattern(" W ")
+                    .input('W', insulatedIronCable).input('C', advancedCircuit).input('T', HvTransformerBlock::class.item()).input('L', lapotronCrystal)
+                    .criterion(hasItem(HvTransformerBlock::class.item()), conditionsFromItem(HvTransformerBlock::class.item()))
+                    .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "ev_transformer"))
+            }
+        }
+    }
 }

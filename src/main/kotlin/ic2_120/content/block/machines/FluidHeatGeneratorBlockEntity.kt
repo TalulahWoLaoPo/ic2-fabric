@@ -37,7 +37,7 @@ import net.minecraft.world.World
 
 /**
  * 流体加热机（Liquid Fuel Firebox）。
- * - 支持沼气（Biofuel）和岩浆（Lava）
+ * - 支持沼气（Biofuel）
  * - 每秒结算：消耗 10mB/s，产 32HU/t（等价 640HU/s）
  * - 仅背面单面传热
  */
@@ -56,9 +56,6 @@ class FluidHeatGeneratorBlockEntity(
     ) {
         BIOFUEL(ModFluids.BIOFUEL_STILL, 32L, 10L, { fluid ->
             fluid == ModFluids.BIOFUEL_STILL || fluid == ModFluids.BIOFUEL_FLOWING
-        }),
-        LAVA(net.minecraft.fluid.Fluids.LAVA, 32L, 10L, { fluid ->
-            fluid == net.minecraft.fluid.Fluids.LAVA || fluid == net.minecraft.fluid.Fluids.FLOWING_LAVA
         });
 
         val heatPerSecond = heatPerTick * 20L
@@ -185,7 +182,6 @@ class FluidHeatGeneratorBlockEntity(
         val item = stack.item
         // 支持沼气桶
         if (item == Items.BUCKET) return false // 空桶不是燃料
-        if (item == Items.LAVA_BUCKET) return true
         // 检查是否是沼气桶
         val itemId = Registries.ITEM.getId(item)
         if (itemId.path == "biofuel_bucket" && itemId.namespace == "ic2_120") return true
@@ -303,17 +299,6 @@ class FluidHeatGeneratorBlockEntity(
     private fun processFuelContainers() {
         val fuelStack = getStack(FUEL_SLOT)
         when {
-            fuelStack.item == Items.LAVA_BUCKET -> {
-                val emptyBucket = ItemStack(Items.BUCKET)
-                if (canInsertEmptyContainer(emptyBucket)) {
-                    val inserted = fuelTankInternal.tryInsertFuel(net.minecraft.fluid.Fluids.LAVA, FluidConstants.BUCKET)
-                    if (inserted >= FluidConstants.BUCKET && tryInsertEmptyContainer(emptyBucket)) {
-                        fuelStack.decrement(1)
-                        if (fuelStack.isEmpty) setStack(FUEL_SLOT, ItemStack.EMPTY)
-                        markDirty()
-                    }
-                }
-            }
             fuelStack.item == Registries.ITEM.get(Identifier("ic2_120", "biofuel_bucket")) -> {
                 val emptyBucket = ItemStack(Items.BUCKET)
                 if (canInsertEmptyContainer(emptyBucket)) {
@@ -362,7 +347,6 @@ class FluidHeatGeneratorBlockEntity(
         world?.getBlockState(pos)?.get(Properties.HORIZONTAL_FACING) ?: Direction.NORTH
 
     private fun isSupportedFuelFluid(fluid: net.minecraft.fluid.Fluid): Boolean {
-        return fluid == ModFluids.BIOFUEL_STILL || fluid == ModFluids.BIOFUEL_FLOWING ||
-            fluid == net.minecraft.fluid.Fluids.LAVA || fluid == net.minecraft.fluid.Fluids.FLOWING_LAVA
+        return fluid == ModFluids.BIOFUEL_STILL || fluid == ModFluids.BIOFUEL_FLOWING
     }
 }

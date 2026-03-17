@@ -1,12 +1,12 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_gold_plate": {
+    "has_gold_ingot": {
       "conditions": {
         "items": [
           {
             "items": [
-              "ic2_120:gold_plate"
+              "minecraft:gold_ingot"
             ]
           }
         ]
@@ -22,7 +22,7 @@
   },
   "requirements": [
     [
-      "has_gold_plate",
+      "has_gold_ingot",
       "has_the_recipe"
     ]
   ],

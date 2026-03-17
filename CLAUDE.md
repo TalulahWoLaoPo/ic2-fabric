@@ -1,146 +1,26 @@
-# CLAUDE.md
+# Claude Code - IC2-120 项目指南
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+当处理此项目时，请务必先阅读 **AGENTS.md** 文件。
 
-## 项目概述
+## AGENTS.md 包含以下关键信息：
 
-这是一个使用 Kotlin 编写的 Minecraft 1.20.1 Fabric 模组 (`ic2_120`)。项目使用 Fabric Loom Gradle 插件进行构建和开发。
+1. **Mod 注册流程** - 使用类级别注解（@ModBlock、@ModItem 等）进行快速注册
+2. **子系统概览** - 电力(EU)、流体、热能(HU)、核电、升级、同步系统
+3. **机器实现模板** - 完整的 Block → BlockEntity → ScreenHandler → Screen 实现流程
+4. **配方系统** - 如何添加处理配方
+5. **资源文件** - blockstates、models、lang 等配置
+6. **常见问题** - 调试技巧
 
-## 开发参考
+## 编译注意事项
 
-开发时应参考 Fabric 官方文档。使用 context7 MCP 服务器查询最新的 Fabric API 文档:
-
-**Context7 库 ID（按优先级排序）**:
-1. `/websites/fabricmc_net_develop` - Fabric 开发文档（优先，533 个代码示例，基准分 76.18）
-2. `/fabricmc/fabric-docs` - 官方精选文档（2274 个代码示例）
-3. `/techreborn/energy` - Tech Reborn Energy API（能量存储与传输，基于 Fabric Transfer API 与 API Lookup，36 个代码示例，基准分 81.2）
-4. `/mezz/justenoughitems` - JEI (Just Enough Items) 配方查看器 API（80 个代码示例，基准分 High）- 用于注册物品子类型、配方分类等
-
-使用方法：通过 context7 的 `query-docs` 工具查询上述库 ID，获取对应 API 的类、方法和示例代码。开发电力相关功能（熔炉充能、电缆、发电机等）时优先查询 `/techreborn/energy`。开发 JEI 集成（如显示不同电量的物品变体）时查询 `/mezz/justenoughitems`。
-
-## 架构
-
-### 源码集
-项目使用分离的环境源码集:
-- `src/main/kotlin` - 通用/服务端代码 (入口点: `Ic2_120`)
-- `src/client/kotlin` - 客户端专用代码 (入口点: `Ic2_120Client`)
-- `src/main/java` - 通用/服务端的 Mixin 类
-- `src/client/java` - 客户端 Mixin 类
-
-### 入口点
-所有入口点在 `fabric.mod.json` 中定义:
-- **Main**: `Ic2_120` - ModInitializer, 在客户端和服务端上运行
-- **Client**: `Ic2_120Client` - ClientModInitializer, 仅客户端初始化
-- **DataGen**: `Ic2_120DataGenerator` - DataGeneratorEntrypoint, 生成资源/数据
-
-### Mixins
-- `ic2_120.mixins.json` - 通用/服务端 mixins
-- `ic2_120.client.mixins.json` - 仅客户端 mixins
-- Mixin 类应放在 `src/main/java/ic2_120/mixin/` 或 `src/client/java/ic2_120/mixin/client/`
-
-## 版本配置
-
-关键版本在 `gradle.properties` 中管理:
-- `minecraft_version` - 目标 Minecraft 版本 (1.20.1)
-- `loader_version` - Fabric Loader 版本
-- `fabric_api_version` - Fabric API 版本
-- `fabric_kotlin_version` - Fabric Language Kotlin 版本
-- `mod_version` - 构建的模组版本
-
-## Kotlin/JVM 配置
-
-- Kotlin 版本: 2.3.10
-- JVM 目标: Java 17
-- Kotlin 编译选项在 `build.gradle` 中配置
-
-## CI/CD
-
-GitHub Actions 工作流 (`.github/workflows/build.yml`) 会在每次推送和拉取请求时自动使用 JDK 25 构建项目。
-
-## 技术文档
-
-- **[类级别注解注册系统](docs/class_based_registry.md)** - 使用类级别注解和枚举的自动注册系统（推荐）
-- **[同步系统（C/S 属性同步）](docs/sync-system.md)** - 基于 ScreenHandler/PropertyDelegate 的整型同步（SyncedData、SyncedDataView）
-- **[ComposeUI 声明式 GUI](docs/compose-ui.md)** - 基于 DrawContext 的声明式 UI DSL，用于 Screen 布局与绘制
-- **[DrawContext 绘制方法参考](docs/drawcontext-methods.md)** - fill、drawBorder、纹理等绘制 API 说明
-- **[Assets 清单](docs/assets-inventory.md)** - 模组方块/物品资源清单与实现状态
-- **[Item 实现流程](docs/item-implemented.md)** - 如何实现一个 item，用于批量补全 assets-inventory
-- **[创建带有生物群系颜色的方块](docs/biome-colored-blocks.md)** - 如何实现根据生物群系改变颜色的方块（如草方块）
-- **[方块变体系统](docs/block-variants.md)** - 方块状态、模型变体与多版本方块实现指南
-- **[能量网络系统](docs/energy-network.md)** - EU 能量传输、电缆网络与能源存储实现
-- **[机器能力组合复用](docs/machine-composition-reuse.md)** - 发电机/槽位等组合优于继承的机器复用方案
-- **[机器升级系统](docs/upgrade-system.md)** - 升级物品、机器接口、升级组件与槽位布局
-- **[SlotSpec 槽位规则系统](docs/slot-spec-system.md)** - 槽位规则声明、堆叠限制与快速移动处理
-
-**材质路径约定**：ic2_120 模组内所有模型 JSON 引用纹理时，命名空间路径**不带复数 s**——方块纹理用 `ic2:block/...`（不用 `blocks`），物品纹理用 `ic2:item/...`（不用 `items`）。例如：`ic2:block/resource/copper_block`、`ic2:item/resource/ingot/copper`。
-
-## 注册系统架构
-
-本项目使用**类级别注解 + 枚举**的注册系统：
-
-```kotlin
-// 直接在类上添加注解
-@ModBlock(name = "copper_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS)
-class CopperBlock : Block(Settings.create())
-
-@ModBlockEntity(name = "electric_furnace")
-class ElectricFurnaceBlockEntity(...) : BlockEntity(...)
-
-// 类型安全的枚举
-enum class CreativeTab(val id: String) {
-    IC2_MATERIALS("ic2_materials"),
-    IC2_MACHINES("ic2_machines"),
-    // ...
-}
-```
-
-**关键特性**：
-- 类级别注解：Block / BlockEntity / Item / Tab 均在类上注解，无需维护注册表对象
-- 类型安全枚举：编译时检查，IDE 自动补全
-- 自动扫描：`ClassScanner.scanAndRegister()` 扫描指定包
-- 注册顺序：方块 → 方块实体类型 → 物品 → 物品栏（详见 `docs/CLASS_BASED_REGISTRY.md`）
-
-**枚举的好处**（用 `CreativeTab` 等枚举替代字符串 id）：
-- **类型安全**：编译时检查，错误枚举值直接报错
-- **IDE 自动补全**：输入 `CreativeTab.` 即可列出所有选项，无需记忆字符串
-- **重构友好**：重命名枚举值时，IDE 自动更新所有引用
-- **避免拼写错误**：使用常量而非手写字符串
-- **无需维护注册表对象**：类定义与注册合一，不必单独维护 `ModBlocks`/`ModItems` 等对象
-
-## 构建规范
-
-**重要**：使用 Gradle 构建时，**不要使用 `--no-daemon` 参数**。让 Gradle Daemon 保持运行以加快构建速度。
-
-### 常用构建命令
-
+实现机器时必须同时编译客户端和服务端：
 ```bash
-# 完整构建（服务端 + 客户端）
-./gradlew build
-
-# 只编译服务端代码（src/main/kotlin）
-./gradlew compileKotlin
-
-# 只编译客户端代码（src/client/kotlin）
-./gradlew compileClientKotlin
-
-# 仅运行数据生成器（资源/数据包自动生成，入口见 Ic2_120DataGenerator）
-./gradlew runDatagen
-
-
-# 运行客户端进行测试
-./gradlew runClient
+./gradlew clean compileKotlin compileClientKotlin
 ```
 
-错误的构建命令（避免使用）：
-```bash
-./gradlew build --no-daemon  # ❌ 不要使用
-```
+## 相关文档
 
-**编译任务说明**：
-- `compileKotlin` - 编译通用/服务端 Kotlin 代码
-- `compileClientKotlin` - 编译客户端专用 Kotlin 代码
-- `build` - 完整构建，包含编译、打包、测试等所有任务
+AGENTS.md 中列出了详细的子系统文档，位于 `docs/` 目录下。
 
-**原因**：Gradle Daemon 是一个长期运行的后台进程，可以缓存项目状态和依赖信息，显著提升后续构建速度。使用 `--no-daemon` 会每次都启动新进程，导致构建变慢。
-
-合成表在src\main\kotlin\ic2_120\content\recipes\ModRecipeProvider.kt定义
+---
+**开始任何工作前，请先阅读 AGENTS.md！**
