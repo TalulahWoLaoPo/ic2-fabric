@@ -133,13 +133,9 @@ class CreativeGeneratorBlockEntity(
 
         // 创造发电机无限生成能量（32 EU/t）
         val space = (CreativeGeneratorSync.ENERGY_CAPACITY - sync.amount).coerceAtLeast(0L)
-        val generated = if (space > 0L) {
-            minOf(CreativeGeneratorSync.GENERATION_RATE, space)
-        } else {
-            CreativeGeneratorSync.GENERATION_RATE
-        }
-        sync.generateEnergy(generated)
-        sync.addGenerated(generated)
+        val toGenerate = if (space > 0L) minOf(CreativeGeneratorSync.GENERATION_RATE, space) else 0L
+        val actualGenerated = sync.generateEnergy(toGenerate)
+        sync.addGenerated(actualGenerated)
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
         markDirty()
 

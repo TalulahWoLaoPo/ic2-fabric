@@ -104,9 +104,9 @@
 | - [x] | block.ic2.geo_generator | 地热发电机 |
 | - [ ] | block.ic2.kinetic_generator | 动能发电机 |
 | - [x] | block.ic2.rt_generator | 放射性同位素温差发电机 |
-| - [ ] | block.ic2.semifluid_generator | 半流质发电机 |
+| - [x] | block.ic2.semifluid_generator | 半流质发电机 |
 | - [x] | block.ic2.solar_generator | 太阳能发电机 |
-| - [ ] | block.ic2.stirling_generator | 斯特林发电机 |
+| - [x] | block.ic2.stirling_generator | 斯特林发电机 |
 | - [x] | block.ic2.water_generator | 水力发电机 |
 | - [x] | block.ic2.wind_generator | 风力发电机 |
 | - [x] | block.ic2.electric_heat_generator | 电力加热机 |
