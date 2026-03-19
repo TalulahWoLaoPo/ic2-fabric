@@ -307,6 +307,7 @@
   "mode.ic2_120.extruding": "挤压模式",
   "tooltip.ic2_120.cable_eu_t": "%s EU/t",
   "tooltip.ic2_120.cable_loss": "损耗: %s EU/格",
+  "tooltip.ic2_120.voltage_tier": "电压等级: %s",
   "tooltip.ic2_120.reactor_durability": "耐久: %s/%s",
   "item.ic2_120.steam_turbine_blade": "蒸汽涡轮扇叶",
   "item.ic2_120.steam_turbine": "蒸汽涡轮",

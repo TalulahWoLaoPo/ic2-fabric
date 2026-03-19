@@ -1,20 +1,23 @@
 package ic2_120.client
 
 import ic2_120.Ic2_120
+import ic2_120.content.block.ITieredMachine
 import ic2_120.content.block.cables.BaseCableBlock
-import ic2_120.content.block.nuclear.NuclearReactorBlockEntity
-import ic2_120.content.block.machines.TransformerBlockEntity
+import ic2_120.content.item.energy.ITiered
 import ic2_120.content.item.getFluidCellVariant
+import ic2_120.registry.ClassScanner
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
 import net.minecraft.item.BlockItem
 import net.minecraft.registry.Registries
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.BlockPos
 
 /**
  * 模组物品 tooltip 注册：导线显示 EU/t 与损耗，流体单元显示所含流体名称。
  * 变压器显示能量等级转换信息。
+ * 所有实现 ITiered 接口的物品显示电压等级。
  */
 object ModItemTooltip {
 
@@ -24,12 +27,13 @@ object ModItemTooltip {
             val item = stack.item
             if (item is BlockItem) {
                 val block = item.block
-                if (block is BaseCableBlock) {
+                if (block is BaseCableBlock && block is ITiered) {
                     val euPerTick = block.getTransferRate()
                     lines.add(Text.translatable("tooltip.ic2_120.cable_eu_t", euPerTick).formatted(Formatting.GRAY))
                     val lossEu = block.getEnergyLoss() / 1000.0  // getEnergyLoss() 为 milliEU/格
                     val lossStr = if (lossEu == lossEu.toLong().toDouble()) "${lossEu.toLong()}" else "%.3f".format(lossEu).trimEnd('0').trimEnd('.')
                     lines.add(Text.translatable("tooltip.ic2_120.cable_loss", lossStr).formatted(Formatting.GRAY))
+                    addVoltageTierTooltip(lines, block.tier)
                     return@register
                 }
 
@@ -57,7 +61,28 @@ object ModItemTooltip {
                 // lines.add(Text.literal("产热: 0").formatted(Formatting.GRAY))
                 // lines.add(Text.literal("散热: 0").formatted(Formatting.GRAY))
             }
+
+            // 所有实现 ITiered 的物品显示电压等级（导线已在上面处理）
+            // 机器方块通过 @ModBlockEntity 映射获取 BlockEntity，再取 tier
+            val tier = when {
+                item is ITiered -> (item as ITiered).tier
+                item is BlockItem && item.block is ITiered -> (item.block as ITiered).tier
+                item is BlockItem -> {
+                    val beType = ClassScanner.getBlockEntityTypeForBlock(item.block)
+                    val be = beType?.instantiate(BlockPos.ORIGIN, item.block.defaultState)
+                    (be as? ITieredMachine)?.tier
+                }
+                else -> null
+            }
+            if (tier != null) {
+                addVoltageTierTooltip(lines, tier)
+            }
         }
+    }
+
+    private fun addVoltageTierTooltip(lines: MutableList<Text>, tier: Int) {
+        val tierName = "${tier}"
+        lines.add(Text.translatable("tooltip.ic2_120.voltage_tier", tierName).formatted(Formatting.GRAY))
     }
 
     /**

@@ -1,19 +1,20 @@
 package ic2_120.content.block
 
+import ic2_120.content.item.energy.ITiered
 import ic2_120.content.upgrade.ITransformerUpgradeSupport
 import net.minecraft.util.math.Direction
 
 /**
  * 能量机器接口
  *
- * 表示具有能量等级的机器方块实体。
+ * 继承 [ITiered]，表示具有能量等级的机器方块实体。
  * 用于区分不同层级的能量设备，确保充电规则正确应用。
  *
  * 分面电压等级（可选）：
  * 某些机器（如变压器）的不同面可能有不同的电压等级。
  * 如果实现了分面电压，机器应重写 [getVoltageTierForSide] 方法。
  */
-interface ITieredMachine {
+interface ITieredMachine : ITiered {
 
     companion object {
         /** 每个电压等级对应的 EU/t（32 * 4^(tier-1)） */
@@ -43,7 +44,7 @@ interface ITieredMachine {
      * - 等级 5 机器可以输入 8192 EU/t。
      * 如果机器想提高耐压等级，那就放置高压升级，每放一个电压等级提升1
      */
-    val tier: Int
+    // tier 由 ITiered 继承
 
     /**
      * 获取机器在特定方向的电压等级。

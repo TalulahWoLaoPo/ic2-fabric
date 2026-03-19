@@ -307,6 +307,7 @@
   "mode.ic2_120.extruding": "Extruding Mode",
   "tooltip.ic2_120.cable_eu_t": "%s EU/t",
   "tooltip.ic2_120.cable_loss": "Loss: %s EU/block",
+  "tooltip.ic2_120.voltage_tier": "Voltage Tier: %s",
   "tooltip.ic2_120.reactor_durability": "Durability: %s/%s",
   "item.ic2_120.steam_turbine_blade": "Steam Turbine Blade",
   "item.ic2_120.steam_turbine": "Steam Turbine",

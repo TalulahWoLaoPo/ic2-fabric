@@ -85,6 +85,9 @@ object ClassScanner {
     /** 存储 BlockEntityType（供扩展方法访问） */
     private val blockEntityTypes = mutableMapOf<kotlin.reflect.KClass<*>, BlockEntityType<*>>()
 
+    /** Block -> BlockEntityType 映射（由 @ModBlockEntity 注解建立，供 tooltip 等获取 tier） */
+    private val blockToBlockEntityType = mutableMapOf<net.minecraft.block.Block, BlockEntityType<*>>()
+
     /** 存储 ScreenHandlerType（供扩展方法访问） */
     private val screenHandlerTypes = mutableMapOf<kotlin.reflect.KClass<*>, ScreenHandlerType<*>>()
 
@@ -120,6 +123,7 @@ object ClassScanner {
         TransparentBlockRegistry.clear()
         blockInstances.clear()
         itemInstances.clear()
+        blockToBlockEntityType.clear()
         recipeGenerators.clear()
 
         // 按顺序注册：方块 → 方块实体类型 → ScreenHandler → 物品 → 物品栏
@@ -453,6 +457,9 @@ object ClassScanner {
                 val type = FabricBlockEntityTypeBuilder.create(factory, block).build() as BlockEntityType<BlockEntity>
                 Registry.register(Registries.BLOCK_ENTITY_TYPE, id, type)
                 blockEntityTypes[clazz] = type
+                if (block != net.minecraft.block.Blocks.AIR) {
+                    blockToBlockEntityType[block] = type
+                }
                 logger.debug("已注册方块实体类型: {}", id)
 
                 // 若存在 @RegisterEnergy 字段，则向 Energy API 注册 SIDED 查找
@@ -684,6 +691,13 @@ object ClassScanner {
     internal fun <T : BlockEntity> getBlockEntityType(clazz: kotlin.reflect.KClass<T>): BlockEntityType<T> =
         blockEntityTypes[clazz] as? BlockEntityType<T>
             ?: error("BlockEntityType not found: ${clazz.simpleName}")
+
+    /**
+     * 根据 @ModBlockEntity(block = XBlock::class) 建立的映射，获取方块对应的 BlockEntityType。
+     * 用于 tooltip 等场景从 BlockEntity 获取 tier。
+     */
+    fun getBlockEntityTypeForBlock(block: net.minecraft.block.Block): BlockEntityType<*>? =
+        blockToBlockEntityType[block]
 
     /**
      * 获取 ScreenHandlerType
