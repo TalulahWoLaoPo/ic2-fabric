@@ -187,7 +187,7 @@
 | - [ ] | block.ic2.energy_o_mat | 能源交易机 |
 | - [ ] | block.ic2.trade_o_mat | 贸易箱 |
 | - [ ] | block.ic2.personal_chest | 保险箱 |
-| - [ ] | block.ic2.chunk_loader | 区块加载器 |
+| - [x] | block.ic2.chunk_loader | 区块加载器 |
 | - [ ] | block.ic2.weighted_fluid_distributor | 高级流体分配机 |
 | - [ ] | block.ic2.weighted_item_distributor | 高级物品分配机 |
 
@@ -922,7 +922,7 @@
 | - [ ] | item.ic2.cesu_chargepad | 充电座 (CESU) |
 | - [ ] | item.ic2.centrifuge | 热能离心机 |
 | - [ ] | item.ic2.cesu | CESU 储电箱 |
-| - [ ] | item.ic2.chunk_loader | 区块加载器 |
+| - [x] | item.ic2.chunk_loader | 区块加载器 |
 | - [x] | item.ic2.compressor | 压缩机 |
 | - [ ] | item.ic2.condenser | 冷凝机 |
 | - [x] | item.ic2.copper_block | 铜块 |
