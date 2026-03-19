@@ -182,7 +182,7 @@
 | - [ ] | block.ic2.teleporter | 传送机 |
 | - [ ] | block.ic2.terraformer | 地形转换机 |
 | - [x] | block.ic2.tesla_coil | 特斯拉线圈 |
-| - [ ] | block.ic2.canner | 流体/固体装罐机 |
+| - [x] | block.ic2.canner | 流体/固体装罐机 |
 | - [x] | block.ic2.solid_canner | 固体装罐机 |
 | - [ ] | block.ic2.energy_o_mat | 能源交易机 |
 | - [ ] | block.ic2.trade_o_mat | 贸易箱 |

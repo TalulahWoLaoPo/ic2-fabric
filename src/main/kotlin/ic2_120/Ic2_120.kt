@@ -19,6 +19,7 @@ import ic2_120.content.block.cables.CableBlockEntity
 import ic2_120.content.block.machines.GeoGeneratorBlockEntity
 import ic2_120.content.block.machines.FluidHeatGeneratorBlockEntity
 import ic2_120.content.block.machines.FluidHeatExchangerBlockEntity
+import ic2_120.content.block.machines.CannerBlockEntity
 import ic2_120.content.block.machines.FluidBottlerBlockEntity
 import ic2_120.content.block.machines.OreWashingPlantBlockEntity
 import ic2_120.content.block.machines.PumpBlockEntity
@@ -115,6 +116,7 @@ object Ic2_120 : ModInitializer {
         SolarDistillerBlockEntity.registerFluidStorageLookup()
         PumpBlockEntity.registerFluidStorageLookup()
         FluidBottlerBlockEntity.registerFluidStorageLookup()
+        CannerBlockEntity.registerFluidStorageLookup()
 
         // 核反应堆的流体存储注册
         NuclearReactorBlockEntity.registerFluidStorageLookup()
