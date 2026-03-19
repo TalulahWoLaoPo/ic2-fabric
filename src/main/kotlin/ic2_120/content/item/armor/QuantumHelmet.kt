@@ -34,7 +34,7 @@ import net.minecraft.world.World
  *
  * 1. **夜视**：694 EU/tick（10M EU / 8小时 = 576000 ticks）
  * 2. **水下呼吸**：消耗 air_cell → empty_cell
- * 3. **补充饱食度**：消耗 filled_tin_can → tin_can，1000 EU/次
+ * 3. **补充饱食度**：穿戴全套量子护甲时，饱食度不满自动从背包拿满锡罐食用，1000 EU/次
  * 4. **消除 debuff**：中毒/凋零，100 EU/次
  *
  * **夜视快捷键**：Alt + N
@@ -98,8 +98,11 @@ class QuantumHelmet : QuantumArmorItem(ModArmorMaterials.QUANTUM_ARMOR, ArmorIte
             }
         }
 
-        // 功能 3: 补充饱食度
-        if (player.hungerManager.foodLevel < 20 && energy >= FOOD_FILL_COST) {
+        // 功能 3: 补充饱食度（需全套量子护甲，自动从背包拿满锡罐食用）
+        if (QuantumArmorItem.hasFullQuantumArmor(player) &&
+            player.hungerManager.foodLevel < 20 &&
+            energy >= FOOD_FILL_COST
+        ) {
             val cooldown = nbt.getInt(FOOD_CHECK_COOLDOWN_KEY)
             if (cooldown <= 0) {
                 if (consumeFilledTinCanIfAvailable(player)) {
@@ -184,5 +187,6 @@ class QuantumHelmet : QuantumArmorItem(ModArmorMaterials.QUANTUM_ARMOR, ArmorIte
 
         tooltip.add(Text.literal("夜视: ${if (nvEnabled) "§aON" else "§cOFF"} §8[${remainingMinutes}分钟]").formatted(Formatting.GRAY))
         tooltip.add(Text.literal("减伤: 15% | 水下呼吸 | 消除debuff").formatted(Formatting.GRAY))
+        tooltip.add(Text.literal("全套时: 饱食不满自动吃满锡罐").formatted(Formatting.GRAY))
     }
 }

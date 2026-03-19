@@ -2,6 +2,8 @@ package ic2_120.content.item.armor
 
 import ic2_120.content.item.ModArmorMaterials
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
+import net.minecraft.entity.EquipmentSlot
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ArmorItem
 import net.minecraft.item.ArmorMaterial
 
@@ -41,6 +43,14 @@ abstract class QuantumArmorItem(
 ) : ElectricArmorItem(material, type, settings) {
 
     override val tier: Int = 4
+
+    companion object {
+        /** 检查玩家是否穿戴全套量子护甲 */
+        fun hasFullQuantumArmor(player: PlayerEntity): Boolean {
+            val slots = arrayOf(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET)
+            return slots.all { player.getEquippedStack(it).item is QuantumArmorItem }
+        }
+    }
     override val maxCapacity: Long = 10_000_000L
 
     /**
