@@ -1,0 +1,103 @@
+package ic2_120.content.block
+
+import ic2_120.Ic2_120
+import ic2_120.content.block.machines.InductionFurnaceBlockEntity
+import ic2_120.registry.CreativeTab
+import ic2_120.registry.annotation.ModBlock
+import ic2_120.registry.instance
+import ic2_120.registry.item
+import ic2_120.registry.type
+import net.minecraft.block.BlockState
+import net.minecraft.block.entity.BlockEntity
+import net.minecraft.block.entity.BlockEntityTicker
+import net.minecraft.block.entity.BlockEntityType
+import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
+import net.minecraft.data.server.recipe.RecipeJsonProvider
+import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.recipe.book.RecipeCategory
+import net.minecraft.state.StateManager
+import net.minecraft.state.property.BooleanProperty
+import net.minecraft.util.ActionResult
+import net.minecraft.util.Hand
+import net.minecraft.util.Identifier
+import net.minecraft.util.hit.BlockHitResult
+import net.minecraft.util.math.BlockPos
+import net.minecraft.world.World
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
+import java.util.function.Consumer
+
+/**
+ * 感应炉方块。使用电力加热并快速烧制物品，支持双槽同时加工。
+ * 热量机制：持续红石信号时热量上升（消耗 1 EU/t），无信号时热量衰减。
+ * 能量等级：2（MV, 最高 128 EU/t）
+ */
+@ModBlock(name = "induction_furnace", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+class InductionFurnaceBlock : MachineBlock() {
+
+    override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =
+        InductionFurnaceBlockEntity(pos, state)
+
+    override fun <T : BlockEntity> getTicker(
+        world: World,
+        state: BlockState,
+        type: BlockEntityType<T>
+    ): BlockEntityTicker<T>? =
+        if (world.isClient) null
+        else checkType(type, InductionFurnaceBlockEntity::class.type()) { w, p, s, be -> (be as InductionFurnaceBlockEntity).tick(w, p, s) }
+
+    override fun createScreenHandlerFactory(state: BlockState, world: World, pos: BlockPos): net.minecraft.screen.NamedScreenHandlerFactory? {
+        val be = world.getBlockEntity(pos)
+        return be as? net.minecraft.screen.NamedScreenHandlerFactory
+    }
+
+    override fun onUse(
+        state: BlockState,
+        world: World,
+        pos: BlockPos,
+        player: PlayerEntity,
+        hand: Hand,
+        hit: BlockHitResult
+    ): ActionResult {
+        if (!world.isClient) {
+            createScreenHandlerFactory(state, world, pos)?.let { factory ->
+                player.openHandledScreen(factory)
+            }
+        }
+        return ActionResult.SUCCESS
+    }
+
+    override fun appendProperties(builder: StateManager.Builder<net.minecraft.block.Block, BlockState>) {
+        super.appendProperties(builder)
+        builder.add(ACTIVE)
+    }
+
+    override fun getPlacementState(ctx: net.minecraft.item.ItemPlacementContext): BlockState? =
+        super.getPlacementState(ctx)?.with(ACTIVE, false)
+
+    companion object {
+        val ACTIVE: BooleanProperty = BooleanProperty.of("active")
+
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val circuit = ic2_120.content.item.AdvancedCircuit::class.instance()
+            val machineCasing = MachineCasingBlock::class.item()
+            val ironFurnace = IronFurnaceBlock::class.item()
+            val goldCable = ic2_120.content.block.cables.GoldCableBlock::class.item()
+            val reBattery = ic2_120.content.item.energy.ReBatteryItem::class.instance()
+
+            if (circuit != net.minecraft.item.Items.AIR && machineCasing != net.minecraft.item.Items.AIR) {
+                ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, InductionFurnaceBlock::class.item(), 1)
+                    .pattern("CGC")
+                    .pattern("MFM")
+                    .pattern("BBB")
+                    .input('C', circuit)
+                    .input('G', goldCable)
+                    .input('M', machineCasing)
+                    .input('F', ironFurnace)
+                    .input('B', reBattery)
+                    .criterion(hasItem(circuit), conditionsFromItem(circuit))
+                    .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "induction_furnace"))
+            }
+        }
+    }
+}

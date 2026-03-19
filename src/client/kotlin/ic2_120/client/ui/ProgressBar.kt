@@ -127,6 +127,39 @@ object ProgressBar {
     }
 
     /**
+     * 热量条：从蓝色（冷）渐变到橙色（热）。
+     * @param fraction 热量 0f～1f
+     */
+    @JvmStatic
+    fun drawHeatBar(
+        context: DrawContext,
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+        fraction: Float
+    ) {
+        val f = fraction.coerceIn(0f, 1f)
+        // 背景
+        context.fill(x, y, x + width, y + height, BG_COLOR)
+        val filledW = (f * width).toInt()
+        if (filledW > 0) {
+            // 蓝(0%) -> 青 -> 绿 -> 黄 -> 橙 -> 红(100%)
+            // 简化：蓝到红的渐变
+            for (i in 0 until filledW) {
+                val t = i.toFloat() / filledW.coerceAtLeast(1)
+                // 0% → 蓝 (0,0,255), 100% → 橙 (255,100,0)
+                val r = (255 * t).toInt()
+                val g = (100 * (1 - t)).toInt()
+                val b = (255 * (1 - t)).toInt()
+                val color = (0xFF shl 24) or (r shl 16) or (g shl 8) or b
+                context.fill(x + i, y, x + i + 1, y + height, color)
+            }
+        }
+        context.drawBorder(x, y, width, height, BORDER_COLOR)
+    }
+
+    /**
      * 在两个 ARGB 颜色之间插值
      * @param color1 起始颜色（ARGB 格式，如 0xFFFF0000）
      * @param color2 结束颜色（ARGB 格式，如 0xFF0000FF）

@@ -143,7 +143,7 @@
 | - [ ] | block.ic2.block_cutter | 方块切割机 |
 | - [ ] | block.ic2.centrifuge | 热能离心机 |
 | - [ ] | block.ic2.fermenter | 发酵机 |
-| - [ ] | block.ic2.induction_furnace | 感应炉 |
+| - [x] | block.ic2.induction_furnace | 感应炉 |
 | - [x] | block.ic2.metal_former | 金属成型机 |
 | - [x] | block.ic2.ore_washing_plant | 洗矿机 |
 
@@ -946,7 +946,7 @@
 | - [ ] | item.ic2.mfsu_chargepad | 充电座 (MFSU) |
 | - [ ] | item.ic2.miner | 采矿机 |
 | - [ ] | item.ic2.mv_transformer | 中压变压器 |
-| - [ ] | item.ic2.induction_furnace | 感应炉 |
+| - [x] | item.ic2.induction_furnace | 感应炉 |
 
 
 ---
