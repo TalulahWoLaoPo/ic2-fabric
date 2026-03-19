@@ -11,8 +11,7 @@ import ic2_120.content.screen.slot.SlotTarget
 import ic2_120.content.sync.GeoGeneratorSync
 import ic2_120.content.syncs.SyncedDataView
 import ic2_120.content.item.isLavaFuel
-import ic2_120.content.item.energy.IElectricTool
-import ic2_120.content.item.energy.IBatteryItem
+import ic2_120.content.item.energy.canBeCharged
 import ic2_120.registry.annotation.ModScreenHandler
 import ic2_120.registry.type
 import net.minecraft.entity.player.PlayerEntity
@@ -140,7 +139,7 @@ class GeoGeneratorScreenHandler(
         )
         private val BATTERY_SLOT_SPEC = SlotSpec(
             maxItemCount = 1,
-            canInsert = { stack -> stack.item is IBatteryItem || stack.item is IElectricTool }
+            canInsert = { stack -> stack.canBeCharged() }
         )
 
         // 槽位索引

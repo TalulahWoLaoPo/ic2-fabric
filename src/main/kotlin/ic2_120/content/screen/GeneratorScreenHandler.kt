@@ -8,6 +8,7 @@ import ic2_120.content.screen.slot.PredicateSlot
 import ic2_120.content.screen.slot.SlotMoveHelper
 import ic2_120.content.screen.slot.SlotSpec
 import ic2_120.content.screen.slot.SlotTarget
+import ic2_120.content.item.energy.canBeCharged
 import ic2_120.content.syncs.SyncedDataView
 import ic2_120.registry.annotation.ModScreenHandler
 import ic2_120.registry.type
@@ -114,7 +115,7 @@ class GeneratorScreenHandler(
         )
         private val BATTERY_SLOT_SPEC = SlotSpec(
             maxItemCount = 1,
-            canInsert = { stack -> stack.item is IBatteryItem || stack.item is IElectricTool }
+            canInsert = { stack -> stack.canBeCharged() }
         )
 
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): GeneratorScreenHandler {

@@ -40,6 +40,7 @@ class BatteryChargerComponent(
     }
 
     private fun chargeBattery(stack: net.minecraft.item.ItemStack, battery: IBatteryItem): Long {
+        if (!battery.canCharge) return 0L
         if (battery.tier > machineTierProvider()) return 0L
         if (battery.isFullyCharged(stack)) return 0L
 

@@ -2,8 +2,7 @@ package ic2_120.content.screen
 
 import ic2_120.content.block.RtGeneratorBlock
 import ic2_120.content.block.machines.RtGeneratorBlockEntity
-import ic2_120.content.item.energy.IElectricTool
-import ic2_120.content.item.energy.IBatteryItem
+import ic2_120.content.item.energy.canBeCharged
 import ic2_120.content.screen.slot.PredicateSlot
 import ic2_120.content.screen.slot.SlotMoveHelper
 import ic2_120.content.screen.slot.SlotSpec
@@ -116,7 +115,7 @@ class RtGeneratorScreenHandler(
         )
         private val BATTERY_SLOT_SPEC = SlotSpec(
             maxItemCount = 1,
-            canInsert = { stack -> stack.item is IBatteryItem || stack.item is IElectricTool }
+            canInsert = { stack -> stack.canBeCharged() }
         )
 
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): RtGeneratorScreenHandler {

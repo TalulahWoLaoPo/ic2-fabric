@@ -4,8 +4,7 @@ import ic2_120.content.block.IGenerator
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.block.WindGeneratorBlock
 import ic2_120.content.energy.charge.BatteryChargerComponent
-import ic2_120.content.item.energy.IElectricTool
-import ic2_120.content.item.energy.IBatteryItem
+import ic2_120.content.item.energy.canBeCharged
 import ic2_120.content.screen.WindGeneratorScreenHandler
 import ic2_120.content.sync.WindGeneratorSync
 import ic2_120.content.syncs.SyncedData
@@ -119,7 +118,7 @@ class WindGeneratorBlockEntity(
     fun canPlaceInSlot(slot: Int, stack: ItemStack): Boolean {
         if (stack.isEmpty) return false
         return when (slot) {
-            BATTERY_SLOT -> stack.item is IBatteryItem || stack.item is IElectricTool
+            BATTERY_SLOT -> stack.canBeCharged()
             else -> false
         }
     }

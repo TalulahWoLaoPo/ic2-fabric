@@ -5,8 +5,7 @@ import ic2_120.content.block.IGenerator
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.block.RtGeneratorBlock
 import ic2_120.content.energy.charge.BatteryChargerComponent
-import ic2_120.content.item.energy.IElectricTool
-import ic2_120.content.item.energy.IBatteryItem
+import ic2_120.content.item.energy.canBeCharged
 import ic2_120.content.screen.RtGeneratorScreenHandler
 import ic2_120.content.sync.RtGeneratorSync
 import ic2_120.content.syncs.SyncedData
@@ -126,7 +125,7 @@ class RtGeneratorBlockEntity(
         if (stack.isEmpty) return false
         return when {
             slot in FUEL_SLOT_START..FUEL_SLOT_END -> isRtgPellet(stack)
-            slot == BATTERY_SLOT -> stack.item is IBatteryItem || stack.item is IElectricTool
+            slot == BATTERY_SLOT -> stack.canBeCharged()
             else -> false
         }
     }

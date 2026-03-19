@@ -3,7 +3,7 @@ package ic2_120.content.screen
 import ic2_120.content.block.SemifluidGeneratorBlock
 import ic2_120.content.block.machines.SemifluidGeneratorBlockEntity
 import ic2_120.content.item.isSemifluidFuel
-import ic2_120.content.item.energy.IBatteryItem
+import ic2_120.content.item.energy.canBeCharged
 import ic2_120.content.screen.slot.PredicateSlot
 import ic2_120.content.screen.slot.SlotMoveHelper
 import ic2_120.content.screen.slot.SlotSpec
@@ -132,7 +132,7 @@ class SemifluidGeneratorScreenHandler(
             canInsert = { stack -> stack.isSemifluidFuel() }
         )
         private val EMPTY_CONTAINER_SLOT_SPEC = SlotSpec(maxItemCount = 64, canInsert = { false })
-        private val BATTERY_SLOT_SPEC = SlotSpec(maxItemCount = 1, canInsert = { stack -> stack.item is IBatteryItem })
+        private val BATTERY_SLOT_SPEC = SlotSpec(maxItemCount = 1, canInsert = { stack -> stack.canBeCharged() })
 
         const val SLOT_UPGRADE_INDEX_START = 3
         const val SLOT_UPGRADE_INDEX_END = 6

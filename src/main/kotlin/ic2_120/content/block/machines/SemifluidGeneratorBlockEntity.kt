@@ -5,7 +5,7 @@ import ic2_120.content.block.SemifluidGeneratorBlock
 import ic2_120.content.block.IGenerator
 import ic2_120.content.energy.charge.BatteryChargerComponent
 import ic2_120.content.fluid.ModFluids
-import ic2_120.content.item.energy.IBatteryItem
+import ic2_120.content.item.energy.canBeCharged
 import ic2_120.content.item.getFluidCellVariant
 import ic2_120.content.item.isSemifluidFuel
 import ic2_120.content.screen.SemifluidGeneratorScreenHandler
@@ -198,7 +198,7 @@ class SemifluidGeneratorBlockEntity(
         return when (slot) {
             FUEL_SLOT -> stack.isSemifluidFuel()
             EMPTY_CONTAINER_SLOT -> false
-            BATTERY_SLOT -> stack.item is IBatteryItem
+            BATTERY_SLOT -> stack.canBeCharged()
             else -> false
         }
     }

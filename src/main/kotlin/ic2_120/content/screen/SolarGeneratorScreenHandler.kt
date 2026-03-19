@@ -2,8 +2,7 @@ package ic2_120.content.screen
 
 import ic2_120.content.block.SolarGeneratorBlock
 import ic2_120.content.block.machines.SolarGeneratorBlockEntity
-import ic2_120.content.item.energy.IElectricTool
-import ic2_120.content.item.energy.IBatteryItem
+import ic2_120.content.item.energy.canBeCharged
 import ic2_120.content.sync.SolarGeneratorSync
 import ic2_120.content.syncs.SyncedDataView
 import ic2_120.content.screen.slot.PredicateSlot
@@ -95,7 +94,7 @@ class SolarGeneratorScreenHandler(
         const val SLOT_SIZE = 18
         private val BATTERY_SLOT_SPEC = SlotSpec(
             maxItemCount = 1,
-            canInsert = { stack -> stack.item is IBatteryItem || stack.item is IElectricTool }
+            canInsert = { stack -> stack.canBeCharged() }
         )
 
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): SolarGeneratorScreenHandler {

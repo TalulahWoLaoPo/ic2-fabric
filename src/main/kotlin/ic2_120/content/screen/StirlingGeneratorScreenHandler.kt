@@ -3,8 +3,8 @@ package ic2_120.content.screen
 import ic2_120.content.block.StirlingGeneratorBlock
 import ic2_120.content.block.machines.StirlingGeneratorBlockEntity
 import ic2_120.content.sync.StirlingGeneratorSync
-import ic2_120.content.syncs.SyncedDataView
 import ic2_120.content.screen.slot.PredicateSlot
+import ic2_120.content.syncs.SyncedDataView
 import ic2_120.content.screen.slot.SlotSpec
 import ic2_120.registry.annotation.ModScreenHandler
 import ic2_120.registry.type

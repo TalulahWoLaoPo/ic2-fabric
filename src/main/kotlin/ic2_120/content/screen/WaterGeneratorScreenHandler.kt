@@ -2,8 +2,7 @@ package ic2_120.content.screen
 
 import ic2_120.content.block.WaterGeneratorBlock
 import ic2_120.content.block.machines.WaterGeneratorBlockEntity
-import ic2_120.content.item.energy.IElectricTool
-import ic2_120.content.item.energy.IBatteryItem
+import ic2_120.content.item.energy.canBeCharged
 import ic2_120.registry.annotation.ModScreenHandler
 import ic2_120.registry.type
 import net.minecraft.entity.player.PlayerEntity
@@ -113,7 +112,7 @@ class WaterGeneratorScreenHandler(
         )
         private val BATTERY_SLOT_SPEC = SlotSpec(
             maxItemCount = 1,
-            canInsert = { stack -> stack.item is IBatteryItem || stack.item is IElectricTool }
+            canInsert = { stack -> stack.canBeCharged() }
         )
 
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): WaterGeneratorScreenHandler {

@@ -26,6 +26,7 @@ import net.minecraft.state.property.Properties
 import net.minecraft.text.Text
 import ic2_120.content.item.energy.IElectricTool
 import ic2_120.content.item.energy.IBatteryItem
+import ic2_120.content.item.energy.canBeCharged
 import net.minecraft.util.collection.DefaultedList
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
@@ -106,8 +107,8 @@ class GeneratorBlockEntity(
                 getFuelTime(stack) > 0
             }
             BATTERY_SLOT -> {
-                // 充电槽：允许电池或电动工具
-                stack.item is IBatteryItem || stack.item is IElectricTool
+                // 充电槽：允许可充电电池或电动工具
+                stack.canBeCharged()
             }
             else -> false
         }

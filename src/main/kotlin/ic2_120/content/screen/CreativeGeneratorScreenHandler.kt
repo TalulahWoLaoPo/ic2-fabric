@@ -2,8 +2,7 @@ package ic2_120.content.screen
 
 import ic2_120.content.block.CreativeGeneratorBlock
 import ic2_120.content.block.machines.CreativeGeneratorBlockEntity
-import ic2_120.content.item.energy.IBatteryItem
-import ic2_120.content.item.energy.IElectricTool
+import ic2_120.content.item.energy.canBeCharged
 import ic2_120.content.screen.slot.PredicateSlot
 import ic2_120.content.screen.slot.SlotSpec
 import ic2_120.content.sync.CreativeGeneratorSync
@@ -38,7 +37,7 @@ class CreativeGeneratorScreenHandler(
 
     private val batterySlotSpec = SlotSpec(
         canInsert = { stack ->
-            !stack.isEmpty && (stack.item is IBatteryItem || stack.item is IElectricTool)
+            !stack.isEmpty && stack.canBeCharged()
         },
         maxItemCount = 1
     )

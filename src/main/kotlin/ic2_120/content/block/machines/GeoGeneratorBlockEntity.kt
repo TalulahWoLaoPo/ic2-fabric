@@ -5,6 +5,7 @@ import ic2_120.content.block.IGenerator
 import ic2_120.content.energy.charge.BatteryChargerComponent
 import ic2_120.content.item.LavaCell
 import ic2_120.content.item.energy.IBatteryItem
+import ic2_120.content.item.energy.canBeCharged
 import ic2_120.Ic2_120
 import ic2_120.content.sync.GeoGeneratorSync
 import ic2_120.content.syncs.SyncedData
@@ -206,7 +207,7 @@ class GeoGeneratorBlockEntity(
         return when (slot) {
             FUEL_SLOT -> stack.item == Items.LAVA_BUCKET || stack.item is LavaCell
             EMPTY_CONTAINER_SLOT -> false  // 仅机器输出，玩家不可放入
-            BATTERY_SLOT -> stack.item is IBatteryItem
+            BATTERY_SLOT -> stack.canBeCharged()
             else -> false
         }
     }

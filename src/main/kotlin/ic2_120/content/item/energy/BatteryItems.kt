@@ -105,6 +105,7 @@ class LapotronCrystalWirelessItem : WirelessBatteryItemBase(
 class SingleUseBatteryItem : BatteryItemBase(
     name = "single_use_battery", tier = 1, maxCapacity = 10_000, transferSpeed = 32, canChargeWireless = false
 ) {
+    override val canCharge: Boolean get() = false
     override fun discharge(stack: net.minecraft.item.ItemStack, amount: Long): Long {
         val discharged = super.discharge(stack, amount)
 
