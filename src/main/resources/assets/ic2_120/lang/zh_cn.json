@@ -490,5 +490,13 @@
   "effect.ic2_120.solar_generating.description": "太阳能头盔正在输出 1 EU/t",
   "block.ic2_120.liquid_heat_exchanger": "流体热交换机",
   "container.ic2_120.liquid_heat_exchanger": "流体热交换机",
-  "gui.ic2_120.block_cutter.blade_too_weak": "锯片硬度不够或者没有锯片"
+  "gui.ic2_120.block_cutter.blade_too_weak": "锯片硬度不够或者没有锯片",
+  "block.ic2_120.bronze_tank": "青铜储罐",
+  "block.ic2_120.iron_tank": "铁储罐",
+  "block.ic2_120.steel_tank": "钢制储罐",
+  "block.ic2_120.iridium_tank": "铱储罐",
+  "container.ic2_120.bronze_tank": "青铜储罐",
+  "container.ic2_120.iron_tank": "铁储罐",
+  "container.ic2_120.steel_tank": "钢制储罐",
+  "container.ic2_120.iridium_tank": "铱储罐"
 }

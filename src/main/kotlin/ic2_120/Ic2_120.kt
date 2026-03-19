@@ -30,6 +30,7 @@ import ic2_120.content.block.machines.SemifluidGeneratorBlockEntity
 import ic2_120.content.block.machines.SolarDistillerBlockEntity
 import ic2_120.content.block.machines.WaterGeneratorBlockEntity
 import ic2_120.content.block.storage.StorageBoxBlockEntity
+import ic2_120.content.block.storage.TankBlockEntity
 import ic2_120.content.block.transmission.TransmissionBlockEntity
 import ic2_120.content.block.pipes.PipeBlockEntity
 import ic2_120.content.block.pipes.PipeNetworkManager
@@ -103,6 +104,10 @@ object Ic2_120 : ModInitializer {
 
         // 特殊处理：储物箱 BlockEntity 需在所有方块注册后统一注册（一个 BE 类型关联多种储物箱方块）
         StorageBoxBlockEntity.register(MOD_ID)
+
+        // 特殊处理：储罐 BlockEntity 需在所有方块注册后统一注册（一个 BE 类型关联多种储罐方块）
+        TankBlockEntity.register(MOD_ID)
+        TankBlockEntity.registerFluidStorageLookup()
 
         // 传动轴/伞齿轮 BlockEntity（仅用于 BER 动画渲染）
         TransmissionBlockEntity.register(MOD_ID)
