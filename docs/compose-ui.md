@@ -28,6 +28,21 @@ class MyScreen(...) : HandledScreen<...>(...) {
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean =
         ui.mouseClicked(mouseX, mouseY, button) || super.mouseClicked(mouseX, mouseY, button)
+
+    // ScrollView 滚动支持（不需要滚动时也可不实现）
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean =
+        ui.mouseScrolled(mouseX, mouseY, 0.0, amount)
+            || super.mouseScrolled(mouseX, mouseY, amount)
+
+    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int,
+                             deltaX: Double, deltaY: Double): Boolean =
+        ui.mouseDragged(mouseX, mouseY, button)
+            || super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+
+    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        ui.stopDrag()
+        return super.mouseReleased(mouseX, mouseY, button)
+    }
 }
 ```
 
@@ -35,11 +50,13 @@ class MyScreen(...) : HandledScreen<...>(...) {
 
 ## 架构
 
-每帧三阶段，无状态，无 diff/recomposition：
+每帧三阶段，无 diff/recomposition（但 ScrollView 的滚动偏移量通过 RenderContext 跨帧保持）：
 
 ```
 DSL 构建 → 节点树 → Measure(自底向上) → Render(自顶向下) → DrawContext 绘制
 ```
+
+**RenderContext** 在整棵节点树中共享，存储 `mouseX/mouseY`、`buttonHits`、`tooltipHits`、`scrollHits` 及滚动偏移量映射。
 
 **两遍布局算法**确保每个节点恰好被访问两次（O(n)），避免父子元素反复更新：
 
@@ -151,6 +168,23 @@ override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean 
 EnergyBar(fraction = 0.5f)                    // 50%，默认 100×8
 EnergyBar(0.25f, barWidth = 80, barHeight = 6)
 ```
+
+### ItemStack
+
+物品/方块图标节点，渲染 ItemStack 的贴图，支持数量角标和悬浮提示。
+
+```kotlin
+ItemStack(
+    stack: ItemStack,
+    size: Int = 16,           // 图标尺寸（默认 16×16）
+    showCount: Boolean = true, // 是否在右下角显示数量角标
+    x: Int = 0, y: Int = 0,
+    absolute: Boolean = false,
+    modifier: Modifier = Modifier.EMPTY
+)
+```
+
+悬停时自动显示物品的 `getName()` tooltip。
 
 ---
 
@@ -274,6 +308,68 @@ Flex(
 
 ---
 
+## ScrollView
+
+垂直滚动视图容器。使用 Minecraft `enableScissor` 裁剪超出视口的内容，支持三种交互方式：
+
+- **滚轮滚动**：鼠标悬停在滚动区域时，滚轮推动内容滚动
+- **Track 跳转**：点击滚动条轨道（thumb 以外的区域），内容跳转到对应位置
+- **Thumb 拖拽**：点击并拖拽滑块，内容跟随 thumb 位置
+
+```kotlin
+ScrollView(
+    width: Int,                 // 视口宽度（不含滚动条）
+    height: Int,                // 视口高度
+    scrollbarWidth: Int = 6,  // 滚动条宽度
+    x: Int = 0, y: Int = 0,
+    absolute: Boolean = false,
+    modifier: Modifier = Modifier.EMPTY
+) {
+    // 任意嵌套内容（Column / Flex / Row / Text / Button ...）
+    Column(spacing = 4) {
+        for (item in items) {
+            Text(item.name)
+        }
+    }
+}
+```
+
+### 尺寸行为
+
+- 视口宽度 = `width`，视口高度 = `height`
+- 内部内容高度不受限制，由子节点自由延伸（measure 时 maxHeight = `Int.MAX_VALUE`）
+- `maxScroll = max(0, contentH - viewportH)`，当内容未超出视口时隐藏滚动条
+
+### 稳定性策略：节点 ID
+
+每帧 DSL 树重建时，同一位置的 `ScrollView` 按深度优先遍历顺序分配**递增序号**作为稳定 ID（`nodeIdGen` 闭包）。只要 UI 结构不变，ID 在各帧之间保持一致，滚动偏移量通过 `Map<Int, Int>` 跨帧持久化。
+
+### Screen 中的事件转发
+
+```kotlin
+override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean =
+    ui.mouseScrolled(mouseX, mouseY, 0.0, amount)
+        || super.mouseScrolled(mouseX, mouseY, amount)
+
+override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int,
+                          deltaX: Double, deltaY: Double): Boolean =
+    ui.mouseDragged(mouseX, mouseY, button)
+        || super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+
+override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    ui.stopDrag()
+    return super.mouseReleased(mouseX, mouseY, button)
+}
+```
+
+> 注意：Minecraft 1.20 的 `HandledScreen` 只暴露 4 参数的 `mouseScrolled(mouseX, mouseY, amount)`（amount 已是垂直滚动值），ComposeUI 内部会将其映射到 `scrollOffsets`。
+
+### 限制
+
+不支持嵌套 ScrollView（Minecraft scissor 不支持嵌套裁剪区域）。如需多层滚动，需分拆到不同 GUI 面板。
+
+---
+
 ## Modifier
 
 链式修饰符，用于设置尺寸、内边距、背景和边框。所有元素和容器都支持。
@@ -302,13 +398,14 @@ Modifier.EMPTY                           // 空修饰符
 
 ```
 src/client/kotlin/ic2_120/client/compose/
-├── ComposeUI.kt      入口类：render() 三阶段编排，mouseClicked() 按钮命中检测
+├── ComposeUI.kt      入口类：render() 三阶段编排，mouseClicked/mouseScrolled/mouseDragged/stopDrag 事件
 ├── Constraints.kt    Constraints（最大宽高约束）、Size
 ├── Modifier.kt       Modifier 链式修饰符、Padding
 ├── Position.kt       Position 密封类：Flow（文档流）、Absolute（绝对定位）
-├── UiNode.kt         节点基类 + TextNode / ImageNode / ButtonNode /
-│                      ColumnNode / RowNode / FlexNode / TableNode / RootNode
-└── UiScope.kt        @UiDsl 作用域：Column / Row / Flex / Table / Text / Image / Button；TableScope.row
+├── UiNode.kt         节点基类 + TextNode / ImageNode / ButtonNode / ItemStackNode /
+│                      ColumnNode / RowNode / FlexNode / TableNode / ScrollViewNode / RootNode
+└── UiScope.kt        @UiDsl 作用域：Column / Row / Flex / Table / ScrollView / Text / Image / Button / ItemStack；
+                       TableScope.row
 ```
 
 **业务 UI 组件**（基于 compose 的扩展，与框架分离）：
@@ -374,5 +471,50 @@ ui.render(context, textRenderer, mouseX, mouseY) {
     // 绝对定位（脱离文档流）
     Text("绝对定位测试", x = left + backgroundWidth - 60, y = top - 10,
          absolute = true, color = 0xFFFF00)
+}
+```
+
+### 带 ScrollView 的示例（Scanner 扫描结果）
+
+```kotlin
+// 扫描结果区：固定视口 160×80，内含可变行数矿物列表
+ScrollView(
+    width = 160,
+    height = 80,
+    scrollbarWidth = 8,
+    x = left + 8,
+    y = top + 80
+) {
+    Column(spacing = 2) {
+        Text("扫描结果:", color = 0xFFFFFF)
+        for (row in results.chunked(6)) {
+            Flex(
+                direction = FlexDirection.ROW,
+                justifyContent = JustifyContent.SPACE_BETWEEN,
+                gap = 4,
+                modifier = Modifier.EMPTY.width(152)
+            ) {
+                for (entry in row) {
+                    ItemStack(entry.stack, size = 12, showCount = false)
+                    Text("${entry.count}", color = 0xFFAA33)
+                }
+            }
+        }
+    }
+}
+
+// Screen 中的事件转发
+override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean =
+    ui.mouseScrolled(mouseX, mouseY, 0.0, amount)
+        || super.mouseScrolled(mouseX, mouseY, amount)
+
+override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int,
+                          deltaX: Double, deltaY: Double): Boolean =
+    ui.mouseDragged(mouseX, mouseY, button)
+        || super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+
+override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    ui.stopDrag()
+    return super.mouseReleased(mouseX, mouseY, button)
 }
 ```

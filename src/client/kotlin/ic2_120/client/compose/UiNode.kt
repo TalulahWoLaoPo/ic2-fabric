@@ -17,6 +17,15 @@ class RenderContext {
 
     val buttonHits = mutableListOf<ButtonHit>()
     val tooltipHits = mutableListOf<TooltipHit>()
+    val scrollHits = mutableListOf<ScrollHit>()
+
+    private val scrollOffsets = mutableMapOf<Int, Int>()
+
+    fun getScrollOffset(nodeId: Int): Int = scrollOffsets.getOrDefault(nodeId, 0)
+
+    fun setScrollOffset(nodeId: Int, offset: Int) {
+        scrollOffsets[nodeId] = offset
+    }
 
     data class ButtonHit(
         val x: Int, val y: Int,
@@ -28,6 +37,14 @@ class RenderContext {
         val x: Int, val y: Int,
         val w: Int, val h: Int,
         val lines: List<net.minecraft.text.Text>
+    )
+
+    data class ScrollHit(
+        val x: Int, val y: Int,
+        val w: Int, val h: Int,
+        val nodeId: Int,
+        val maxScroll: Int,
+        val thumbHit: Boolean
     )
 }
 
@@ -547,6 +564,74 @@ class TableNode(
                 cursorX += colWidth + columnSpacing
             }
             cursorY += rowHeight + rowSpacing
+        }
+    }
+}
+
+// ──────────────────────────── ScrollView ────────────────────────────
+
+class ScrollViewNode(
+    val nodeId: Int,
+    val scrollbarWidth: Int = 6,
+    val scrollbarTrackColor: Int = 0xFF333333.toInt(),
+    val thumbColor: Int = 0xFF888888.toInt(),
+    val thumbHoverColor: Int = 0xFFAAAAAA.toInt(),
+    val children: List<UiNode>
+) : UiNode() {
+
+    private var contentH: Int = 0
+
+    override fun measure(ctx: RenderContext, constraints: Constraints) {
+        val pad = modifier.padding
+        val innerMaxW = (modifier.width?.let { it - pad.horizontal - scrollbarWidth } ?: constraints.maxWidth)
+            .coerceAtLeast(0)
+        // Width constrained; height unconstrained so content can extend freely
+        val childConstraints = Constraints(innerMaxW, Int.MAX_VALUE)
+
+        children.forEach { it.measure(ctx, childConstraints) }
+        contentH = children.sumOf { it.measuredHeight }
+
+        measuredWidth = modifier.width ?: (innerMaxW + pad.horizontal + scrollbarWidth)
+        measuredHeight = modifier.height ?: (contentH + pad.vertical)
+    }
+
+    override fun render(ctx: RenderContext, originX: Int, originY: Int) {
+        val pad = modifier.padding
+        val vpX = originX + pad.left
+        val vpY = originY + pad.top
+        val vpW = measuredWidth - pad.horizontal - scrollbarWidth
+        val vpH = measuredHeight - pad.vertical
+
+        val maxScroll = (contentH - vpH).coerceAtLeast(0)
+        val scrollY = ctx.getScrollOffset(nodeId).coerceIn(0, maxScroll)
+
+        // 1. Clip → draw children with vertical offset
+        ctx.drawContext.enableScissor(vpX, vpY, vpX + vpW, vpY + vpH)
+        var cursorY = 0
+        for (child in children) {
+            child.render(ctx, vpX, vpY + cursorY - scrollY)
+            cursorY += child.measuredHeight
+        }
+        ctx.drawContext.disableScissor()
+
+        // 2. Scrollbar
+        if (maxScroll > 0) {
+            val trackX = vpX + vpW
+            val thumbH = (vpH.toFloat() * vpH / contentH).toInt().coerceAtLeast(10)
+            val thumbMaxY = vpH - thumbH
+            val thumbY = vpY + (scrollY.toFloat() * thumbMaxY / maxScroll).toInt()
+
+            val hovered = ctx.mouseX in trackX until (trackX + scrollbarWidth)
+                    && ctx.mouseY in vpY until (vpY + vpH)
+
+            ctx.drawContext.fill(trackX, vpY, trackX + scrollbarWidth, vpY + vpH, scrollbarTrackColor)
+            ctx.drawContext.fill(trackX, thumbY, trackX + scrollbarWidth, thumbY + thumbH,
+                if (hovered) thumbHoverColor else thumbColor)
+            ctx.drawContext.drawBorder(trackX, vpY, scrollbarWidth, vpH, 0xFF444444.toInt())
+
+            val thumbHit = ctx.mouseX in trackX until (trackX + scrollbarWidth)
+                    && ctx.mouseY in thumbY until (thumbY + thumbH)
+            ctx.scrollHits += RenderContext.ScrollHit(trackX, vpY, scrollbarWidth, vpH, nodeId, maxScroll, thumbHit)
         }
     }
 }

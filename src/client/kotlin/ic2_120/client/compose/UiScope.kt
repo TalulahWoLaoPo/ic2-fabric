@@ -16,6 +16,9 @@ class UiScope {
     @PublishedApi
     internal val children = mutableListOf<UiNode>()
 
+    /** Shared node ID generator across the whole tree. Set by ComposeUI.render(). */
+    var nodeIdGen: () -> Int = { -1 }
+
     fun Column(
         x: Int = 0,
         y: Int = 0,
@@ -24,7 +27,11 @@ class UiScope {
         modifier: Modifier = Modifier.EMPTY,
         content: UiScope.() -> Unit
     ) {
-        val inner = UiScope().apply(content)
+        // nodeIdGen is shared closure over parent's counter.
+        // After inner content runs (which may call nodeIdGen for nested ScrollViews),
+        // parent's counter = initial + N. We call nodeIdGen() once more for this Column's ID.
+        val inner = UiScope().apply { nodeIdGen = this@UiScope.nodeIdGen }.apply(content)
+        val nodeId = nodeIdGen()
         val node = ColumnNode(spacing, inner.children).apply {
             this.position = if (absolute) Position.Absolute(x, y) else Position.Flow(x, y)
             this.modifier = modifier
@@ -40,7 +47,8 @@ class UiScope {
         modifier: Modifier = Modifier.EMPTY,
         content: UiScope.() -> Unit
     ) {
-        val inner = UiScope().apply(content)
+        val inner = UiScope().apply { nodeIdGen = this@UiScope.nodeIdGen }.apply(content)
+        val nodeId = nodeIdGen()
         val node = RowNode(spacing, inner.children).apply {
             this.position = if (absolute) Position.Absolute(x, y) else Position.Flow(x, y)
             this.modifier = modifier
@@ -75,7 +83,8 @@ class UiScope {
         modifier: Modifier = Modifier.EMPTY,
         content: UiScope.() -> Unit
     ) {
-        val inner = UiScope().apply(content)
+        val inner = UiScope().apply { nodeIdGen = this@UiScope.nodeIdGen }.apply(content)
+        val nodeId = nodeIdGen()
         val node = FlexNode(direction, justifyContent, alignItems, gap, inner.children).apply {
             this.position = if (absolute) Position.Absolute(x, y) else Position.Flow(x, y)
             this.modifier = modifier
@@ -170,7 +179,10 @@ class UiScope {
         modifier: Modifier = Modifier.EMPTY,
         content: TableScope.() -> Unit
     ) {
-        val scope = TableScope().apply(content)
+        val scope = TableScope().apply {
+            nodeIdGen = this@UiScope.nodeIdGen
+        }.apply(content)
+        val nodeId = nodeIdGen()
         val node = TableNode(scope.rows, columnSpacing, rowSpacing, columnWidths).apply {
             this.position = if (absolute) Position.Absolute(x, y) else Position.Flow(x, y)
             this.modifier = modifier
@@ -198,6 +210,39 @@ class UiScope {
         }
         children += node
     }
+
+    /**
+     * 滚动视图。支持鼠标滚轮滚动、点击 track 跳转、拖拽 thumb 滚动。
+     * 注意：不支持嵌套 ScrollView（scissor 无法嵌套）。
+     *
+     * @param width          视口宽度（不含滚动条）
+     * @param height         视口高度
+     * @param scrollbarWidth 滚动条宽度，默认 6
+     * @param x              布局 x 偏移
+     * @param y              布局 y 偏移
+     * @param absolute       是否使用绝对定位
+     * @param modifier       修饰符
+     * @param content        子节点（内容高度可超出 [height]）
+     */
+    fun ScrollView(
+        width: Int,
+        height: Int,
+        scrollbarWidth: Int = 6,
+        x: Int = 0,
+        y: Int = 0,
+        absolute: Boolean = false,
+        modifier: Modifier = Modifier.EMPTY,
+        content: UiScope.() -> Unit
+    ) {
+        val inner = UiScope().apply { nodeIdGen = this@UiScope.nodeIdGen }.apply(content)
+        // nodeIdGen is called for any nested ScrollViews already; now call for this one
+        val nodeId = nodeIdGen()
+        val node = ScrollViewNode(nodeId, scrollbarWidth, children = inner.children).apply {
+            this.position = if (absolute) Position.Absolute(x, y) else Position.Flow(x, y)
+            this.modifier = modifier.width(width + scrollbarWidth).height(height)
+        }
+        children += node
+    }
 }
 
 /**
@@ -208,8 +253,11 @@ class TableScope {
     @PublishedApi
     internal val rows = mutableListOf<List<UiNode>>()
 
+    /** Shared node ID generator — propagate to inner UiScope. */
+    var nodeIdGen: () -> Int = { -1 }
+
     fun row(content: UiScope.() -> Unit) {
-        val inner = UiScope().apply(content)
+        val inner = UiScope().apply { nodeIdGen = this@TableScope.nodeIdGen }.apply(content)
         rows += inner.children
     }
 }

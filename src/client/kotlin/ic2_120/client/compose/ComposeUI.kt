@@ -30,10 +30,13 @@ import net.minecraft.text.Text
 class ComposeUI {
 
     private val renderCtx = RenderContext()
+    private var draggingNodeId: Int = -1
+    private var thumbHit: Boolean = false
 
     /**
      * 构建节点树 → 测量 → 绘制，三阶段在一帧内完成。
      * [content] 中使用 [UiScope] DSL 声明 UI 结构。
+     * [nodeIdGen] is passed from outside so ScrollView nodes get stable IDs across frames.
      */
     fun render(
         drawContext: DrawContext,
@@ -42,14 +45,20 @@ class ComposeUI {
         mouseY: Int,
         content: UiScope.() -> Unit
     ) {
+        var counter = 0
+        val idGen: () -> Int = { counter++ }
+
         renderCtx.drawContext = drawContext
         renderCtx.textRenderer = textRenderer
         renderCtx.mouseX = mouseX
         renderCtx.mouseY = mouseY
         renderCtx.buttonHits.clear()
         renderCtx.tooltipHits.clear()
+        renderCtx.scrollHits.clear()
 
-        val scope = UiScope().apply(content)
+        val scope = UiScope().apply {
+            nodeIdGen = idGen
+        }.apply(content)
         val root = RootNode(scope.children)
 
         val constraints = Constraints(
@@ -78,10 +87,76 @@ class ComposeUI {
         if (button != 0) return false
         val mx = mouseX.toInt()
         val my = mouseY.toInt()
-        val hit = renderCtx.buttonHits.lastOrNull { h ->
+
+        // Button hits
+        val btnHit = renderCtx.buttonHits.lastOrNull { h ->
+            mx in h.x until (h.x + h.w) && my in h.y until (h.y + h.h)
+        }
+        if (btnHit != null) {
+            btnHit.onClick()
+            return true
+        }
+
+        // ScrollView track click → jump to position
+        val scrollHit = renderCtx.scrollHits.lastOrNull { h ->
+            mx in h.x until (h.x + h.w) && my in h.y until (h.y + h.h)
+        }
+        if (scrollHit != null && !scrollHit.thumbHit) {
+            // Clicked track (not thumb): jump to clicked position
+            val trackH = scrollHit.h
+            val relative = (my - scrollHit.y).toFloat() / trackH
+            val newScroll = (relative * scrollHit.maxScroll).toInt().coerceIn(0, scrollHit.maxScroll)
+            renderCtx.setScrollOffset(scrollHit.nodeId, newScroll)
+            return true
+        }
+
+        // ScrollView thumb click → start drag
+        if (scrollHit?.thumbHit == true) {
+            draggingNodeId = scrollHit.nodeId
+            thumbHit = true
+            return true
+        }
+
+        return false
+    }
+
+    /**
+     * 处理鼠标滚轮滚动。返回 true 表示已消费事件。
+     */
+    fun mouseScrolled(mouseX: Double, mouseY: Double,
+                      horizontalAmount: Double, verticalAmount: Double): Boolean {
+        if (verticalAmount == 0.0) return false
+        val mx = mouseX.toInt()
+        val my = mouseY.toInt()
+        val hit = renderCtx.scrollHits.lastOrNull { h ->
             mx in h.x until (h.x + h.w) && my in h.y until (h.y + h.h)
         } ?: return false
-        hit.onClick()
+        val delta = verticalAmount.toInt().coerceIn(-1, 1) * 3
+        val current = renderCtx.getScrollOffset(hit.nodeId)
+        renderCtx.setScrollOffset(hit.nodeId, (current + delta).coerceIn(0, hit.maxScroll))
         return true
+    }
+
+    /**
+     * 处理鼠标拖拽（用于滚动条 thumb 拖动）。返回 true 表示已消费事件。
+     */
+    fun mouseDragged(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        if (!thumbHit || button != 0 || draggingNodeId < 0) return false
+        val my = mouseY.toInt()
+        val hit = renderCtx.scrollHits.lastOrNull { it.nodeId == draggingNodeId } ?: return false
+        val trackH = hit.h
+        if (trackH <= 0) return false
+        val relative = (my - hit.y).toFloat() / trackH
+        val newScroll = (relative * hit.maxScroll).toInt().coerceIn(0, hit.maxScroll)
+        renderCtx.setScrollOffset(draggingNodeId, newScroll)
+        return true
+    }
+
+    /**
+     * 在 mouseReleased 中调用，停止 thumb 拖动。
+     */
+    fun stopDrag() {
+        draggingNodeId = -1
+        thumbHit = false
     }
 }
