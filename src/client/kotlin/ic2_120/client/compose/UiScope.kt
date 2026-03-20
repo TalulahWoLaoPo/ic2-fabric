@@ -120,6 +120,26 @@ class UiScope {
         children += node
     }
 
+    /**
+     * 渲染物品/方块图标，可选数量角标。
+     * @param showCount 是否在图标上绘制数量（false 时可用 Text 单独显示在后面）
+     */
+    fun ItemStack(
+        stack: net.minecraft.item.ItemStack,
+        size: Int = 16,
+        showCount: Boolean = true,
+        x: Int = 0,
+        y: Int = 0,
+        absolute: Boolean = false,
+        modifier: Modifier = Modifier.EMPTY
+    ) {
+        val node = ItemStackNode(stack, size, showCount).apply {
+            this.position = if (absolute) Position.Absolute(x, y) else Position.Flow(x, y)
+            this.modifier = modifier
+        }
+        children += node
+    }
+
     fun Button(
         text: String,
         x: Int = 0,

@@ -2,6 +2,8 @@ package ic2_120
 
 import ic2_120.client.ArmorKeybinds
 import ic2_120.client.ArmorTooltipHandler
+import ic2_120.client.DrillTooltipHandler
+import ic2_120.client.ModeKeybinds
 import ic2_120.client.BatteryModelPredicates
 import ic2_120.client.ModItemTooltip
 import ic2_120.client.ModFluidClient
@@ -29,8 +31,10 @@ object Ic2_120Client : ClientModInitializer {
 
 		// 注册网络管理器
 		NetworkManager.register()
+		ModeKeybinds.register()
 		ArmorKeybinds.register()
 		ArmorTooltipHandler.register()
+		DrillTooltipHandler.register()
 
 		// 注册储物箱着色器
 		StorageBoxColorProvider.register()

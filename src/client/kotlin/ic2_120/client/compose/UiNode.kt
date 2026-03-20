@@ -16,11 +16,18 @@ class RenderContext {
     var mouseY: Int = 0
 
     val buttonHits = mutableListOf<ButtonHit>()
+    val tooltipHits = mutableListOf<TooltipHit>()
 
     data class ButtonHit(
         val x: Int, val y: Int,
         val w: Int, val h: Int,
         val onClick: () -> Unit
+    )
+
+    data class TooltipHit(
+        val x: Int, val y: Int,
+        val w: Int, val h: Int,
+        val lines: List<net.minecraft.text.Text>
     )
 }
 
@@ -150,6 +157,46 @@ class ImageNode(
             regionWidth, regionHeight,
             textureWidth, textureHeight
         )
+    }
+}
+
+// ──────────────────────────── ItemStack ────────────────────────────
+
+/**
+ * 物品/方块图标节点。渲染 ItemStack 的贴图，可选数量角标。
+ * @param showCount 是否在图标上绘制数量角标（false 时数量可单独用 Text 显示在后面）
+ */
+class ItemStackNode(
+    val stack: net.minecraft.item.ItemStack,
+    val size: Int = 16,
+    val showCount: Boolean = true
+) : UiNode() {
+
+    override fun measure(ctx: RenderContext, constraints: Constraints) {
+        val pad = modifier.padding
+        measuredWidth = modifier.width ?: (size + pad.horizontal)
+        measuredHeight = modifier.height ?: (size + pad.vertical)
+    }
+
+    override fun render(ctx: RenderContext, originX: Int, originY: Int) {
+        renderModifierDecoration(ctx, originX, originY)
+        val pad = modifier.padding
+        val px = originX + pad.left
+        val py = originY + pad.top
+        if (!stack.isEmpty) {
+            ctx.drawContext.drawItemWithoutEntity(stack, px, py)
+            if (showCount && stack.count > 1) {
+                val countStr = if (stack.count >= 1000) "${stack.count / 1000}k" else stack.count.toString()
+                ctx.drawContext.drawText(
+                    ctx.textRenderer, countStr,
+                    px + size - ctx.textRenderer.getWidth(countStr) - 1,
+                    py + size - 9,
+                    0xFFFFFF,
+                    true
+                )
+            }
+            ctx.tooltipHits += RenderContext.TooltipHit(px, py, size, size, listOf(stack.getName()))
+        }
     }
 }
 

@@ -1,5 +1,6 @@
 package ic2_120.client
 
+import ic2_120.content.item.NightVisionGoggles
 import ic2_120.content.item.armor.NanoHelmet
 import ic2_120.content.item.armor.QuantumChestplate
 import ic2_120.content.item.armor.QuantumHelmet
@@ -13,7 +14,7 @@ import net.minecraft.util.Formatting
 /**
  * 护甲 Tooltip 客户端处理器
  *
- * 动态添加实际的按键绑定名称到 tooltip。
+ * 量子套/纳米套使用 Alt+N(夜视)、Alt+F(飞行)；夜视仪使用 Alt+M。
  */
 @Environment(EnvType.CLIENT)
 object ArmorTooltipHandler {
@@ -22,22 +23,31 @@ object ArmorTooltipHandler {
         ItemTooltipCallback.EVENT.register { stack, context, type ->
             val item = stack.item
 
-            // 处理纳米/量子头盔 - 添加夜视按键
-            if (item is NanoHelmet || item is QuantumHelmet) {
-                val visionKey = ArmorKeybinds.getVisionKey()
-                val boundKeyName = visionKey.boundKeyLocalizedText.string
+            // 夜视仪：M 键
+            if (item is NightVisionGoggles) {
+                val key = ModeKeybinds.getModeKey()
+                val name = key.boundKeyLocalizedText.string
                 type.add(Text.literal("夜视按键: ").formatted(Formatting.GRAY)
                     .append(Text.literal("Alt + ").formatted(Formatting.YELLOW))
-                    .append(Text.literal(boundKeyName).formatted(Formatting.YELLOW)))
+                    .append(Text.literal(name).formatted(Formatting.YELLOW)))
             }
 
-            // 处理量子胸甲 - 添加飞行按键
+            // 纳米/量子头盔：N 键
+            if (item is NanoHelmet || item is QuantumHelmet) {
+                val key = ArmorKeybinds.getVisionKey()
+                val name = key.boundKeyLocalizedText.string
+                type.add(Text.literal("夜视按键: ").formatted(Formatting.GRAY)
+                    .append(Text.literal("Alt + ").formatted(Formatting.YELLOW))
+                    .append(Text.literal(name).formatted(Formatting.YELLOW)))
+            }
+
+            // 量子胸甲：F 键
             if (item is QuantumChestplate) {
-                val flightKey = ArmorKeybinds.getFlightKey()
-                val boundKeyName = flightKey.boundKeyLocalizedText.string
+                val key = ArmorKeybinds.getFlightKey()
+                val name = key.boundKeyLocalizedText.string
                 type.add(Text.literal("飞行按键: ").formatted(Formatting.GRAY)
                     .append(Text.literal("Alt + ").formatted(Formatting.YELLOW))
-                    .append(Text.literal(boundKeyName).formatted(Formatting.YELLOW)))
+                    .append(Text.literal(name).formatted(Formatting.YELLOW)))
             }
         }
     }

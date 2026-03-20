@@ -1,8 +1,7 @@
 package ic2_120.client
 
-import ic2_120.content.item.armor.NanoHelmet
-import ic2_120.content.item.armor.QuantumChestplate
-import ic2_120.content.item.armor.QuantumHelmet
+import ic2_120.content.item.IridiumDrill
+import ic2_120.content.item.NightVisionGoggles
 import ic2_120.content.network.NetworkManager
 import io.netty.buffer.Unpooled
 import net.fabricmc.api.EnvType
@@ -17,29 +16,22 @@ import net.minecraft.network.PacketByteBuf
 import org.lwjgl.glfw.GLFW
 
 /**
- * 量子套 / 纳米套专用按键（夜视、飞行）
+ * 通用模式切换按键（默认 Alt+M）
  *
- * - Alt+N：纳米/量子头盔夜视
- * - Alt+F：量子胸甲飞行
+ * 用于手持类设备的模式切换：
+ * - 夜视仪：夜视开关
+ * - 铱钻头：精准采集开关
+ * - 采矿镭射等：模式切换（预留）
  *
- * 注：M 键用于铱钻头、夜视仪、采矿镭射等手持设备，量子套不共用。
+ * 注：量子套夜视(Alt+N)、飞行(Alt+F) 使用 ArmorKeybinds，不共用 M。
  */
 @Environment(EnvType.CLIENT)
-object ArmorKeybinds {
-    private val toggleVisionKey = KeyBindingHelper.registerKeyBinding(
+object ModeKeybinds {
+    private val toggleModeKey = KeyBindingHelper.registerKeyBinding(
         KeyBinding(
-            "key.ic2_120.toggle_vision",
+            "key.ic2_120.toggle_mode",
             InputUtil.Type.KEYSYM,
-            GLFW.GLFW_KEY_N,
-            "category.ic2_120.ic2"
-        )
-    )
-
-    private val toggleFlightKey = KeyBindingHelper.registerKeyBinding(
-        KeyBinding(
-            "key.ic2_120.toggle_flight",
-            InputUtil.Type.KEYSYM,
-            GLFW.GLFW_KEY_F,
+            GLFW.GLFW_KEY_M,
             "category.ic2_120.ic2"
         )
     )
@@ -48,25 +40,24 @@ object ArmorKeybinds {
         ClientTickEvents.END_CLIENT_TICK.register { client ->
             val player = client.player ?: return@register
 
-            while (toggleVisionKey.wasPressed()) {
+            while (toggleModeKey.wasPressed()) {
                 if (!isAltDown(client)) continue
 
-                val helmet = player.getEquippedStack(EquipmentSlot.HEAD)
-                if (helmet.item is NanoHelmet || helmet.item is QuantumHelmet) {
+                // 优先级 1：主手铱钻头 → 精准采集
+                val mainHand = player.mainHandStack
+                if (mainHand.item is IridiumDrill) {
                     ClientPlayNetworking.send(
-                        NetworkManager.TOGGLE_NANO_VISION_PACKET,
+                        NetworkManager.TOGGLE_IRIDIUM_SILK_TOUCH_PACKET,
                         PacketByteBuf(Unpooled.buffer())
                     )
+                    return@register
                 }
-            }
 
-            while (toggleFlightKey.wasPressed()) {
-                if (!isAltDown(client)) continue
-
-                val chest = player.getEquippedStack(EquipmentSlot.CHEST)
-                if (chest.item is QuantumChestplate) {
+                // 优先级 2：头盔 → 夜视仪（量子套夜视用 Alt+N，不在此处理）
+                val helmet = player.getEquippedStack(EquipmentSlot.HEAD)
+                if (helmet.item is NightVisionGoggles) {
                     ClientPlayNetworking.send(
-                        NetworkManager.TOGGLE_QUANTUM_FLIGHT_PACKET,
+                        NetworkManager.TOGGLE_NIGHT_VISION_GOGGLES_PACKET,
                         PacketByteBuf(Unpooled.buffer())
                     )
                 }
@@ -80,6 +71,6 @@ object ArmorKeybinds {
                InputUtil.isKeyPressed(window, GLFW.GLFW_KEY_RIGHT_ALT)
     }
 
-    fun getVisionKey(): KeyBinding = toggleVisionKey
-    fun getFlightKey(): KeyBinding = toggleFlightKey
+    /** 供 tooltip 动态显示快捷键 */
+    fun getModeKey(): KeyBinding = toggleModeKey
 }

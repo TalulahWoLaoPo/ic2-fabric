@@ -243,6 +243,17 @@ class Chainsaw : Item(FabricItemSettings().maxCount(1)), IElectricTool {
 /** 钻石钻头 - 电动采矿工具（等级 1，10k EU） */
 @ModItem(name = "diamond_drill", tab = CreativeTab.IC2_TOOLS, group = "electric_tools")
 class DiamondDrill : Item(FabricItemSettings().maxCount(1)), IElectricTool {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val diamond = Items.DIAMOND
+            val drill = Drill::class.instance()
+            ShapedRecipeJsonBuilder.create(RecipeCategory.TOOLS, DiamondDrill::class.instance(), 1)
+                .pattern("   ").pattern(" D ").pattern("DVD")
+                .input('D', diamond).input('V', drill)
+                .criterion(hasItem(drill), conditionsFromItem(drill))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "diamond_drill"))
+        }
+    }
     override val tier = 1
     override val maxCapacity = 10_000L
     override fun getEnergy(stack: ItemStack) = IElectricTool.getEnergy(stack)
@@ -259,6 +270,17 @@ class DiamondDrill : Item(FabricItemSettings().maxCount(1)), IElectricTool {
 /** 采矿钻头 - 电动采矿工具（等级 1，10k EU） */
 @ModItem(name = "drill", tab = CreativeTab.IC2_TOOLS, group = "electric_tools")
 class Drill : Item(FabricItemSettings().maxCount(1)), IElectricTool {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val ironPlate = IronPlate::class.instance()
+            val powerUnit = PowerUnitItem::class.instance()
+            ShapedRecipeJsonBuilder.create(RecipeCategory.TOOLS, Drill::class.instance(), 1)
+                .pattern(" I ").pattern("III").pattern("IPI")
+                .input('I', ironPlate).input('P', powerUnit)
+                .criterion(hasItem(ironPlate), conditionsFromItem(ironPlate))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "drill"))
+        }
+    }
     override val tier = 1
     override val maxCapacity = 10_000L
     override fun getEnergy(stack: ItemStack) = IElectricTool.getEnergy(stack)
@@ -304,11 +326,36 @@ class ElectricWrench : Item(FabricItemSettings().maxCount(1)), IElectricTool {
     override fun getItemBarColor(stack: ItemStack) = getEnergyBarColor(stack)
 }
 
-/** 铱钻头 - 高级电动采矿工具（等级 3，100k EU） */
+/** 铱钻头 - 高级电动采矿工具（等级 3，100k EU），Alt+M 切换精准采集 */
 @ModItem(name = "iridium_drill", tab = CreativeTab.IC2_TOOLS, group = "electric_tools")
 class IridiumDrill : Item(FabricItemSettings().maxCount(1)), IElectricTool {
     override val tier = 3
     override val maxCapacity = 100_000L
+
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val reinforcedIridium = IridiumPlate::class.instance()
+            val diamondDrill = DiamondDrill::class.instance()
+            val energyCrystal = ic2_120.content.item.energy.EnergyCrystalItem::class.instance()
+            ShapedRecipeJsonBuilder.create(RecipeCategory.TOOLS, IridiumDrill::class.instance(), 1)
+                .pattern(" R ").pattern("RDR").pattern(" E ")
+                .input('R', reinforcedIridium).input('D', diamondDrill).input('E', energyCrystal)
+                .criterion(hasItem(diamondDrill), conditionsFromItem(diamondDrill))
+                .offerTo(exporter, Identifier(Ic2_120.MOD_ID, "iridium_drill"))
+        }
+        private const val SILK_TOUCH_KEY = "SilkTouchEnabled"
+
+        fun isSilkTouchEnabled(stack: ItemStack): Boolean =
+            stack.orCreateNbt.getBoolean(SILK_TOUCH_KEY)
+
+        fun toggleSilkTouch(stack: ItemStack): Boolean {
+            val nbt = stack.orCreateNbt
+            val enabled = !nbt.getBoolean(SILK_TOUCH_KEY)
+            nbt.putBoolean(SILK_TOUCH_KEY, enabled)
+            return enabled
+        }
+    }
+
     override fun getEnergy(stack: ItemStack) = IElectricTool.getEnergy(stack)
     override fun setEnergy(stack: ItemStack, energy: Long) = IElectricTool.setEnergy(stack, energy, maxCapacity)
     override fun appendTooltip(stack: ItemStack, world: net.minecraft.world.World?, tooltip: MutableList<net.minecraft.text.Text>, context: net.minecraft.client.item.TooltipContext) {
@@ -323,14 +370,6 @@ class IridiumDrill : Item(FabricItemSettings().maxCount(1)), IElectricTool {
 /** 拟态板 - 伪装方块外观 */
 @ModItem(name = "obscurator", tab = CreativeTab.IC2_TOOLS, group = "tools")
 class Obscurator : Item(FabricItemSettings().maxCount(1))
-
-/** OD 扫描器 - 矿石密度扫描 */
-@ModItem(name = "scanner", tab = CreativeTab.IC2_TOOLS, group = "tools")
-class Scanner : Item(FabricItemSettings().maxCount(1))
-
-/** OV 扫描器 - 矿石价值扫描 */
-@ModItem(name = "advanced_scanner", tab = CreativeTab.IC2_TOOLS, group = "tools")
-class AdvancedScanner : Item(FabricItemSettings().maxCount(1))
 
 /** 风力计 - 测量风力 */
 @ModItem(name = "wind_meter", tab = CreativeTab.IC2_TOOLS, group = "tools")

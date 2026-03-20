@@ -1,6 +1,7 @@
 package ic2_120.content.network
 
 import ic2_120.Ic2_120
+import ic2_120.content.item.IridiumDrill
 import ic2_120.content.item.NightVisionGoggles
 import ic2_120.content.item.armor.NanoHelmet
 import ic2_120.content.item.armor.QuantumChestplate
@@ -20,6 +21,7 @@ object NetworkManager {
     val TOGGLE_NIGHT_VISION_GOGGLES_PACKET = Identifier(Ic2_120.MOD_ID, "toggle_night_vision_goggles")
     val TOGGLE_NANO_VISION_PACKET = Identifier(Ic2_120.MOD_ID, "toggle_nano_vision")
     val TOGGLE_QUANTUM_FLIGHT_PACKET = Identifier(Ic2_120.MOD_ID, "toggle_quantum_flight")
+    val TOGGLE_IRIDIUM_SILK_TOUCH_PACKET = Identifier(Ic2_120.MOD_ID, "toggle_iridium_silk_touch")
 
     fun register() {
         // 注册服务端接收处理器（如果需要）
@@ -72,6 +74,18 @@ object NetworkManager {
                     val enabled = QuantumChestplate.toggleFlight(stack)
                     player.sendMessage(Text.translatable(
                         if (enabled) "message.ic2_120.quantum_chestplate.flight_on" else "message.ic2_120.quantum_chestplate.flight_off"
+                    ), true)
+                }
+            }
+        }
+
+        ServerPlayNetworking.registerGlobalReceiver(TOGGLE_IRIDIUM_SILK_TOUCH_PACKET) { server, player, _, _, _ ->
+            server.execute {
+                val stack = player.mainHandStack
+                if (stack.item is IridiumDrill) {
+                    val enabled = IridiumDrill.toggleSilkTouch(stack)
+                    player.sendMessage(Text.translatable(
+                        if (enabled) "message.ic2_120.iridium_drill.silk_touch_on" else "message.ic2_120.iridium_drill.silk_touch_off"
                     ), true)
                 }
             }

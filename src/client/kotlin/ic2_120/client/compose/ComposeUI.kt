@@ -2,6 +2,7 @@ package ic2_120.client.compose
 
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.text.Text
 
 /**
  * Compose-like UI 入口。在 Screen 中持有一个实例，
@@ -46,6 +47,7 @@ class ComposeUI {
         renderCtx.mouseX = mouseX
         renderCtx.mouseY = mouseY
         renderCtx.buttonHits.clear()
+        renderCtx.tooltipHits.clear()
 
         val scope = UiScope().apply(content)
         val root = RootNode(scope.children)
@@ -56,6 +58,16 @@ class ComposeUI {
         )
         root.measure(renderCtx, constraints)
         root.render(renderCtx, 0, 0)
+    }
+
+    /**
+     * 获取鼠标位置下的 tooltip 文本。在 [render] 之后调用，用于绘制悬停提示。
+     * 返回 null 表示无 tooltip。
+     */
+    fun getTooltipAt(mouseX: Int, mouseY: Int): List<Text>? {
+        return renderCtx.tooltipHits.lastOrNull { h ->
+            mouseX in h.x until (h.x + h.w) && mouseY in h.y until (h.y + h.h)
+        }?.lines
     }
 
     /**
