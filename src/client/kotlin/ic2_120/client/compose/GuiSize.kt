@@ -49,13 +49,13 @@ enum class GuiSize(val width: Int, val height: Int) {
     STANDARD(176, 166),
 
     /** 标准机器 + 升级槽（194×184），如压缩机、冶炼炉 */
-    STANDARD_UPGRADE(194, 184),
+    STANDARD_UPGRADE(176+18+8, 184),
 
     /** 加高机器（194×214），如灌装机 */
-    TALL(194, 214),
+    // TALL(194, 214),
 
     /** 紧凑机器（176×120），如变压器 */
-    COMPACT(176, 120),
+    // COMPACT(176, 120),
 
     /** 大型 GUI（256×256），如扫描仪 */
     LARGE(256, 256),
@@ -83,5 +83,6 @@ enum class GuiSize(val width: Int, val height: Int) {
          * @return GUI 总高度 = contentHeight + 玩家背包区域高度(67) + 底部 padding(8)
          */
         fun computeHeight(contentHeight: Int): Int = contentHeight + 67 + 8
+        val UPGRADE_COLUMN_WIDTH = STANDARD_UPGRADE.contentWidth - STANDARD.contentWidth
     }
 }
