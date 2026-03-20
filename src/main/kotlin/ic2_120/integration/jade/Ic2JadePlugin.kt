@@ -97,8 +97,6 @@ object PipeJadeProvider : IBlockComponentProvider, IServerDataProvider<BlockAcce
         val capacity = accessor.serverData.getLong("pipeCapacity")
         val posLong = be.pos.asLong()
         val load = filteredLoad(posLong, rawLoad)
-
-        tooltip.add(Text.translatable("ic2_120.jade.flow", load, capacity))
         tooltip.add(Text.translatable("ic2_120.jade.flow_rate", formatFlow(load)))
         if (accessor.serverData.getBoolean("stalled")) {
             tooltip.add(Text.translatable("ic2_120.jade.stalled"))
@@ -117,9 +115,6 @@ object PipeJadeProvider : IBlockComponentProvider, IServerDataProvider<BlockAcce
     }
 
     private fun formatFlow(load: Long): String {
-        return when {
-            load >= 1000 -> "${load / 1000}.${(load % 1000) / 100} L/t"
-            else -> "$load mB/t"
-        }
+        return "$load mB/s"
     }
 }
