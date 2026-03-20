@@ -32,6 +32,7 @@ class ComposeUI {
     private val renderCtx = RenderContext()
     private var draggingNodeId: Int = -1
     private var thumbHit: Boolean = false
+    data class LayoutSnapshot(val anchors: Map<String, RenderContext.AnchorRect>)
 
     /**
      * 构建节点树 → 测量 → 绘制，三阶段在一帧内完成。
@@ -45,28 +46,21 @@ class ComposeUI {
         mouseY: Int,
         content: UiScope.() -> Unit
     ) {
-        var counter = 0
-        val idGen: () -> Int = { counter++ }
+        execute(drawContext, textRenderer, mouseX, mouseY, draw = true, interactive = true, content = content)
+    }
 
-        renderCtx.drawContext = drawContext
-        renderCtx.textRenderer = textRenderer
-        renderCtx.mouseX = mouseX
-        renderCtx.mouseY = mouseY
-        renderCtx.buttonHits.clear()
-        renderCtx.tooltipHits.clear()
-        renderCtx.scrollHits.clear()
-
-        val scope = UiScope().apply {
-            nodeIdGen = idGen
-        }.apply(content)
-        val root = RootNode(scope.children)
-
-        val constraints = Constraints(
-            maxWidth = drawContext.scaledWindowWidth,
-            maxHeight = drawContext.scaledWindowHeight
-        )
-        root.measure(renderCtx, constraints)
-        root.render(renderCtx, 0, 0)
+    /**
+     * 仅执行布局与放置，不绘制也不记录交互命中；用于在 super.render 前拿 slot 锚点。
+     */
+    fun layout(
+        drawContext: DrawContext,
+        textRenderer: TextRenderer,
+        mouseX: Int,
+        mouseY: Int,
+        content: UiScope.() -> Unit
+    ): LayoutSnapshot {
+        execute(drawContext, textRenderer, mouseX, mouseY, draw = false, interactive = false, content = content)
+        return LayoutSnapshot(renderCtx.anchors.toMap())
     }
 
     /**
@@ -158,5 +152,41 @@ class ComposeUI {
     fun stopDrag() {
         draggingNodeId = -1
         thumbHit = false
+    }
+
+    private fun execute(
+        drawContext: DrawContext,
+        textRenderer: TextRenderer,
+        mouseX: Int,
+        mouseY: Int,
+        draw: Boolean,
+        interactive: Boolean,
+        content: UiScope.() -> Unit
+    ) {
+        var counter = 0
+        val idGen: () -> Int = { counter++ }
+
+        renderCtx.drawContext = drawContext
+        renderCtx.textRenderer = textRenderer
+        renderCtx.mouseX = mouseX
+        renderCtx.mouseY = mouseY
+        renderCtx.drawEnabled = draw
+        renderCtx.interactionEnabled = interactive
+        renderCtx.buttonHits.clear()
+        renderCtx.tooltipHits.clear()
+        renderCtx.scrollHits.clear()
+        renderCtx.anchors.clear()
+
+        val scope = UiScope().apply {
+            nodeIdGen = idGen
+        }.apply(content)
+        val root = RootNode(scope.children)
+
+        val constraints = Constraints(
+            maxWidth = drawContext.scaledWindowWidth,
+            maxHeight = drawContext.scaledWindowHeight
+        )
+        root.measure(renderCtx, constraints)
+        root.render(renderCtx, 0, 0)
     }
 }

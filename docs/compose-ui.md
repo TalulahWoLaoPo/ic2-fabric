@@ -14,7 +14,14 @@ class MyScreen(...) : HandledScreen<...>(...) {
     private val ui = ComposeUI()
 
     override fun render(ctx: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        super.render(ctx, mouseX, mouseY, delta)
+        // 可选：先布局不绘制，拿锚点（用于动态 slot）
+        val layout = ui.layout(ctx, textRenderer, mouseX, mouseY) {
+            // SlotAnchor("machine.input")
+        }
+        // SlotLayoutBridge.apply(layout.anchors, handler, x, y, mapping)
+
+        super.render(ctx, mouseX, mouseY, delta) // 原生 slot 渲染
+
         ui.render(ctx, textRenderer, mouseX, mouseY) {
             Column(x = 10, y = 10, spacing = 4) {
                 Text("Hello IC2")
@@ -45,6 +52,19 @@ class MyScreen(...) : HandledScreen<...>(...) {
     }
 }
 ```
+
+### 两阶段渲染（slot 融合）
+
+当界面需要由 Compose 决定 `Slot` 坐标时，推荐时序：
+
+1. `ui.layout(...)`：仅构建 + 测量 + 放置，不绘制  
+2. 读取 `layout.anchors`，通过 `SlotLayoutBridge` 写回 `slot.x/slot.y`  
+3. `super.render(...)`：由原生 `HandledScreen` 渲染 slot 并处理交互  
+4. `ui.render(...)`：绘制 Compose 文本/按钮/进度条等 overlay
+
+坐标系说明：
+- `anchors` 为**屏幕绝对坐标**
+- `slot.x / slot.y` 为**相对 GUI 左上角**坐标（通常是 `HandledScreen.x / y`）
 
 ---
 
@@ -160,6 +180,22 @@ override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean 
 
 默认 padding 为 `Padding(6, 4, 6, 4)`，可通过 `modifier.padding()` 覆盖。
 
+### SlotAnchor
+
+仅占位并导出锚点矩形，不会绘制任何像素。
+
+```kotlin
+SlotAnchor(
+    id = "machine.input",
+    width = 18, height = 18,
+    x = 0, y = 0,
+    absolute = false
+)
+```
+
+- 常用于与 `SlotLayoutBridge` 搭配，把 Compose 布局结果同步到 `handler.slots`。
+- `id` 需稳定，建议采用 `machine.xxx` 命名。
+
 ### EnergyBar（client/ui）
 
 能量条组件，渐变色：空电端红、满电端绿。需 `import ic2_120.client.ui.EnergyBar` 后使用。
@@ -171,13 +207,12 @@ EnergyBar(0.25f, barWidth = 80, barHeight = 6)
 
 ### ItemStack
 
-物品/方块图标节点，渲染 ItemStack 的贴图，支持数量角标和悬浮提示。
+物品/方块图标节点，仅渲染 ItemStack 的贴图（不绘制数量）。数量可用外部 DSL 拼接。
 
 ```kotlin
 ItemStack(
     stack: ItemStack,
     size: Int = 16,           // 图标尺寸（默认 16×16）
-    showCount: Boolean = true, // 是否在右下角显示数量角标
     x: Int = 0, y: Int = 0,
     absolute: Boolean = false,
     modifier: Modifier = Modifier.EMPTY
@@ -185,6 +220,8 @@ ItemStack(
 ```
 
 悬停时自动显示物品的 `getName()` tooltip。
+
+数量示例：`Row(spacing = 4) { ItemStack(stack); Text("${stack.count}") }`
 
 ---
 
@@ -280,7 +317,7 @@ Flex(
 | `SPACE_AROUND` | 每个元素两侧等间距 |
 | `SPACE_EVENLY` | 所有间隙（含首尾）等间距 |
 
-需要为 Flex 指定明确尺寸（通过 `modifier.width()` / `.height()`）才能看到对齐效果，否则容器会紧贴内容。
+**尺寸来源**：主轴方向优先使用 `modifier.width()` / `.height()`；若未指定，则使用父布局传入的 constraints（当约束有界时），使 JustifyContent 在父容器内生效。若 constraints 无界（如 ScrollView 内 `maxHeight = Int.MAX_VALUE`），则回退为内容尺寸。
 
 #### AlignItems（交叉轴对齐）
 
@@ -495,7 +532,7 @@ ScrollView(
                 modifier = Modifier.EMPTY.width(152)
             ) {
                 for (entry in row) {
-                    ItemStack(entry.stack, size = 12, showCount = false)
+                    ItemStack(entry.stack, size = 12)
                     Text("${entry.count}", color = 0xFFAA33)
                 }
             }
@@ -518,3 +555,7 @@ override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean
     return super.mouseReleased(mouseX, mouseY, button)
 }
 ```
+
+---
+
+**布局建议**：永远推荐最外层使用 `Column` 作为根节点，然后使用相对布局偏移，而非全部使用绝对布局。全部使用绝对布局会使得 Compose UI 系统变得没有意义。

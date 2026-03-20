@@ -47,8 +47,6 @@ class ScannerScreen(
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        super.render(context, mouseX, mouseY, delta)
-
         // 能量、次数等由 handler.sync（PropertyDelegate）同步，与其他机器一致
         val energy = handler.sync.energy.toLong().coerceAtLeast(0)
         val cap = handler.sync.energyCapacity.toLong().coerceAtLeast(1)
@@ -57,104 +55,23 @@ class ScannerScreen(
         val type = OdScannerItem.getScannerType(stack)
         val usesRemaining = handler.sync.usesRemaining
         val maxUses = handler.sync.maxUses
+        val scannerTitle = if (type.tier == 3) "OV 扫描仪" else "OD 扫描仪"
+        val scanRangeText = "${type.scanRadius * 2 + 1} × ${type.scanRadius * 2 + 1}"
+        val canScan = energy >= type.energyPerScan && usesRemaining > 0
         val results = ScannerScreen.lastResults
 
         val left = x
         val top = y - topOffset
 
-        // ===== 上部信息区 =====
+        // 预布局通道（当前 scanner 暂无 slot 锚点，但渲染时序与动态 slot 方案保持一致）
+        ui.layout(context, textRenderer, mouseX, mouseY) {
+            buildUi(left, top, energy, cap, energyFraction, scannerTitle, scanRangeText, canScan, usesRemaining, maxUses, results)
+        }
+
+        super.render(context, mouseX, mouseY, delta)
+
         ui.render(context, textRenderer, mouseX, mouseY) {
-            Column(x = left + 8, y = top + 6, spacing = 4) {
-                // 标题 + 扫描仪类型
-                Text(
-                    if (type.tier == 3) "OV 扫描仪" else "OD 扫描仪",
-                    color = 0xFFFFFF
-                )
-
-                // 能量条
-                Row(spacing = 4, modifier = Modifier.EMPTY) {
-                    Text("${energy.toInt()} / $cap EU", color = 0xCCCCCC, shadow = false)
-                }
-                EnergyBar(energyFraction, barWidth = 140, barHeight = 6)
-
-                // 剩余次数
-                Text(
-                    "剩余次数: $usesRemaining / $maxUses",
-                    color = if (usesRemaining > 0) 0xAAAAAA else 0xFF4A4A,
-                    shadow = false
-                )
-
-                // 扫描半径
-                Text(
-                    "扫描范围: ${type.scanRadius * 2 + 1} × ${type.scanRadius * 2 + 1}",
-                    color = 0x888888,
-                    shadow = false
-                )
-
-                // 扫描按钮
-                Button(
-                    text = if (energy >= type.energyPerScan && usesRemaining > 0) "扫描" else "能量不足",
-                    modifier = Modifier.EMPTY.width(100),
-                    onClick = {
-                        client?.player?.networkHandler?.sendPacket(
-                            ButtonClickC2SPacket(handler.syncId, ScannerScreenHandler.BUTTON_ID_SCAN)
-                        )
-                    }
-                )
-            }
-
-            // ===== 扫描结果：Flex 自适应 6 列，全部矿石 =====
-            if (results.isNotEmpty()) {
-                val resultsAreaW = backgroundWidth - 16
-                val resultsAreaH = (backgroundHeight - 88).coerceAtLeast(40)
-                Column(
-                    x = left + 8,
-                    y = top + 80,
-                    spacing = 4,
-                    modifier = Modifier.EMPTY.width(resultsAreaW)
-                ) {
-                    Text("扫描结果:", color = 0xFFFFFF)
-                    Flex(
-                        direction = FlexDirection.COLUMN,
-                        justifyContent = JustifyContent.SPACE_EVENLY,
-                        alignItems = AlignItems.START,
-                        gap = 4,
-                        modifier = Modifier.EMPTY.width(resultsAreaW).height(resultsAreaH)
-                    ) {
-                        for (row in results.chunked(6)) {
-                            Flex(
-                                direction = FlexDirection.ROW,
-                                justifyContent = JustifyContent.SPACE_BETWEEN,
-                                alignItems = AlignItems.CENTER,
-                                gap = 8,
-                                modifier = Modifier.EMPTY.width(resultsAreaW)
-                            ) {
-                                for (entry in row) {
-                                    val oreStack = entryToItemStack(entry)
-                                    if (!oreStack.isEmpty) {
-                                        Row(spacing = 4) {
-                                            ItemStack(oreStack, size = 16, showCount = false)
-                                            Text(
-                                                if (entry.count >= 1000) "${entry.count / 1000}k" else entry.count.toString(),
-                                                color = 0xFFAA33,
-                                                shadow = false
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                Text(
-                    "点击「扫描」开始扫描周围矿物",
-                    x = left + 8,
-                    y = top + 80,
-                    color = 0x666666,
-                    shadow = false
-                )
-            }
+            buildUi(left, top, energy, cap, energyFraction, scannerTitle, scanRangeText, canScan, usesRemaining, maxUses, results)
         }
 
         val tooltip = ui.getTooltipAt(mouseX, mouseY)
@@ -189,6 +106,99 @@ class ScannerScreen(
             val item = block.asItem()
             if (item == net.minecraft.item.Items.AIR) return ItemStack.EMPTY
             return ItemStack(item, entry.count.coerceAtLeast(1))
+        }
+    }
+
+    private fun UiScope.buildUi(
+        left: Int,
+        top: Int,
+        energy: Long,
+        cap: Long,
+        energyFraction: Float,
+        scannerTitle: String,
+        scanRangeText: String,
+        canScan: Boolean,
+        usesRemaining: Int,
+        maxUses: Int,
+        results: List<OreScanEntry>
+    ) {
+        Column(x = left + 8, y = top + 6, spacing = 4) {
+            Text(scannerTitle, color = 0xFFFFFF)
+            Row(spacing = 4, modifier = Modifier.EMPTY) {
+                Text("${energy.toInt()} / $cap EU", color = 0xCCCCCC, shadow = false)
+            }
+            EnergyBar(energyFraction, barWidth = 140, barHeight = 6)
+            Text(
+                "剩余次数: $usesRemaining / $maxUses",
+                color = if (usesRemaining > 0) 0xAAAAAA else 0xFF4A4A,
+                shadow = false
+            )
+            Text(
+                "扫描范围: $scanRangeText",
+                color = 0x888888,
+                shadow = false
+            )
+            Button(
+                text = if (canScan) "扫描" else "能量不足",
+                modifier = Modifier.EMPTY.width(100),
+                onClick = {
+                    client?.player?.networkHandler?.sendPacket(
+                        ButtonClickC2SPacket(handler.syncId, ScannerScreenHandler.BUTTON_ID_SCAN)
+                    )
+                }
+            )
+        }
+
+        if (results.isNotEmpty()) {
+            val resultsAreaW = backgroundWidth - 16
+            val resultsAreaH = (backgroundHeight - 88).coerceAtLeast(40)
+            Column(
+                x = left + 8,
+                y = top + 80,
+                spacing = 4,
+                modifier = Modifier.EMPTY.width(resultsAreaW)
+            ) {
+                Text("扫描结果:", color = 0xFFFFFF)
+                Flex(
+                    direction = FlexDirection.COLUMN,
+                    justifyContent = JustifyContent.SPACE_EVENLY,
+                    alignItems = AlignItems.START,
+                    gap = 4,
+                    modifier = Modifier.EMPTY.width(resultsAreaW).height(resultsAreaH)
+                ) {
+                    for (row in results.chunked(6)) {
+                        Flex(
+                            direction = FlexDirection.ROW,
+                            justifyContent = JustifyContent.SPACE_BETWEEN,
+                            alignItems = AlignItems.CENTER,
+                            gap = 8,
+                            modifier = Modifier.EMPTY.width(resultsAreaW)
+                        ) {
+                            for (entry in row) {
+                                val oreStack = entryToItemStack(entry)
+                                if (!oreStack.isEmpty) {
+                                    Row(spacing = 4) {
+                                        ItemStack(oreStack, size = 16)
+                                        Text(
+                                            if (entry.count >= 1000) "${entry.count / 1000}k" else entry.count.toString(),
+                                            color = 0xFFAA33,
+                                            shadow = false
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            Text(
+                "点击「扫描」开始扫描周围矿物",
+                x = left + 8,
+                y = top + 80,
+                color = 0x666666,
+                shadow = false
+            )
         }
     }
 }

@@ -14,10 +14,13 @@ class RenderContext {
     lateinit var drawContext: DrawContext
     var mouseX: Int = 0
     var mouseY: Int = 0
+    var drawEnabled: Boolean = true
+    var interactionEnabled: Boolean = true
 
     val buttonHits = mutableListOf<ButtonHit>()
     val tooltipHits = mutableListOf<TooltipHit>()
     val scrollHits = mutableListOf<ScrollHit>()
+    val anchors = linkedMapOf<String, AnchorRect>()
 
     private val scrollOffsets = mutableMapOf<Int, Int>()
 
@@ -26,6 +29,13 @@ class RenderContext {
     fun setScrollOffset(nodeId: Int, offset: Int) {
         scrollOffsets[nodeId] = offset
     }
+
+    data class AnchorRect(
+        val x: Int,
+        val y: Int,
+        val w: Int,
+        val h: Int
+    )
 
     data class ButtonHit(
         val x: Int, val y: Int,
@@ -66,6 +76,7 @@ abstract class UiNode {
 
     /** 绘制 Modifier 上的背景与边框（容器和叶子共用）。 */
     protected fun renderModifierDecoration(ctx: RenderContext, x: Int, y: Int) {
+        if (!ctx.drawEnabled) return
         modifier.backgroundColor?.let { color ->
             ctx.drawContext.fill(x, y, x + measuredWidth, y + measuredHeight, color)
         }
@@ -98,6 +109,7 @@ class PanelNode(
         val pad = modifier.padding
         val x = originX + pad.left
         val y = originY + pad.top
+        if (!ctx.drawEnabled) return
         GuiBackground.draw(ctx.drawContext, x, y, panelWidth, panelHeight, fillColor, borderColor)
     }
 }
@@ -123,6 +135,7 @@ class TextNode(
         val pad = modifier.padding
         val tx = originX + pad.left
         val ty = originY + pad.top
+        if (!ctx.drawEnabled) return
         if (shadow) {
             ctx.drawContext.drawTextWithShadow(ctx.textRenderer, text, tx, ty, color)
         } else {
@@ -167,6 +180,7 @@ class ImageNode(
     override fun render(ctx: RenderContext, originX: Int, originY: Int) {
         renderModifierDecoration(ctx, originX, originY)
         val pad = modifier.padding
+        if (!ctx.drawEnabled) return
         ctx.drawContext.drawTexture(
             texture,
             originX + pad.left, originY + pad.top,
@@ -180,13 +194,12 @@ class ImageNode(
 // ──────────────────────────── ItemStack ────────────────────────────
 
 /**
- * 物品/方块图标节点。渲染 ItemStack 的贴图，可选数量角标。
- * @param showCount 是否在图标上绘制数量角标（false 时数量可单独用 Text 显示在后面）
+ * 物品/方块图标节点。仅渲染 ItemStack 的贴图，不绘制数量。
+ * 数量可用外部 DSL 拼接，例如：`Row(spacing = 4) { ItemStack(stack); Text("${stack.count}") }`
  */
 class ItemStackNode(
     val stack: net.minecraft.item.ItemStack,
-    val size: Int = 16,
-    val showCount: Boolean = true
+    val size: Int = 16
 ) : UiNode() {
 
     override fun measure(ctx: RenderContext, constraints: Constraints) {
@@ -200,19 +213,12 @@ class ItemStackNode(
         val pad = modifier.padding
         val px = originX + pad.left
         val py = originY + pad.top
+        if (!ctx.drawEnabled) return
         if (!stack.isEmpty) {
             ctx.drawContext.drawItemWithoutEntity(stack, px, py)
-            if (showCount && stack.count > 1) {
-                val countStr = if (stack.count >= 1000) "${stack.count / 1000}k" else stack.count.toString()
-                ctx.drawContext.drawText(
-                    ctx.textRenderer, countStr,
-                    px + size - ctx.textRenderer.getWidth(countStr) - 1,
-                    py + size - 9,
-                    0xFFFFFF,
-                    true
-                )
+            if (ctx.interactionEnabled) {
+                ctx.tooltipHits += RenderContext.TooltipHit(px, py, size, size, listOf(stack.getName()))
             }
-            ctx.tooltipHits += RenderContext.TooltipHit(px, py, size, size, listOf(stack.getName()))
         }
     }
 }
@@ -247,14 +253,43 @@ class ButtonNode(
         val bdColor = modifier.borderColor
             ?: if (hovered) 0xFFFFFFFF.toInt() else 0xFFAAAAAA.toInt()
 
-        ctx.drawContext.fill(originX, originY, originX + measuredWidth, originY + measuredHeight, bgColor)
-        ctx.drawContext.drawBorder(originX, originY, measuredWidth, measuredHeight, bdColor)
+        if (ctx.drawEnabled) {
+            ctx.drawContext.fill(originX, originY, originX + measuredWidth, originY + measuredHeight, bgColor)
+            ctx.drawContext.drawBorder(originX, originY, measuredWidth, measuredHeight, bdColor)
+        }
 
         val tx = originX + pad.left
         val ty = originY + pad.top
-        ctx.drawContext.drawTextWithShadow(ctx.textRenderer, text, tx, ty, 0xFFFFFF)
+        if (ctx.drawEnabled) {
+            ctx.drawContext.drawTextWithShadow(ctx.textRenderer, text, tx, ty, 0xFFFFFF)
+        }
 
-        ctx.buttonHits += RenderContext.ButtonHit(originX, originY, measuredWidth, measuredHeight, onClick)
+        if (ctx.interactionEnabled) {
+            ctx.buttonHits += RenderContext.ButtonHit(originX, originY, measuredWidth, measuredHeight, onClick)
+        }
+    }
+}
+
+class SlotAnchorNode(
+    private val id: String,
+    private val anchorWidth: Int,
+    private val anchorHeight: Int
+) : UiNode() {
+
+    override fun measure(ctx: RenderContext, constraints: Constraints) {
+        val pad = modifier.padding
+        measuredWidth = modifier.width ?: (anchorWidth + pad.horizontal)
+        measuredHeight = modifier.height ?: (anchorHeight + pad.vertical)
+    }
+
+    override fun render(ctx: RenderContext, originX: Int, originY: Int) {
+        val pad = modifier.padding
+        ctx.anchors[id] = RenderContext.AnchorRect(
+            x = originX + pad.left,
+            y = originY + pad.top,
+            w = (measuredWidth - pad.horizontal).coerceAtLeast(0),
+            h = (measuredHeight - pad.vertical).coerceAtLeast(0)
+        )
     }
 }
 
@@ -416,8 +451,19 @@ class FlexNode(
             }
         }
 
-        measuredWidth = modifier.width ?: (contentW + pad.horizontal)
-        measuredHeight = modifier.height ?: (contentH + pad.vertical)
+        // 主轴方向：modifier 未指定时，若父布局有有界约束则使用之，使 JustifyContent 生效
+        val mainAxisFromConstraints = when (direction) {
+            FlexDirection.ROW -> constraints.maxWidth < Int.MAX_VALUE
+            FlexDirection.COLUMN -> constraints.maxHeight < Int.MAX_VALUE
+        }
+        measuredWidth = modifier.width ?: (when (direction) {
+            FlexDirection.ROW -> if (mainAxisFromConstraints) constraints.maxWidth else contentW
+            FlexDirection.COLUMN -> contentW
+        } + pad.horizontal)
+        measuredHeight = modifier.height ?: (when (direction) {
+            FlexDirection.ROW -> contentH
+            FlexDirection.COLUMN -> if (mainAxisFromConstraints) constraints.maxHeight else contentH
+        } + pad.vertical)
     }
 
     override fun render(ctx: RenderContext, originX: Int, originY: Int) {
@@ -549,6 +595,7 @@ class TableNode(
     }
 
     override fun render(ctx: RenderContext, originX: Int, originY: Int) {
+        if (!ctx.drawEnabled) return
         renderModifierDecoration(ctx, originX, originY)
         val pad = modifier.padding
         var cursorY = originY + pad.top
@@ -606,13 +653,17 @@ class ScrollViewNode(
         val scrollY = ctx.getScrollOffset(nodeId).coerceIn(0, maxScroll)
 
         // 1. Clip → draw children with vertical offset
-        ctx.drawContext.enableScissor(vpX, vpY, vpX + vpW, vpY + vpH)
+        if (ctx.drawEnabled) {
+            ctx.drawContext.enableScissor(vpX, vpY, vpX + vpW, vpY + vpH)
+        }
         var cursorY = 0
         for (child in children) {
             child.render(ctx, vpX, vpY + cursorY - scrollY)
             cursorY += child.measuredHeight
         }
-        ctx.drawContext.disableScissor()
+        if (ctx.drawEnabled) {
+            ctx.drawContext.disableScissor()
+        }
 
         // 2. Scrollbar
         if (maxScroll > 0) {
@@ -624,14 +675,18 @@ class ScrollViewNode(
             val hovered = ctx.mouseX in trackX until (trackX + scrollbarWidth)
                     && ctx.mouseY in vpY until (vpY + vpH)
 
-            ctx.drawContext.fill(trackX, vpY, trackX + scrollbarWidth, vpY + vpH, scrollbarTrackColor)
-            ctx.drawContext.fill(trackX, thumbY, trackX + scrollbarWidth, thumbY + thumbH,
-                if (hovered) thumbHoverColor else thumbColor)
-            ctx.drawContext.drawBorder(trackX, vpY, scrollbarWidth, vpH, 0xFF444444.toInt())
+            if (ctx.drawEnabled) {
+                ctx.drawContext.fill(trackX, vpY, trackX + scrollbarWidth, vpY + vpH, scrollbarTrackColor)
+                ctx.drawContext.fill(trackX, thumbY, trackX + scrollbarWidth, thumbY + thumbH,
+                    if (hovered) thumbHoverColor else thumbColor)
+                ctx.drawContext.drawBorder(trackX, vpY, scrollbarWidth, vpH, 0xFF444444.toInt())
+            }
 
             val thumbHit = ctx.mouseX in trackX until (trackX + scrollbarWidth)
                     && ctx.mouseY in thumbY until (thumbY + thumbH)
-            ctx.scrollHits += RenderContext.ScrollHit(trackX, vpY, scrollbarWidth, vpH, nodeId, maxScroll, thumbHit)
+            if (ctx.interactionEnabled) {
+                ctx.scrollHits += RenderContext.ScrollHit(trackX, vpY, scrollbarWidth, vpH, nodeId, maxScroll, thumbHit)
+            }
         }
     }
 }

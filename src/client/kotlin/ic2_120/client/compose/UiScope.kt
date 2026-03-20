@@ -130,19 +130,18 @@ class UiScope {
     }
 
     /**
-     * 渲染物品/方块图标，可选数量角标。
-     * @param showCount 是否在图标上绘制数量（false 时可用 Text 单独显示在后面）
+     * 渲染物品/方块图标（仅贴图，不绘制数量）。
+     * 数量可用外部 DSL 拼接，例如：`Row(spacing = 4) { ItemStack(stack); Text("${stack.count}") }`
      */
     fun ItemStack(
         stack: net.minecraft.item.ItemStack,
         size: Int = 16,
-        showCount: Boolean = true,
         x: Int = 0,
         y: Int = 0,
         absolute: Boolean = false,
         modifier: Modifier = Modifier.EMPTY
     ) {
-        val node = ItemStackNode(stack, size, showCount).apply {
+        val node = ItemStackNode(stack, size).apply {
             this.position = if (absolute) Position.Absolute(x, y) else Position.Flow(x, y)
             this.modifier = modifier
         }
@@ -240,6 +239,25 @@ class UiScope {
         val node = ScrollViewNode(nodeId, scrollbarWidth, children = inner.children).apply {
             this.position = if (absolute) Position.Absolute(x, y) else Position.Flow(x, y)
             this.modifier = modifier.width(width + scrollbarWidth).height(height)
+        }
+        children += node
+    }
+
+    /**
+     * Slot 锚点：仅参与布局并导出矩形，不执行绘制。
+     */
+    fun SlotAnchor(
+        id: String,
+        width: Int = 18,
+        height: Int = 18,
+        x: Int = 0,
+        y: Int = 0,
+        absolute: Boolean = false,
+        modifier: Modifier = Modifier.EMPTY
+    ) {
+        val node = SlotAnchorNode(id, width, height).apply {
+            this.position = if (absolute) Position.Absolute(x, y) else Position.Flow(x, y)
+            this.modifier = modifier
         }
         children += node
     }

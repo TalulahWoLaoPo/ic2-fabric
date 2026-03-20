@@ -7,6 +7,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.screen.ScreenHandler
+import net.minecraft.screen.slot.Slot
 import net.minecraft.util.math.BlockPos
 
 /**
@@ -19,6 +20,12 @@ class ComposeDebugScreenHandler(
     val playerInventory: PlayerInventory
 ) : ScreenHandler(ComposeDebugScreenHandler::class.type(), syncId) {
 
+    init {
+        // 绑定到玩家背包的两个演示槽位；坐标由客户端每帧通过 Compose 锚点驱动。
+        addSlot(Slot(playerInventory, 0, 0, 0))
+        addSlot(Slot(playerInventory, 1, 0, 0))
+    }
+
     override fun quickMove(player: PlayerEntity, index: Int): net.minecraft.item.ItemStack =
         net.minecraft.item.ItemStack.EMPTY
 
@@ -27,6 +34,8 @@ class ComposeDebugScreenHandler(
     companion object {
         const val GUI_WIDTH = 240
         const val GUI_HEIGHT = 200
+        const val SLOT_LEFT_INDEX = 0
+        const val SLOT_RIGHT_INDEX = 1
 
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf?): ComposeDebugScreenHandler {
             return ComposeDebugScreenHandler(syncId, playerInventory)
