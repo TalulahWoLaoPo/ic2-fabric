@@ -8,10 +8,7 @@ import ic2_120.registry.annotation.ModScreen
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.entity.player.PlayerInventory
-import net.minecraft.item.ItemStack
-import net.minecraft.registry.Registries
 import net.minecraft.text.Text
-import net.minecraft.util.Identifier
 
 /**
  * Compose UI 调试屏幕。
@@ -30,14 +27,16 @@ class ComposeDebugScreen(
 ) : HandledScreen<ComposeDebugScreenHandler>(handler, playerInventory, title) {
 
     private val ui = ComposeUI()
-    private val slotMapping = mapOf(
-        "compose.slot.left" to ComposeDebugScreenHandler.SLOT_LEFT_INDEX,
-        "compose.slot.right" to ComposeDebugScreenHandler.SLOT_RIGHT_INDEX
-    )
+    private val slotXField by lazy {
+        net.minecraft.screen.slot.Slot::class.java.getDeclaredField("x").apply { isAccessible = true }
+    }
+    private val slotYField by lazy {
+        net.minecraft.screen.slot.Slot::class.java.getDeclaredField("y").apply { isAccessible = true }
+    }
 
     init {
-        backgroundWidth = ComposeDebugScreenHandler.GUI_WIDTH
-        backgroundHeight = ComposeDebugScreenHandler.GUI_HEIGHT
+        backgroundWidth = GuiSize.DEBUG.width
+        backgroundHeight = GuiSize.DEBUG.height
     }
 
     override fun drawBackground(context: DrawContext, delta: Float, mouseX: Int, mouseY: Int) {
@@ -47,30 +46,29 @@ class ComposeDebugScreen(
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val left = x
         val top = y
-        val innerW = backgroundWidth - 16
+        val gui = GuiSize.DEBUG
 
         val results = buildDemoResults()
         val itemCount = results.size
+        val uiContent: UiScope.() -> Unit = {
+            buildUi(left, top, gui, results, itemCount)
+        }
 
         // 1) 预布局（不绘制）→ 2) 套用 slot 坐标
-        val layout = ui.layout(context, textRenderer, mouseX, mouseY) {
-            buildUi(left, top, innerW, results, itemCount)
-        }
-        SlotLayoutBridge.apply(layout.anchors, handler, left, top, slotMapping)
+        val layout = ui.layout(context, textRenderer, mouseX, mouseY, content = uiContent)
+        applyAnchoredSlots(layout, left, top)
 
         // 3) 原生渲染（slot+交互）
         super.render(context, mouseX, mouseY, delta)
 
         // 4) Compose overlay 绘制
-        ui.render(context, textRenderer, mouseX, mouseY) {
-            buildUi(left, top, innerW, results, itemCount)
-        }
+        ui.render(context, textRenderer, mouseX, mouseY, content = uiContent)
 
         val tooltip = ui.getTooltipAt(mouseX, mouseY)
         if (tooltip != null) {
             context.drawTooltip(textRenderer, tooltip, mouseX, mouseY)
         } else {
-            drawMouseoverTooltip(context, mouseX, mouseY)
+            drawMouseoverTooltip(context, mouseX, mouseY)   
         }
     }
 
@@ -108,23 +106,24 @@ class ComposeDebugScreen(
     private fun UiScope.buildUi(
         left: Int,
         top: Int,
-        innerW: Int,
+        gui: GuiSize,
         results: List<OreEntry>,
         itemCount: Int
     ) {
-        Column(
+        Flex(
             x = left + 8,
             y = top + 8,
-            spacing = 8,
-            modifier = Modifier.EMPTY.width(innerW)
+            direction = FlexDirection.COLUMN,
+            gap = 8,
+            modifier = Modifier.EMPTY.width(gui.contentWidth).height(gui.height - 16)
         ) {
-            // 标题栏
+            // 标题栏（固定高度 22）
             Column(spacing = 6) {
                 Text("Compose UI 调试面板", color = 0xFFFFFF)
                 Text("ScrollView 演示 — 滚轮/track/thumb", color = 0xAAAAAA, shadow = false)
             }
 
-            // 顶部按钮（不受滚动影响）
+            // 顶部按钮行（固定高度 18）
             Row(spacing = 8) {
                 Button(
                     text = "按钮 A",
@@ -138,59 +137,43 @@ class ComposeDebugScreen(
                 )
                 Text(
                     "Hover 我看 Tooltip！",
-                    modifier = Modifier.EMPTY.width(innerW - 140).padding(4, 0, 0, 0)
+                    modifier = Modifier.EMPTY.width(gui.contentWidth - 140).padding(4, 0, 0, 0),
+                    tooltip = listOf(Text.translatable("gui.ic2_120.compose_debug.tooltip_hover"))
                 )
             }
 
-            // Slot 锚点（驱动 handler.slots 坐标）
+            // Slot 锚点（固定高度 18）
             Flex(justifyContent = JustifyContent.SPACE_BETWEEN) {
-                SlotAnchor("compose.slot.left")
-                SlotAnchor("compose.slot.right")
+                SlotHost(ComposeDebugScreenHandler.SLOT_LEFT_INDEX)
+                SlotHost(ComposeDebugScreenHandler.SLOT_RIGHT_INDEX)
             }
 
-            // 标签说明（不受滚动影响）
+            // 标签说明（固定高度 14）
             Text(
                 "扫描结果（${results.size} 种矿物）:",
                 color = 0xCCCCCC,
                 shadow = false
             )
 
-            // ScrollView（核心演示）
+            // ScrollView（flex-1：填充根 Flex 剩余所有空间）
             ScrollView(
-                width = innerW,
-                height = 100,
-                scrollbarWidth = 8,
-                modifier = Modifier.EMPTY
+                width = gui.contentWidth,
+                height = 1,
+                modifier = Modifier.EMPTY.fractionHeight(1.0f)
             ) {
                 Column(spacing = 2) {
                     for (entry in results) {
-                        Flex(
-                            direction = FlexDirection.ROW,
-                            alignItems = AlignItems.CENTER,
-                            gap = 4,
-                            modifier = Modifier.EMPTY.width(innerW - 8).height(14)
-                        ) {
-                            val oreItem = getOreItemStack(entry.name)
-                            ItemStack(oreItem, size = 12)
-                            Text(entry.name, color = 0xFFAA33, shadow = false)
-                            Text(
-                                "× ${entry.count}",
-                                color = 0x888888,
-                                shadow = false,
-                                modifier = Modifier.EMPTY.padding(4, 0, 0, 0)
-                            )
-                            Text("", modifier = Modifier.EMPTY.width(60))
-                            Button(
-                                text = "×",
-                                modifier = Modifier.EMPTY.width(16).height(12),
-                                onClick = { /* demo */ }
-                            )
-                        }
+                        Text(
+                            "${entry.name} × ${entry.count}",
+                            color = 0xFFAA33,
+                            shadow = false,
+                            modifier = Modifier.EMPTY.height(14)
+                        )
                     }
                 }
             }
 
-            // 底部状态栏
+            // 底部状态栏（固定高度 14）
             Row(spacing = 4) {
                 Text("行数: $itemCount", color = 0x666666, shadow = false)
                 Text(" | ", color = 0x444444, shadow = false)
@@ -198,6 +181,20 @@ class ComposeDebugScreen(
             }
         }
     }
+
+    private fun UiScope.SlotHost(slotIndex: Int, size: Int = 18, showBorder: Boolean = true) {
+        SlotAnchor(slotAnchorId(slotIndex), width = size, height = size, showBorder = showBorder)
+    }
+
+    private fun applyAnchoredSlots(layout: ComposeUI.LayoutSnapshot, left: Int, top: Int) {
+        handler.slots.forEachIndexed { index, slot ->
+            val anchor = layout.anchors[slotAnchorId(index)] ?: return@forEachIndexed
+            slotXField.setInt(slot, anchor.x - left)
+            slotYField.setInt(slot, anchor.y - top)
+        }
+    }
+
+    private fun slotAnchorId(slotIndex: Int): String = "compose.slot.$slotIndex"
 
     private fun buildDemoResults(): List<OreEntry> = buildList {
         for (i in 1..40) {
@@ -213,22 +210,5 @@ class ComposeDebugScreen(
             }
             add(OreEntry(oreName.first, oreName.second, i))
         }
-    }
-
-    private fun getOreItemStack(name: String): ItemStack {
-        val id = when (name) {
-            "煤矿" -> "minecraft:coal"
-            "铁矿" -> "minecraft:iron_ore"
-            "铜矿" -> "minecraft:copper_ore"
-            "锡矿" -> "ic2_120:tin_ore"
-            "银矿" -> "ic2_120:silver_ore"
-            "铅矿" -> "ic2_120:lead_ore"
-            "金矿" -> "minecraft:gold_ore"
-            else -> "minecraft:diamond_ore"
-        }
-        val identifier = Identifier.tryParse(id) ?: return ItemStack.EMPTY
-        val item = Registries.ITEM.getOrEmpty(identifier).orElse(null) ?: return ItemStack.EMPTY
-        if (item == net.minecraft.item.Items.AIR) return ItemStack.EMPTY
-        return ItemStack(item)
     }
 }

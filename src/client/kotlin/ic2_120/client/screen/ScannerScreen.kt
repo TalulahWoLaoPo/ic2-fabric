@@ -21,7 +21,7 @@ import net.minecraft.util.Identifier
  * 扫描仪 GUI（客户端）。
  *
  * 上部：能量条 + 使用次数 + 扫描按钮
- * 下部：扫描结果列表（矿物名称 + 数量）
+ * 下部：扫描结果列表（矿物名称 + 数量，可滚动）
  */
 @ModScreen(handler = "scanner")
 class ScannerScreen(
@@ -47,23 +47,21 @@ class ScannerScreen(
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        // 能量、次数等由 handler.sync（PropertyDelegate）同步，与其他机器一致
         val energy = handler.sync.energy.toLong().coerceAtLeast(0)
         val cap = handler.sync.energyCapacity.toLong().coerceAtLeast(1)
         val energyFraction = if (cap > 0) (energy.toFloat() / cap).coerceIn(0f, 1f) else 0f
-        val stack = handler.playerInventory.getStack(handler.playerInventory.selectedSlot)
-        val type = OdScannerItem.getScannerType(stack)
+        val type = OdScannerItem.getScannerType(handler.playerInventory.getStack(handler.playerInventory.selectedSlot))
         val usesRemaining = handler.sync.usesRemaining
         val maxUses = handler.sync.maxUses
         val scannerTitle = if (type.tier == 3) "OV 扫描仪" else "OD 扫描仪"
         val scanRangeText = "${type.scanRadius * 2 + 1} × ${type.scanRadius * 2 + 1}"
         val canScan = energy >= type.energyPerScan && usesRemaining > 0
-        val results = ScannerScreen.lastResults
+        val results = lastResults
 
         val left = x
         val top = y - topOffset
 
-        // 预布局通道（当前 scanner 暂无 slot 锚点，但渲染时序与动态 slot 方案保持一致）
+        // 预布局通道（当前 scanner 暂无 slot 锚点，渲染时序与动态 slot 方案保持一致）
         ui.layout(context, textRenderer, mouseX, mouseY) {
             buildUi(left, top, energy, cap, energyFraction, scannerTitle, scanRangeText, canScan, usesRemaining, maxUses, results)
         }
@@ -82,20 +80,31 @@ class ScannerScreen(
         }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        if (ui.mouseClicked(mouseX, mouseY, button)) return true
-        return super.mouseClicked(mouseX, mouseY, button)
+    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean =
+        if (ui.mouseClicked(mouseX, mouseY, button)) true
+        else super.mouseClicked(mouseX, mouseY, button)
+
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean =
+        ui.mouseScrolled(mouseX, mouseY, 0.0, amount)
+            || super.mouseScrolled(mouseX, mouseY, amount)
+
+    override fun mouseDragged(
+        mouseX: Double, mouseY: Double, button: Int,
+        deltaX: Double, deltaY: Double
+    ): Boolean = ui.mouseDragged(mouseX, mouseY, button)
+        || super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+
+    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        ui.stopDrag()
+        return super.mouseReleased(mouseX, mouseY, button)
     }
 
+    // ─── 扫描结果（S2C 包更新）──────────────────────────────────────
+
     companion object {
-        /** 最新扫描结果（由 S2C 包更新，能量/次数由 handler.sync 同步） */
         @JvmField
         var lastResults: List<OreScanEntry> = emptyList()
 
-        /**
-         * 接收扫描结果（S2C 包回调在渲染线程执行）。
-         * 仅更新结果列表；能量、次数由 PropertyDelegate 同步。
-         */
         fun receiveResults(packet: ScannerResultPacket) {
             lastResults = packet.results
         }
@@ -108,6 +117,8 @@ class ScannerScreen(
             return ItemStack(item, entry.count.coerceAtLeast(1))
         }
     }
+
+    // ─── UI 构建 ───────────────────────────────────────────────────
 
     private fun UiScope.buildUi(
         left: Int,
@@ -122,11 +133,14 @@ class ScannerScreen(
         maxUses: Int,
         results: List<OreScanEntry>
     ) {
+        // 信息面板（左侧）
         Column(x = left + 8, y = top + 6, spacing = 4) {
             Text(scannerTitle, color = 0xFFFFFF)
-            Row(spacing = 4, modifier = Modifier.EMPTY) {
-                Text("${energy.toInt()} / $cap EU", color = 0xCCCCCC, shadow = false)
-            }
+            Text(
+                "${energy.toInt()} / $cap EU",
+                color = 0xCCCCCC,
+                shadow = false
+            )
             EnergyBar(energyFraction, barWidth = 140, barHeight = 6)
             Text(
                 "剩余次数: $usesRemaining / $maxUses",
@@ -149,43 +163,46 @@ class ScannerScreen(
             )
         }
 
+        // 扫描结果区（可滚动）
+        val resultsX = left + 8
+        val resultsY = top + 82
+        val resultsW = backgroundWidth - 16
+        val resultsH = (backgroundHeight - 94).coerceAtLeast(40)
+
         if (results.isNotEmpty()) {
-            val resultsAreaW = backgroundWidth - 16
-            val resultsAreaH = (backgroundHeight - 88).coerceAtLeast(40)
-            Column(
-                x = left + 8,
-                y = top + 80,
-                spacing = 4,
-                modifier = Modifier.EMPTY.width(resultsAreaW)
+            // 带滚动支持的列表
+            ScrollView(
+                width = resultsW,
+                height = resultsH,
+                scrollbarWidth = 8,
+                x = resultsX,
+                y = resultsY
             ) {
-                Text("扫描结果:", color = 0xFFFFFF)
-                Flex(
-                    direction = FlexDirection.COLUMN,
-                    justifyContent = JustifyContent.SPACE_EVENLY,
-                    alignItems = AlignItems.START,
-                    gap = 4,
-                    modifier = Modifier.EMPTY.width(resultsAreaW).height(resultsAreaH)
-                ) {
-                    for (row in results.chunked(6)) {
-                        Flex(
-                            direction = FlexDirection.ROW,
-                            justifyContent = JustifyContent.SPACE_BETWEEN,
-                            alignItems = AlignItems.CENTER,
-                            gap = 8,
-                            modifier = Modifier.EMPTY.width(resultsAreaW)
-                        ) {
-                            for (entry in row) {
-                                val oreStack = entryToItemStack(entry)
-                                if (!oreStack.isEmpty) {
-                                    Row(spacing = 4) {
-                                        ItemStack(oreStack, size = 16)
-                                        Text(
-                                            if (entry.count >= 1000) "${entry.count / 1000}k" else entry.count.toString(),
-                                            color = 0xFFAA33,
-                                            shadow = false
-                                        )
-                                    }
-                                }
+                Column(spacing = 6) {
+                    Text("扫描结果:", color = 0xFFFFFF)
+                    for (entry in results) {
+                        val oreStack = entryToItemStack(entry)
+                        if (!oreStack.isEmpty) {
+                            Row(
+                                spacing = 6,
+                                modifier = Modifier.EMPTY.width(resultsW - 8)
+                            ) {
+                                ItemStack(oreStack, size = 16)
+                                Text(
+                                    entry.blockId.substringAfterLast("/")
+                                        .replace("_", " ")
+                                        .replaceFirstChar { it.uppercase() },
+                                    color = 0xDDDDDD,
+                                    shadow = false
+                                )
+                                // 数量右对齐
+                                Text(
+                                    if (entry.count >= 1000) "${entry.count / 1000}k"
+                                    else entry.count.toString(),
+                                    color = 0xFFAA33,
+                                    shadow = false,
+                                    modifier = Modifier.EMPTY
+                                )
                             }
                         }
                     }
@@ -194,8 +211,8 @@ class ScannerScreen(
         } else {
             Text(
                 "点击「扫描」开始扫描周围矿物",
-                x = left + 8,
-                y = top + 80,
+                x = resultsX,
+                y = resultsY,
                 color = 0x666666,
                 shadow = false
             )

@@ -60,12 +60,13 @@ class UiScope {
         text: String,
         color: Int = 0xFFFFFF,
         shadow: Boolean = true,
+        tooltip: List<net.minecraft.text.Text>? = null,
         x: Int = 0,
         y: Int = 0,
         absolute: Boolean = false,
         modifier: Modifier = Modifier.EMPTY
     ) {
-        val node = TextNode(text, color, shadow).apply {
+        val node = TextNode(text, color, shadow, tooltip).apply {
             this.position = if (absolute) Position.Absolute(x, y) else Position.Flow(x, y)
             this.modifier = modifier
         }
@@ -250,12 +251,14 @@ class UiScope {
         id: String,
         width: Int = 18,
         height: Int = 18,
+        showBorder: Boolean = true,
+        borderColor: Int = GuiBackground.BORDER_COLOR,
         x: Int = 0,
         y: Int = 0,
         absolute: Boolean = false,
         modifier: Modifier = Modifier.EMPTY
     ) {
-        val node = SlotAnchorNode(id, width, height).apply {
+        val node = SlotAnchorNode(id, width, height, showBorder, borderColor).apply {
             this.position = if (absolute) Position.Absolute(x, y) else Position.Flow(x, y)
             this.modifier = modifier
         }

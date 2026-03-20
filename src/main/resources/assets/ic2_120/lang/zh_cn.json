@@ -508,5 +508,6 @@
   "ic2_120.jade.flow_label": "流量: ",
   "ic2_120.jade.fluid_name": "流体: %s",
   "ic2_120.jade.stalled": "停滞: 流体种类冲突",
-  "ic2_120.jade.pump": "泵附件"
+  "ic2_120.jade.pump": "泵附件",
+  "gui.ic2_120.compose_debug.tooltip_hover": "这是悬停提示！"
 }

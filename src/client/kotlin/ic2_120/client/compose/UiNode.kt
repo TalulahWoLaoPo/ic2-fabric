@@ -119,7 +119,8 @@ class PanelNode(
 class TextNode(
     val text: String,
     val color: Int = 0xFFFFFF,
-    val shadow: Boolean = true
+    val shadow: Boolean = true,
+    val tooltip: List<net.minecraft.text.Text>? = null
 ) : UiNode() {
 
     override fun measure(ctx: RenderContext, constraints: Constraints) {
@@ -140,6 +141,9 @@ class TextNode(
             ctx.drawContext.drawTextWithShadow(ctx.textRenderer, text, tx, ty, color)
         } else {
             ctx.drawContext.drawText(ctx.textRenderer, text, tx, ty, color, false)
+        }
+        if (tooltip != null && ctx.interactionEnabled) {
+            ctx.tooltipHits += RenderContext.TooltipHit(originX, originY, measuredWidth, measuredHeight, tooltip)
         }
     }
 }
@@ -273,7 +277,9 @@ class ButtonNode(
 class SlotAnchorNode(
     private val id: String,
     private val anchorWidth: Int,
-    private val anchorHeight: Int
+    private val anchorHeight: Int,
+    private val showBorder: Boolean = true,
+    private val borderColor: Int = GuiBackground.BORDER_COLOR
 ) : UiNode() {
 
     override fun measure(ctx: RenderContext, constraints: Constraints) {
@@ -284,11 +290,21 @@ class SlotAnchorNode(
 
     override fun render(ctx: RenderContext, originX: Int, originY: Int) {
         val pad = modifier.padding
+        val anchorX = originX + pad.left
+        val anchorY = originY + pad.top
+        val anchorW = (measuredWidth - pad.horizontal).coerceAtLeast(0)
+        val anchorH = (measuredHeight - pad.vertical).coerceAtLeast(0)
+
+        if (ctx.drawEnabled && showBorder) {
+            // Align with vanilla slot border convention used across screens: offset by -1, keep slot size.
+            ctx.drawContext.drawBorder(anchorX - 1, anchorY - 1, anchorW, anchorH, borderColor)
+        }
+
         ctx.anchors[id] = RenderContext.AnchorRect(
-            x = originX + pad.left,
-            y = originY + pad.top,
-            w = (measuredWidth - pad.horizontal).coerceAtLeast(0),
-            h = (measuredHeight - pad.vertical).coerceAtLeast(0)
+            x = anchorX,
+            y = anchorY,
+            w = anchorW,
+            h = anchorH
         )
     }
 }
@@ -433,11 +449,98 @@ class FlexNode(
         val childConstraints = Constraints(innerMaxW, innerMaxH)
 
         val flowChildren = children.filter { !it.isAbsolute }
-        flowChildren.forEach { it.measure(ctx, childConstraints) }
-        children.filter { it.isAbsolute }.forEach { it.measure(ctx, childConstraints) }
-
+        val mainBounded = when (direction) {
+            FlexDirection.ROW -> innerMaxW < Int.MAX_VALUE
+            FlexDirection.COLUMN -> innerMaxH < Int.MAX_VALUE
+        }
         val totalGap = if (flowChildren.size > 1) gap * (flowChildren.size - 1) else 0
 
+        fun withResolvedModifier(child: UiNode, resolvedMainAxisSize: Int? = null, block: () -> Unit) {
+            val original = child.modifier
+            var resolved = original
+
+            // 交叉轴 fraction：按父 Flex 内尺寸直接解析，保证 fractionWidth/fractionHeight 可用。
+            if (resolved.fractionWidth != null) {
+                val w = (innerMaxW * resolved.fractionWidth!!).toInt().coerceAtLeast(0).coerceAtMost(innerMaxW)
+                resolved = resolved.copy(width = w, fractionWidth = null)
+            }
+            if (resolved.fractionHeight != null) {
+                val h = (innerMaxH * resolved.fractionHeight!!).toInt().coerceAtLeast(0).coerceAtMost(innerMaxH)
+                resolved = resolved.copy(height = h, fractionHeight = null)
+            }
+
+            // 主轴 fraction：在 Flex 内按“剩余空间”分配后覆盖，避免和固定项叠加溢出。
+            if (resolvedMainAxisSize != null) {
+                resolved = when (direction) {
+                    FlexDirection.ROW -> resolved.copy(
+                        width = resolvedMainAxisSize.coerceAtLeast(0).coerceAtMost(innerMaxW),
+                        fractionWidth = null
+                    )
+                    FlexDirection.COLUMN -> resolved.copy(
+                        height = resolvedMainAxisSize.coerceAtLeast(0).coerceAtMost(innerMaxH),
+                        fractionHeight = null
+                    )
+                }
+            }
+
+            child.modifier = resolved
+            block()
+            child.modifier = original
+        }
+
+        val mainFractionChildren = flowChildren.filter { child ->
+            when (direction) {
+                FlexDirection.ROW -> child.modifier.fractionWidth != null
+                FlexDirection.COLUMN -> child.modifier.fractionHeight != null
+            }
+        }
+        val fixedChildren = flowChildren.filterNot { it in mainFractionChildren }
+
+        // Pass 1: 先测固定项，得到主轴已占用空间。
+        fixedChildren.forEach { child ->
+            withResolvedModifier(child) { child.measure(ctx, childConstraints) }
+        }
+
+        // Pass 2: 主轴 fraction 子项按“剩余空间”进行分配（类似 flex-grow）。
+        if (mainFractionChildren.isNotEmpty()) {
+            if (mainBounded) {
+                val fixedMain = fixedChildren.sumOf {
+                    if (direction == FlexDirection.ROW) it.measuredWidth else it.measuredHeight
+                }
+                val mainCapacity = if (direction == FlexDirection.ROW) innerMaxW else innerMaxH
+                val remaining = (mainCapacity - fixedMain - totalGap).coerceAtLeast(0)
+                val totalFraction = mainFractionChildren.sumOf { child ->
+                    when (direction) {
+                        FlexDirection.ROW -> child.modifier.fractionWidth?.toDouble() ?: 0.0
+                        FlexDirection.COLUMN -> child.modifier.fractionHeight?.toDouble() ?: 0.0
+                    }
+                }.coerceAtLeast(1e-6)
+
+                var assigned = 0
+                mainFractionChildren.forEachIndexed { index, child ->
+                    val fraction = when (direction) {
+                        FlexDirection.ROW -> child.modifier.fractionWidth?.toDouble() ?: 0.0
+                        FlexDirection.COLUMN -> child.modifier.fractionHeight?.toDouble() ?: 0.0
+                    }
+                    val allocated = if (index == mainFractionChildren.lastIndex) {
+                        (remaining - assigned).coerceAtLeast(0)
+                    } else {
+                        ((remaining * (fraction / totalFraction)).toInt()).coerceAtLeast(0)
+                    }
+                    assigned += allocated
+                    withResolvedModifier(child, resolvedMainAxisSize = allocated) {
+                        child.measure(ctx, childConstraints)
+                    }
+                }
+            } else {
+                // 主轴无界时无法按剩余空间分配，回退为普通测量。
+                mainFractionChildren.forEach { child ->
+                    withResolvedModifier(child) { child.measure(ctx, childConstraints) }
+                }
+            }
+        }
+
+        children.filter { it.isAbsolute }.forEach { it.measure(ctx, childConstraints) }
         val (contentW, contentH) = when (direction) {
             FlexDirection.ROW -> {
                 val w = flowChildren.sumOf { it.measuredWidth } + totalGap
@@ -464,6 +567,7 @@ class FlexNode(
             FlexDirection.ROW -> contentH
             FlexDirection.COLUMN -> if (mainAxisFromConstraints) constraints.maxHeight else contentH
         } + pad.vertical)
+
     }
 
     override fun render(ctx: RenderContext, originX: Int, originY: Int) {
@@ -638,8 +742,14 @@ class ScrollViewNode(
         children.forEach { it.measure(ctx, childConstraints) }
         contentH = children.sumOf { it.measuredHeight }
 
-        measuredWidth = modifier.width ?: (innerMaxW + pad.horizontal + scrollbarWidth)
-        measuredHeight = modifier.height ?: (contentH + pad.vertical)
+        measuredWidth = (modifier.width ?: (innerMaxW + pad.horizontal + scrollbarWidth))
+            .coerceAtMost(constraints.maxWidth)
+        // fractionHeight overrides explicit height: resolved from parent constraints (set by Flex's inner size)
+        measuredHeight = (when {
+            modifier.fractionHeight != null -> (constraints.maxHeight * modifier.fractionHeight!!).toInt()
+            modifier.height != null -> modifier.height!!
+            else -> contentH + pad.vertical
+        }).coerceAtMost(constraints.maxHeight)
     }
 
     override fun render(ctx: RenderContext, originX: Int, originY: Int) {
