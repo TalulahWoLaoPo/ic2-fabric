@@ -47,8 +47,9 @@ class GeneratorScreenHandler(
         addProperties(propertyDelegate)
 
         // 机器槽位（规则由 SlotSpec 描述，便于后续机器复用）
-        addSlot(PredicateSlot(blockInventory, MachineBlockEntity.FUEL_SLOT, FUEL_SLOT_X, BLOCK_SLOTS_Y, FUEL_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, MachineBlockEntity.BATTERY_SLOT, BATTERY_SLOT_X, BLOCK_SLOTS_Y, BATTERY_SLOT_SPEC))
+        // 初始坐标由 Screen 的 SlotAnchor 覆盖（两阶段渲染）
+        addSlot(PredicateSlot(blockInventory, MachineBlockEntity.FUEL_SLOT, 0, 0, FUEL_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, MachineBlockEntity.BATTERY_SLOT, 0, 0, BATTERY_SLOT_SPEC))
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
