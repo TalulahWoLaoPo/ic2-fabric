@@ -27,17 +27,17 @@ object OreGeneration {
 
     fun register() {
         BiomeModifications.addFeature(
-            BiomeSelectors.foundInOverworld(),
+            BiomeSelectors.all(),
             GenerationStep.Feature.UNDERGROUND_ORES,
             ORE_TIN_PLACED_KEY
         )
         BiomeModifications.addFeature(
-            BiomeSelectors.foundInOverworld(),
+            BiomeSelectors.all(),
             GenerationStep.Feature.UNDERGROUND_ORES,
             ORE_LEAD_PLACED_KEY
         )
         BiomeModifications.addFeature(
-            BiomeSelectors.foundInOverworld(),
+            BiomeSelectors.all(),
             GenerationStep.Feature.UNDERGROUND_ORES,
             ORE_URANIUM_PLACED_KEY
         )

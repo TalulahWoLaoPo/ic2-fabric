@@ -94,10 +94,12 @@ class MyComposeDemoScreen(
 
     private val ui = ComposeUI()
     private val slotXField by lazy {
-        net.minecraft.screen.slot.Slot::class.java.getDeclaredField("x").apply { isAccessible = true }
+        // intermediary: x -> field_7873
+        net.minecraft.screen.slot.Slot::class.java.getDeclaredField("field_7873").apply { isAccessible = true }
     }
     private val slotYField by lazy {
-        net.minecraft.screen.slot.Slot::class.java.getDeclaredField("y").apply { isAccessible = true }
+        // intermediary: y -> field_7872
+        net.minecraft.screen.slot.Slot::class.java.getDeclaredField("field_7872").apply { isAccessible = true }
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {

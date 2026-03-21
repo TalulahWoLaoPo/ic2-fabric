@@ -8,6 +8,7 @@ import ic2_120.content.sync.InductionFurnaceSync
 import ic2_120.content.block.InductionFurnaceBlock
 import ic2_120.content.screen.InductionFurnaceScreenHandler
 import ic2_120.registry.annotation.ModScreen
+import ic2_120.client.utils.SlotReflection
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.entity.player.PlayerInventory
@@ -26,12 +27,6 @@ class InductionFurnaceScreen(
 ) : HandledScreen<InductionFurnaceScreenHandler>(handler, playerInventory, title) {
 
     private val ui = ComposeUI()
-    private val slotXField by lazy {
-        Slot::class.java.getDeclaredField("x").apply { isAccessible = true }
-    }
-    private val slotYField by lazy {
-        Slot::class.java.getDeclaredField("y").apply { isAccessible = true }
-    }
 
     init {
         backgroundWidth = GUI_SIZE.width
@@ -241,8 +236,8 @@ class InductionFurnaceScreen(
     private fun applyAnchoredSlots(layout: ComposeUI.LayoutSnapshot, left: Int, top: Int) {
         handler.slots.forEachIndexed { index, slot ->
             val anchor = layout.anchors[slotAnchorId(index)] ?: return@forEachIndexed
-            slotXField.setInt(slot, anchor.x - left)
-            slotYField.setInt(slot, anchor.y - top)
+            SlotReflection.setX(slot, anchor.x - left)
+            SlotReflection.setY(slot, anchor.y - top)
         }
     }
 

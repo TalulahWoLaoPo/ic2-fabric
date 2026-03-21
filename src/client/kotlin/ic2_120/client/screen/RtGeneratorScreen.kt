@@ -3,6 +3,7 @@ package ic2_120.client.screen
 import ic2_120.client.compose.*
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
+import ic2_120.client.utils.SlotReflection
 import ic2_120.content.block.RtGeneratorBlock
 import ic2_120.content.block.machines.RtGeneratorBlockEntity
 import ic2_120.content.screen.RtGeneratorScreenHandler
@@ -22,12 +23,6 @@ class RtGeneratorScreen(
 ) : HandledScreen<RtGeneratorScreenHandler>(handler, playerInventory, title) {
 
     private val ui = ComposeUI()
-    private val slotXField by lazy {
-        Slot::class.java.getDeclaredField("x").apply { isAccessible = true }
-    }
-    private val slotYField by lazy {
-        Slot::class.java.getDeclaredField("y").apply { isAccessible = true }
-    }
 
     init {
         backgroundWidth = GUI_SIZE.width
@@ -132,8 +127,8 @@ class RtGeneratorScreen(
     private fun applyAnchoredSlots(layout: ComposeUI.LayoutSnapshot, left: Int, top: Int) {
         handler.slots.forEachIndexed { index, slot ->
             val anchor = layout.anchors[slotAnchorId(index)] ?: return@forEachIndexed
-            slotXField.setInt(slot, anchor.x - left)
-            slotYField.setInt(slot, anchor.y - top)
+            SlotReflection.setX(slot, anchor.x - left)
+            SlotReflection.setY(slot, anchor.y - top)
         }
     }
 

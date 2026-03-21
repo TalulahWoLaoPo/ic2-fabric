@@ -3,6 +3,7 @@ package ic2_120.client.screen
 import ic2_120.client.compose.*
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
+import ic2_120.client.utils.SlotReflection
 import ic2_120.content.block.storage.EnergyStorageConfig
 import ic2_120.content.screen.EnergyStorageScreenHandler
 import ic2_120.registry.annotation.ModScreen
@@ -26,12 +27,6 @@ class EnergyStorageScreen(
     private val ui = ComposeUI()
     private val capacity: Long = resolveCapacity()
     private val useEquipmentSlots: Boolean = resolveUseEquipmentSlots()
-    private val slotXField by lazy {
-        Slot::class.java.getDeclaredField("x").apply { isAccessible = true }
-    }
-    private val slotYField by lazy {
-        Slot::class.java.getDeclaredField("y").apply { isAccessible = true }
-    }
 
     private fun resolveCapacity(): Long {
         return handler.context.get({ world, pos ->
@@ -146,8 +141,8 @@ class EnergyStorageScreen(
     private fun applyAnchoredSlots(layout: ComposeUI.LayoutSnapshot, left: Int, top: Int) {
         handler.slots.forEachIndexed { index, slot ->
             val anchor = layout.anchors[slotAnchorId(index)] ?: return@forEachIndexed
-            slotXField.setInt(slot, anchor.x - left)
-            slotYField.setInt(slot, anchor.y - top)
+            SlotReflection.setX(slot, anchor.x - left)
+            SlotReflection.setY(slot, anchor.y - top)
         }
     }
 

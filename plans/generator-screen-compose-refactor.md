@@ -45,10 +45,12 @@ ui.render()            → Compose overlay：标题、能量条、槽位锚点�
 
 ```kotlin
 private val slotXField by lazy {
-    Slot::class.java.getDeclaredField("x").apply { isAccessible = true }
+    // intermediary: x -> field_7873
+    Slot::class.java.getDeclaredField("field_7873").apply { isAccessible = true }
 }
 private val slotYField by lazy {
-    Slot::class.java.getDeclaredField("y").apply { isAccessible = true }
+    // intermediary: y -> field_7872
+    Slot::class.java.getDeclaredField("field_7872").apply { isAccessible = true }
 }
 ```
 

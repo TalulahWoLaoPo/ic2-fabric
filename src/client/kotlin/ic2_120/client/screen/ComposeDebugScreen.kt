@@ -2,6 +2,7 @@ package ic2_120.client.screen
 
 import ic2_120.client.compose.*
 import ic2_120.client.ui.GuiBackground
+import ic2_120.client.utils.SlotReflection
 import ic2_120.content.block.ComposeDebugBlock
 import ic2_120.content.screen.ComposeDebugScreenHandler
 import ic2_120.registry.annotation.ModScreen
@@ -27,12 +28,6 @@ class ComposeDebugScreen(
 ) : HandledScreen<ComposeDebugScreenHandler>(handler, playerInventory, title) {
 
     private val ui = ComposeUI()
-    private val slotXField by lazy {
-        net.minecraft.screen.slot.Slot::class.java.getDeclaredField("x").apply { isAccessible = true }
-    }
-    private val slotYField by lazy {
-        net.minecraft.screen.slot.Slot::class.java.getDeclaredField("y").apply { isAccessible = true }
-    }
 
     init {
         backgroundWidth = GuiSize.DEBUG.width
@@ -189,8 +184,8 @@ class ComposeDebugScreen(
     private fun applyAnchoredSlots(layout: ComposeUI.LayoutSnapshot, left: Int, top: Int) {
         handler.slots.forEachIndexed { index, slot ->
             val anchor = layout.anchors[slotAnchorId(index)] ?: return@forEachIndexed
-            slotXField.setInt(slot, anchor.x - left)
-            slotYField.setInt(slot, anchor.y - top)
+            SlotReflection.setX(slot, anchor.x - left)
+            SlotReflection.setY(slot, anchor.y - top)
         }
     }
 

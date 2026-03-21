@@ -1,18 +1,12 @@
 package ic2_120.client.compose
 
+import ic2_120.client.utils.SlotReflection
 import net.minecraft.screen.ScreenHandler
 
 /**
  * 将 Compose 布局导出的锚点转换为 Slot 相对 GUI 的坐标。
  */
 object SlotLayoutBridge {
-    private val slotXField = runCatching {
-        net.minecraft.screen.slot.Slot::class.java.getDeclaredField("x").apply { isAccessible = true }
-    }.getOrNull()
-    private val slotYField = runCatching {
-        net.minecraft.screen.slot.Slot::class.java.getDeclaredField("y").apply { isAccessible = true }
-    }.getOrNull()
-
     /**
      * @param anchors Compose 布局快照中的锚点矩形（屏幕绝对坐标）
      * @param handler 当前 screen handler
@@ -32,8 +26,8 @@ object SlotLayoutBridge {
             val slot = handler.slots.getOrNull(slotIndex) ?: continue
             val relativeX = anchor.x - screenLeft
             val relativeY = anchor.y - screenTop
-            slotXField?.setInt(slot, relativeX)
-            slotYField?.setInt(slot, relativeY)
+            SlotReflection.setX(slot, relativeX)
+            SlotReflection.setY(slot, relativeY)
         }
     }
 }
