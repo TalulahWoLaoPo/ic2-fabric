@@ -33,7 +33,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
 import java.util.function.Consumer
 
-@ModBlock(name = "pump", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "pump", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "processing")
 class PumpBlock : MachineBlock() {
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =
         PumpBlockEntity(pos, state)

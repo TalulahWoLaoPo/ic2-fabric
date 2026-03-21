@@ -23,8 +23,8 @@ class ChunkLoaderScreen(
     private val ui = ComposeUI()
 
     init {
-        backgroundWidth = PANEL_WIDTH
-        backgroundHeight = PANEL_HEIGHT
+        backgroundWidth = GUI_SIZE.width
+        backgroundHeight = GUI_SIZE.height
     }
 
     override fun drawBackground(context: DrawContext, delta: Float, mouseX: Int, mouseY: Int) {
@@ -73,10 +73,12 @@ class ChunkLoaderScreen(
                     Text(title.string, color = 0xFFFFFF)
                     Text(energyText, color = 0xFFFFFF)
                 }
-                EnergyBar(energyFraction, modifier = Modifier().width(barW))
+                EnergyBar(energyFraction)
 
-                // 放电槽
-                SlotAnchor(id = "slot.${ChunkLoaderScreenHandler.SLOT_DISCHARGING_INDEX}")
+                Flex(justifyContent = JustifyContent.CENTER, alignItems = AlignItems.CENTER) {
+                    // 放电槽
+                    SlotAnchor(id = "slot.${ChunkLoaderScreenHandler.SLOT_DISCHARGING_INDEX}")
+                }
 
                 Text("加载范围: $chunkCount 区块", color = 0xFFFFFF, shadow = false)
             }
@@ -107,8 +109,7 @@ class ChunkLoaderScreen(
         ui.mouseClicked(mouseX, mouseY, button) || super.mouseClicked(mouseX, mouseY, button)
 
     companion object {
-        private const val PANEL_WIDTH = 176
-        private const val PANEL_HEIGHT = 166
+        private val GUI_SIZE = GuiSize.STANDARD
     }
 
     private fun formatEu(value: Long): String {

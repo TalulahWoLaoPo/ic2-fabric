@@ -21,7 +21,7 @@ import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 
-@ModBlock(name = "solar_distiller", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "solar_distiller", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "heat")
 class SolarDistillerBlock : MachineBlock() {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =

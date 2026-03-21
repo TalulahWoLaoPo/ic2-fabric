@@ -16,7 +16,7 @@ import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 
-@ModBlock(name = "wind_kinetic_generator", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "wind_kinetic_generator", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "generator")
 class WindKineticGeneratorBlock : MachineBlock() {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =

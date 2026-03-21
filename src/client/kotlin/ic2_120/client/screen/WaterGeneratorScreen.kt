@@ -78,40 +78,60 @@ class WaterGeneratorScreen(
                         barHeight = 12,
                     )
 
+                Flex(
+                    direction = FlexDirection.ROW,
+                    justifyContent = JustifyContent.SPACE_AROUND,
+                    alignItems = AlignItems.CENTER,
+                    gap = 4,
+                    modifier = Modifier().height(60)
+                ) {
                     Flex(
-                        direction = FlexDirection.ROW,
+                        direction = FlexDirection.COLUMN,
+                        justifyContent = JustifyContent.SPACE_BETWEEN,
                         alignItems = AlignItems.CENTER,
-                        gap = 4
                     ) {
-                        Column(spacing = 4) {
-                            SlotAnchor(
-                                id = slotAnchorId(WaterGeneratorBlockEntity.FUEL_SLOT),
-                                width = WaterGeneratorScreenHandler.SLOT_SIZE,
-                                height = WaterGeneratorScreenHandler.SLOT_SIZE
-                            )
-                            SlotAnchor(
-                                id = slotAnchorId(WaterGeneratorBlockEntity.EMPTY_CONTAINER_SLOT),
-                                width = WaterGeneratorScreenHandler.SLOT_SIZE,
-                                height = WaterGeneratorScreenHandler.SLOT_SIZE
-                            )
-                        }
-                        // 水储量竖向条
-                        EnergyBar(
-                            waterFrac,
-                            orientation = EnergyBarOrientation.VERTICAL,
-                            shortEdge = 12,
-                            barHeight = 36,
-                            emptyColor = 0xFF333333.toInt(),
-                            fullColor = 0xFF3333CC.toInt(),
+                        SlotAnchor(
+                            id = slotAnchorId(WaterGeneratorBlockEntity.FUEL_SLOT),
+                            width = WaterGeneratorScreenHandler.SLOT_SIZE,
+                            height = WaterGeneratorScreenHandler.SLOT_SIZE
                         )
                         SlotAnchor(
-                            id = slotAnchorId(WaterGeneratorBlockEntity.BATTERY_SLOT),
+                            id = slotAnchorId(WaterGeneratorBlockEntity.EMPTY_CONTAINER_SLOT),
                             width = WaterGeneratorScreenHandler.SLOT_SIZE,
                             height = WaterGeneratorScreenHandler.SLOT_SIZE
                         )
                     }
+                    // 水储量竖向条
+                    EnergyBar(
+                        waterFrac,
+                        orientation = EnergyBarOrientation.VERTICAL,
+                        emptyColor = 0xFF333333.toInt(),
+                        fullColor = 0xFF3333CC.toInt(),
+                        modifier = Modifier().fractionHeight(1f)
+                    )
+                    SlotAnchor(
+                        id = slotAnchorId(WaterGeneratorBlockEntity.BATTERY_SLOT),
+                        width = WaterGeneratorScreenHandler.SLOT_SIZE,
+                        height = WaterGeneratorScreenHandler.SLOT_SIZE
+                    )
                 }
             }
+
+            Column(
+                spacing = 4,
+                modifier = Modifier.EMPTY
+                    .width(GuiSize.UPGRADE_COLUMN_WIDTH)
+                    .padding(0, 8, 0, 0)
+            ) {
+                for (slotIndex in WaterGeneratorScreenHandler.SLOT_UPGRADE_INDEX_START..WaterGeneratorScreenHandler.SLOT_UPGRADE_INDEX_END) {
+                    SlotAnchor(
+                        id = slotAnchorId(slotIndex),
+                        width = WaterGeneratorScreenHandler.SLOT_SIZE,
+                        height = WaterGeneratorScreenHandler.SLOT_SIZE
+                    )
+                }
+            }
+        }
         }
 
         val layout = ui.layout(context, textRenderer, mouseX, mouseY, content = content)
@@ -146,7 +166,7 @@ class WaterGeneratorScreen(
         ui.mouseClicked(mouseX, mouseY, button) || super.mouseClicked(mouseX, mouseY, button)
 
     companion object {
-        private val GUI_SIZE = GuiSize.STANDARD
+        private val GUI_SIZE = GuiSize.STANDARD_UPGRADE
     }
 }
 

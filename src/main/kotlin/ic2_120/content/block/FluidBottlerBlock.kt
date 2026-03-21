@@ -38,7 +38,7 @@ import java.util.function.Consumer
  * 能量等级：1 (32 EU/t)
  * 操作时间：5 秒/桶，2 EU/t，单次 200 EU
  */
-@ModBlock(name = "fluid_bottler", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "fluid_bottler", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "processing")
 class FluidBottlerBlock : MachineBlock() {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =

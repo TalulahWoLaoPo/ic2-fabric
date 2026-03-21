@@ -53,7 +53,6 @@ class BlockCutterScreen(
         val inputText = "输入 ${formatEu(inputRate)} EU/t"
         val consumeText = "耗能 ${formatEu(consumeRate)} EU/t"
         val sideTextWidth = maxOf(textRenderer.getWidth(inputText), textRenderer.getWidth(consumeText))
-        val sideTextX = left - sideTextWidth - 4
 
         val content: UiScope.() -> Unit = {
             Row(
@@ -62,6 +61,15 @@ class BlockCutterScreen(
                 spacing = 8,
                 modifier = Modifier.EMPTY.width(GUI_SIZE.contentWidth)
             ) {
+                // 左侧信息文本
+                Column(
+                    spacing = 4,
+                    modifier = Modifier.EMPTY.width(sideTextWidth)
+                ) {
+                    Text(inputText, color = 0xAAAAAA, shadow = false)
+                    Text(consumeText, color = 0xAAAAAA, shadow = false)
+                }
+
                 Column(
                     spacing = 6,
                     modifier = Modifier.EMPTY.width(GuiSize.STANDARD.contentWidth)
@@ -88,6 +96,14 @@ class BlockCutterScreen(
                         Column(spacing = 4) {
                             SlotHost(BlockCutterScreenHandler.SLOT_OUTPUT_INDEX)
                             SlotHost(BlockCutterScreenHandler.SLOT_BLADE_INDEX)
+                            // 刀片警告文本
+                            if (handler.sync.bladeTooWeak != 0) {
+                                Text(
+                                    Text.translatable("gui.ic2_120.block_cutter.blade_too_weak").string,
+                                    color = 0xFF5555,
+                                    shadow = false
+                                )
+                            }
                         }
                     }
                 }
@@ -110,18 +126,6 @@ class BlockCutterScreen(
 
         super.render(context, mouseX, mouseY, delta)
         ui.render(context, textRenderer, mouseX, mouseY, content = content)
-        context.drawText(textRenderer, inputText, sideTextX, top + 8, 0xAAAAAA, false)
-        context.drawText(textRenderer, consumeText, sideTextX, top + 20, 0xAAAAAA, false)
-
-        // 绘制刀片警告
-        if (handler.sync.bladeTooWeak != 0) {
-            val warningText = Text.translatable("gui.ic2_120.block_cutter.blade_too_weak").string
-            val bladeAnchor = layout.anchors[slotAnchorId(BlockCutterScreenHandler.SLOT_BLADE_INDEX)]
-            if (bladeAnchor != null) {
-                context.drawText(textRenderer, warningText, bladeAnchor.x, bladeAnchor.y + BlockCutterScreenHandler.SLOT_SIZE + 4, 0xFF5555, false)
-            }
-        }
-
         drawMouseoverTooltip(context, mouseX, mouseY)
     }
 

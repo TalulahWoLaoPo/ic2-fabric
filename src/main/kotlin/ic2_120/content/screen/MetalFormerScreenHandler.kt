@@ -48,7 +48,7 @@ class MetalFormerScreenHandler(
 
     /**
      * 服务端处理：收到客户端发来的按钮点击包后在此执行。
-     * 客户端应发送 [ButtonClickC2SPacket] 指定 syncId 与 [BUTTON_ID_MODE_CYCLE]。
+     * 客户端应发送 [net.minecraft.network.packet.c2s.play.ButtonClickC2SPacket] 指定 syncId 与 [BUTTON_ID_MODE_CYCLE]。
      */
     override fun onButtonClick(player: PlayerEntity, id: Int): Boolean {
         if (id != BUTTON_ID_MODE_CYCLE) return false

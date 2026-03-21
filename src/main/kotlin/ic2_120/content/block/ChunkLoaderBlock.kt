@@ -32,7 +32,7 @@ import net.minecraft.world.World
  * 区块加载器。消耗 EU 强制加载周围 1～25 个区块，运行时显示绿色。
  * 能量等级：1 (LV)
  */
-@ModBlock(name = "chunk_loader", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "chunk_loader", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "processing")
 class ChunkLoaderBlock : MachineBlock() {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =

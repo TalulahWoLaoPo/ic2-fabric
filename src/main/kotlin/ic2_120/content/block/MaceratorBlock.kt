@@ -20,10 +20,10 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 
 /**
- * 粉碎机方块。消耗电力将矿石等粉碎为粉末/粉碎矿。
+ * 打粉机方块。消耗电力将矿石等粉碎为粉末/粉碎矿。
  * 能量等级：1
  */
-@ModBlock(name = "macerator", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "macerator", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "processing")
 class MaceratorBlock : MachineBlock() {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =

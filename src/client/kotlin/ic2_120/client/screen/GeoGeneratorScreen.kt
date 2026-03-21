@@ -80,10 +80,16 @@ class GeoGeneratorScreen(
 
                     Flex(
                         direction = FlexDirection.ROW,
+                        justifyContent = JustifyContent.SPACE_AROUND,
                         alignItems = AlignItems.CENTER,
-                        gap = 4
+                        gap = 4,
+                        modifier = Modifier().height(60)
                     ) {
-                        Column(spacing = 4) {
+                        Flex(
+                            direction = FlexDirection.COLUMN,
+                            justifyContent = JustifyContent.SPACE_BETWEEN,
+                            alignItems = AlignItems.CENTER,
+                        ) {
                             SlotAnchor(
                                 id = slotAnchorId(GeoGeneratorBlockEntity.FUEL_SLOT),
                                 width = GeoGeneratorScreenHandler.SLOT_SIZE,
@@ -99,10 +105,11 @@ class GeoGeneratorScreen(
                         EnergyBar(
                             lavaFrac,
                             orientation = EnergyBarOrientation.VERTICAL,
-                            shortEdge = 12,
-                            barHeight = 36,
+//                            shortEdge = 12,
+//                            barHeight = 70,
                             emptyColor = 0xFF333333.toInt(),
                             fullColor = 0xFFCC3300.toInt(),
+                            modifier = Modifier().fractionHeight(1f)
                         )
                         SlotAnchor(
                             id = slotAnchorId(GeoGeneratorBlockEntity.BATTERY_SLOT),

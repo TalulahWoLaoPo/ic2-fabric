@@ -21,7 +21,7 @@ import net.minecraft.world.World
 /**
  * 创造模式发电机方块。无限生成 32 EU/t，支持电池充电。
  */
-@ModBlock(name = "creative_generator", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "creative_generator", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "generator")
 class CreativeGeneratorBlock : MachineBlock() {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =

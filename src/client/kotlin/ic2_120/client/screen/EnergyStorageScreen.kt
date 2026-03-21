@@ -123,6 +123,19 @@ class EnergyStorageScreen(
                             )
                         }
                     }
+                } else {
+                    Flex(
+                        direction = FlexDirection.ROW,
+                        alignItems = AlignItems.CENTER,
+                        gap = 4
+                    ) {
+                        Text(chargeLabel.string, color = 0xAAAAAA, shadow = false)
+                        SlotAnchor(
+                            id = slotAnchorId(0),
+                            width = 18,
+                            height = 18
+                        )
+                    }
                 }
             }
         }

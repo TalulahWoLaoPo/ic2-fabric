@@ -85,7 +85,7 @@ abstract class EnergyStorageBlockEntity(
     override fun writeScreenOpeningData(player: net.minecraft.server.network.ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)
         buf.writeVarInt(syncedData.size())
-        buf.writeVarInt(5) // always 5 slots: 1 charge + 4 equipment
+        buf.writeVarInt(config.slotCount)
         buf.writeBoolean(config.useEquipmentSlots)
     }
 

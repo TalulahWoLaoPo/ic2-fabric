@@ -15,7 +15,7 @@ import net.minecraft.world.World
 
 /**
  * 反应堆红石接口。
- * 提供红石控制功能，可以禁用/反转红石信号。
+ * 提供红石控制功能
  */
 @ModBlock(name = "reactor_redstone_port", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "reactor")
 class ReactorRedstonePortBlock(settings: AbstractBlock.Settings = AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(5.0f, 6.0f)) : MachineBlock(settings) {

@@ -22,7 +22,7 @@ import net.minecraft.world.World
 /**
  * 火力发电机方块。燃烧燃料产生 EU，支持 facing 与 active 状态。
  */
-@ModBlock(name = "generator", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "generator", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "generator")
 class GeneratorBlock : MachineBlock() {
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =
         GeneratorBlockEntity(pos, state)

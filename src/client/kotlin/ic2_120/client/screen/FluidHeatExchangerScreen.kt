@@ -25,8 +25,8 @@ class FluidHeatExchangerScreen(
     private val ui = ComposeUI()
 
     init {
-        backgroundWidth = PANEL_WIDTH
-        backgroundHeight = PANEL_HEIGHT
+        backgroundWidth = GUI_SIZE.width
+        backgroundHeight = GUI_SIZE.height
         titleY = 4
     }
 
@@ -157,7 +157,6 @@ class FluidHeatExchangerScreen(
         ui.mouseClicked(mouseX, mouseY, button) || super.mouseClicked(mouseX, mouseY, button)
 
     companion object {
-        private const val PANEL_WIDTH = 176
-        private const val PANEL_HEIGHT = 184
+        private val GUI_SIZE = GuiSize.STANDARD_TALL
     }
 }

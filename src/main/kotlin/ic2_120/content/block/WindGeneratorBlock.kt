@@ -34,7 +34,7 @@ import java.util.function.Consumer
  * 以高度为动力的发电机，发电量受高度、障碍、天气影响。
  * 极限约 11.46 EU/t，平均每 6.4 秒刷新一次。
  */
-@ModBlock(name = "wind_generator", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "wind_generator", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "generator")
 class WindGeneratorBlock : MachineBlock() {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =

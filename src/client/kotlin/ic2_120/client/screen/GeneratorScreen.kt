@@ -80,7 +80,7 @@ class GeneratorScreen(
                 // 机器槽（横向排列，SlotAnchor 导出锚点给原生 slot 渲染）
                 Flex(
                     direction = FlexDirection.ROW,
-                    justifyContent = JustifyContent.SPACE_BETWEEN,
+                    justifyContent = JustifyContent.SPACE_AROUND,
                 ) {
                     Row(spacing = 8) {
                         SlotAnchor(id = "slot.${MachineBlockEntity.FUEL_SLOT}")

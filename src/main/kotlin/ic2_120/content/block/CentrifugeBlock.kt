@@ -26,7 +26,7 @@ import ic2_120.Ic2_120
  * 消耗电力与热量，将矿石、燃料棒等离心分离为多种产物。
  * 能量等级：2 (MV)
  */
-@ModBlock(name = "centrifuge", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "centrifuge", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "processing")
 class CentrifugeBlock : MachineBlock() {
 
     override fun getCasingDrop(): net.minecraft.item.Item =

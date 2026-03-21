@@ -37,7 +37,7 @@ import java.util.function.Consumer
  * 能量等级：1 (32 EU/t)
  * 操作时间：10 秒，4 EU/t，单次 800 EU
  */
-@ModBlock(name = "canner", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "canner", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "processing")
 class CannerBlock : MachineBlock() {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =

@@ -2,7 +2,15 @@ package ic2_120.content.screen
 
 import ic2_120.content.block.WaterGeneratorBlock
 import ic2_120.content.block.machines.WaterGeneratorBlockEntity
+import ic2_120.content.item.isWaterFuel
 import ic2_120.content.item.energy.canBeCharged
+import ic2_120.content.screen.slot.PredicateSlot
+import ic2_120.content.screen.slot.UpgradeSlotLayout
+import ic2_120.content.screen.slot.SlotMoveHelper
+import ic2_120.content.screen.slot.SlotSpec
+import ic2_120.content.screen.slot.SlotTarget
+import ic2_120.content.sync.WaterGeneratorSync
+import ic2_120.content.syncs.SyncedDataView
 import ic2_120.registry.annotation.ModScreenHandler
 import ic2_120.registry.type
 import net.minecraft.entity.player.PlayerEntity
@@ -16,13 +24,6 @@ import net.minecraft.screen.PropertyDelegate
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
-import ic2_120.content.screen.slot.PredicateSlot
-import ic2_120.content.screen.slot.SlotMoveHelper
-import ic2_120.content.screen.slot.SlotSpec
-import ic2_120.content.screen.slot.SlotTarget
-import ic2_120.content.item.isWaterFuel
-import ic2_120.content.sync.WaterGeneratorSync
-import ic2_120.content.syncs.SyncedDataView
 
 @ModScreenHandler(block = WaterGeneratorBlock::class)
 class WaterGeneratorScreenHandler(
@@ -39,13 +40,30 @@ class WaterGeneratorScreenHandler(
         currentTickProvider = { null }
     )
 
+    private val upgradeSlotSpec: SlotSpec by lazy {
+        UpgradeSlotLayout.slotSpec { context.get({ world, pos -> world.getBlockEntity(pos) }, null) }
+    }
+
     init {
-        checkSize(blockInventory, 3)
+        checkSize(blockInventory, WaterGeneratorBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
 
         addSlot(PredicateSlot(blockInventory, WaterGeneratorBlockEntity.FUEL_SLOT, FUEL_SLOT_X, BLOCK_SLOTS_Y, FUEL_SLOT_SPEC))
         addSlot(PredicateSlot(blockInventory, WaterGeneratorBlockEntity.EMPTY_CONTAINER_SLOT, EMPTY_CONTAINER_SLOT_X, BLOCK_SLOTS_Y, EMPTY_CONTAINER_SLOT_SPEC))
         addSlot(PredicateSlot(blockInventory, WaterGeneratorBlockEntity.BATTERY_SLOT, BATTERY_SLOT_X, BLOCK_SLOTS_Y, BATTERY_SLOT_SPEC))
+
+        // 4 个升级槽
+        for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
+            addSlot(
+                PredicateSlot(
+                    blockInventory,
+                    WaterGeneratorBlockEntity.SLOT_UPGRADE_INDICES[i],
+                    UpgradeSlotLayout.SLOT_X,
+                    UpgradeSlotLayout.slotY(i),
+                    upgradeSlotSpec
+                )
+            )
+        }
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
@@ -67,13 +85,20 @@ class WaterGeneratorScreenHandler(
                 index == WaterGeneratorBlockEntity.FUEL_SLOT -> if (!insertItem(stackInSlot, 3, 39, true)) return ItemStack.EMPTY
                 index == WaterGeneratorBlockEntity.EMPTY_CONTAINER_SLOT -> if (!insertItem(stackInSlot, 3, 39, true)) return ItemStack.EMPTY
                 index == WaterGeneratorBlockEntity.BATTERY_SLOT -> if (!insertItem(stackInSlot, 3, 39, true)) return ItemStack.EMPTY
-                index in 3..38 -> {
+                index in SLOT_UPGRADE_INDEX_START..SLOT_UPGRADE_INDEX_END -> {
+                    if (!insertItem(stackInSlot, PLAYER_INV_START, HOTBAR_END, true)) return ItemStack.EMPTY
+                    slot.onQuickTransfer(stackInSlot, stack)
+                }
+                index in PLAYER_INV_START..HOTBAR_END -> {
+                    val upgradeTargets = (SLOT_UPGRADE_INDEX_START..SLOT_UPGRADE_INDEX_END).map {
+                        SlotTarget(slots[it], upgradeSlotSpec)
+                    }
                     val moved = SlotMoveHelper.insertIntoTargets(
                         stackInSlot,
                         listOf(
                             SlotTarget(slots[WaterGeneratorBlockEntity.FUEL_SLOT], FUEL_SLOT_SPEC),
                             SlotTarget(slots[WaterGeneratorBlockEntity.BATTERY_SLOT], BATTERY_SLOT_SPEC)
-                        )
+                        ) + upgradeTargets
                     )
                     if (!moved) return ItemStack.EMPTY
                 }
@@ -99,8 +124,8 @@ class WaterGeneratorScreenHandler(
         const val EMPTY_CONTAINER_SLOT_X = 86
         const val BATTERY_SLOT_X = 116
         const val BLOCK_SLOTS_Y = 54
-        const val PLAYER_INV_Y = 84
-        const val HOTBAR_Y = 142
+        const val PLAYER_INV_Y = 108
+        const val HOTBAR_Y = 166
         const val SLOT_SIZE = 18
         private val FUEL_SLOT_SPEC = SlotSpec(
             maxItemCount = 64,
@@ -115,11 +140,17 @@ class WaterGeneratorScreenHandler(
             canInsert = { stack -> stack.canBeCharged() }
         )
 
+        // 槽位索引
+        const val SLOT_UPGRADE_INDEX_START = 3
+        const val SLOT_UPGRADE_INDEX_END = 6
+        const val PLAYER_INV_START = 7
+        const val HOTBAR_END = 43
+
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): WaterGeneratorScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()
             val context = ScreenHandlerContext.create(playerInventory.player.world, pos)
-            val blockInv = SimpleInventory(3)
+            val blockInv = SimpleInventory(WaterGeneratorBlockEntity.INVENTORY_SIZE)
             return WaterGeneratorScreenHandler(syncId, playerInventory, blockInv, context, ArrayPropertyDelegate(propertyCount))
         }
     }

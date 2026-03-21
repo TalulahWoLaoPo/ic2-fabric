@@ -91,10 +91,16 @@ class SemifluidGeneratorScreen(
 
                     Flex(
                         direction = FlexDirection.ROW,
+                        justifyContent = JustifyContent.SPACE_AROUND,
                         alignItems = AlignItems.CENTER,
-                        gap = 4
+                        gap = 4,
+                        modifier = Modifier().height(60)
                     ) {
-                        Column(spacing = 4) {
+                        Flex(
+                            direction = FlexDirection.COLUMN,
+                            justifyContent = JustifyContent.SPACE_BETWEEN,
+                            alignItems = AlignItems.CENTER,
+                        ) {
                             SlotAnchor(
                                 id = slotAnchorId(SemifluidGeneratorBlockEntity.FUEL_SLOT),
                                 width = SemifluidGeneratorScreenHandler.SLOT_SIZE,
@@ -110,10 +116,9 @@ class SemifluidGeneratorScreen(
                         EnergyBar(
                             fuelFrac,
                             orientation = EnergyBarOrientation.VERTICAL,
-                            shortEdge = 12,
-                            barHeight = 36,
                             emptyColor = 0xFF333333.toInt(),
                             fullColor = fuelColor,
+                            modifier = Modifier().fractionHeight(1f)
                         )
                         SlotAnchor(
                             id = slotAnchorId(SemifluidGeneratorBlockEntity.BATTERY_SLOT),

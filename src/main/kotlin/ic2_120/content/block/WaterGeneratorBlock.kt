@@ -25,7 +25,7 @@ import net.minecraft.world.World
  * 水力发电机方块。
  * 水桶发电 500 EU（1 EU/t），周围 3x3x3 水方块每块 +0.01 EU/t。
  */
-@ModBlock(name = "water_generator", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "water_generator", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "generator")
 class WaterGeneratorBlock : MachineBlock() {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =

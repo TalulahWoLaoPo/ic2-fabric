@@ -88,12 +88,13 @@ class MetalFormerScreen(
 
                     Flex(
                         direction = FlexDirection.ROW,
+                        justifyContent = JustifyContent.CENTER,
                         alignItems = AlignItems.CENTER,
                         gap = 6,
                         modifier = Modifier.EMPTY.width(GuiSize.STANDARD.contentWidth)
                     ) {
-                        Text("模式: $modeText", color = 0xAAAAFF, shadow = false)
-                        Button("切换", onClick = {
+//                        Text("模式: $modeText", color = 0xAAAAFF, shadow = false)
+                        Button(modeText, onClick = {
                             client?.player?.networkHandler?.sendPacket(
                                 ButtonClickC2SPacket(handler.syncId, MetalFormerScreenHandler.BUTTON_ID_MODE_CYCLE)
                             )

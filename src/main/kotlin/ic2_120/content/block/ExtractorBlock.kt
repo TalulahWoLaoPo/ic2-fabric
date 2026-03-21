@@ -34,7 +34,7 @@ import java.util.function.Consumer
  * 提取机方块。消耗电力从粘性树脂、橡胶原木、橡胶树苗等提取橡胶。
  * 能量等级：1
  */
-@ModBlock(name = "extractor", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "extractor", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "processing")
 class ExtractorBlock : MachineBlock() {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =

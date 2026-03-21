@@ -185,7 +185,7 @@ class CannerScreenHandler(
         const val PROGRESS_BAR_Y = 84
         const val PROGRESS_BAR_W = 54
         const val PROGRESS_BAR_H = 8
-        const val FLUID_BAR_W = 6
+        const val FLUID_BAR_W = 12
         const val FLUID_BAR_H = 52
         const val SLOT_SIZE = 18
 

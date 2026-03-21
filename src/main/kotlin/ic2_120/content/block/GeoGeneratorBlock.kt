@@ -24,7 +24,7 @@ import net.minecraft.world.World
 /**
  * 地热发电机方块。
  */
-@ModBlock(name = "geo_generator", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "geo_generator", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "generator")
 class GeoGeneratorBlock : MachineBlock() {
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =
         GeoGeneratorBlockEntity(pos, state)

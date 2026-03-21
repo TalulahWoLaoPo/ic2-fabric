@@ -20,7 +20,6 @@ import net.minecraft.world.World
 /**
  * 反应堆流体接口。
  * 提供流体交互功能，通过管道输入冷却液/输出热冷却液。
- * 右键打开中心反应堆的 UI。
  */
 @ModBlock(name = "reactor_fluid_port", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "reactor")
 class ReactorFluidPortBlock(settings: AbstractBlock.Settings = AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(5.0f, 6.0f)) : MachineBlock(settings) {

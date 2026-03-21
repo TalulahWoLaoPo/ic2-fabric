@@ -18,7 +18,9 @@ class PredicateSlot(
 
     override fun canInsert(stack: ItemStack): Boolean = spec.canInsert(stack)
 
-    override fun getMaxItemCount(stack: ItemStack): Int = spec.maxItemCount
+    override fun getMaxItemCount(): Int = spec.maxItemCount
+
+    override fun getMaxItemCount(existingStack: ItemStack): Int = spec.maxItemCount
 
     override fun canTakeItems(playerEntity: PlayerEntity): Boolean = spec.canTake(playerEntity)
 }

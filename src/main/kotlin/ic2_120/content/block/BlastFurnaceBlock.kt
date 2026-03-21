@@ -21,7 +21,7 @@ import net.minecraft.world.World
  * 高炉方块。
  * 从背面接收热量（HU），消耗铁质材料与压缩空气，产出钢锭和炉渣。
  */
-@ModBlock(name = "blast_furnace", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "blast_furnace", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "processing")
 class BlastFurnaceBlock : MachineBlock() {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =

@@ -21,7 +21,7 @@ class CreativeGeneratorSync(
 
     companion object {
         /** 能量缓存容量 100,000 EU */
-        const val ENERGY_CAPACITY = 100_000L
+        const val ENERGY_CAPACITY = 10_000L
         /** 每 tick 最大输出 32 EU/t（与能量等级 1 对齐） */
         const val MAX_EXTRACT = 32L
         /** 每 tick 生成 32 EU */

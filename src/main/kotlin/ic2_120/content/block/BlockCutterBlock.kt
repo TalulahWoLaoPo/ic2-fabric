@@ -23,7 +23,7 @@ import net.minecraft.world.World
  * 能量等级 1（LV），最大 32 EU/t，耗能 4 EU/t，切割 1 个方块约 22.5 秒（1800 EU）。
  * 需放置锯片，越硬的锯片可切的东西越多。过压爆炸机制已启用。
  */
-@ModBlock(name = "block_cutter", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "block_cutter", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "processing")
 class BlockCutterBlock : MachineBlock() {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =

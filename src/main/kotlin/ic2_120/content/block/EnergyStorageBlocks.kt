@@ -21,7 +21,7 @@ import net.minecraft.world.World
 
 // ============== Block Definitions ==============
 
-@ModBlock(name = "batbox", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "batbox", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "bat_box")
 class BatBoxBlock : EnergyStorageBlock(EnergyStorageConfig.BATBOX) {
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =
         EnergyStorageBlockEntity.BatBoxBlockEntity(pos, state)
@@ -35,7 +35,7 @@ class BatBoxBlock : EnergyStorageBlock(EnergyStorageConfig.BATBOX) {
     }
 }
 
-@ModBlock(name = "cesu", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "cesu", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "bat_box")
 class CesuBlock : EnergyStorageBlock(EnergyStorageConfig.CESU) {
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =
         EnergyStorageBlockEntity.CesuBlockEntity(pos, state)
@@ -49,7 +49,7 @@ class CesuBlock : EnergyStorageBlock(EnergyStorageConfig.CESU) {
     }
 }
 
-@ModBlock(name = "mfe", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "mfe", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "bat_box")
 class MfeBlock : EnergyStorageBlock(EnergyStorageConfig.MFE) {
     override fun getCasingDrop(): Item = Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "advanced_machine"))
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =
@@ -64,7 +64,7 @@ class MfeBlock : EnergyStorageBlock(EnergyStorageConfig.MFE) {
     }
 }
 
-@ModBlock(name = "mfsu", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "mfsu", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "bat_box")
 class MfsuBlock : EnergyStorageBlock(EnergyStorageConfig.MFSU) {
     override fun getCasingDrop(): Item = Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "advanced_machine"))
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =

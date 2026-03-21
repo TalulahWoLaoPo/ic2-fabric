@@ -21,7 +21,7 @@ import net.minecraft.world.World
  * 回收机方块。消耗电力将任意物品回收为废料。
  * 能量等级：1
  */
-@ModBlock(name = "recycler", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "recycler", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "processing")
 class RecyclerBlock : MachineBlock() {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =

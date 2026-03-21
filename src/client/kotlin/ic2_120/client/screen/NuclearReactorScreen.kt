@@ -7,7 +7,6 @@ import ic2_120.content.network.SlotHeatEnergyInfo
 import ic2_120.content.screen.NuclearReactorScreenHandler
 import ic2_120.content.sync.NuclearReactorSync
 import ic2_120.registry.annotation.ModScreen
-import ic2_120.registry.type
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.entity.player.PlayerInventory
@@ -39,7 +38,7 @@ class NuclearReactorScreen(
         9 * NuclearReactorScreenHandler.SLOT_SIZE - 2 * NuclearReactorScreenHandler.SLOT_SIZE  // 126 = 7*18
 
     init {
-        backgroundWidth = NuclearReactorScreenHandler.FRAME_WIDTH
+        backgroundWidth = GuiSize.REACTOR.width
         backgroundHeight = handler.hotbarY + 18 + 8
         titleY = -1000
         playerInventoryTitleY = -1000  // 隐藏 "Inv" 文本
@@ -207,6 +206,23 @@ class NuclearReactorScreen(
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        val content: UiScope.() -> Unit = {
+            val machineSlotEnd = if (isThermalLayout()) handler.reactorSlotCount + 4 else handler.reactorSlotCount
+            for (slotIndex in 0 until machineSlotEnd) {
+                val slot = handler.slots[slotIndex]
+                SlotAnchor(
+                    id = slotAnchorId(slotIndex),
+                    x = x + slot.x,
+                    y = y + slot.y,
+                    width = NuclearReactorScreenHandler.SLOT_SIZE,
+                    height = NuclearReactorScreenHandler.SLOT_SIZE,
+                    absolute = true
+                )
+            }
+        }
+        val layout = ui.layout(context, textRenderer, mouseX, mouseY, content = content)
+        applyAnchoredSlots(layout, x, y)
+
         super.render(context, mouseX, mouseY, delta)
         val left = x
         val top = y + guiOffsetY  // 内容下移避免顶部溢出
@@ -321,6 +337,16 @@ class NuclearReactorScreen(
         else -> value.toString()
     }
 
+    private fun applyAnchoredSlots(layout: ComposeUI.LayoutSnapshot, left: Int, top: Int) {
+        handler.slots.forEachIndexed { index, slot ->
+            val anchor = layout.anchors[slotAnchorId(index)] ?: return@forEachIndexed
+            slot.x = anchor.x - left
+            slot.y = anchor.y - top
+        }
+    }
+
+    private fun slotAnchorId(slotIndex: Int): String = "slot.$slotIndex"
+
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean =
         ui.mouseClicked(mouseX, mouseY, button) || super.mouseClicked(mouseX, mouseY, button)
 
@@ -339,4 +365,3 @@ class NuclearReactorScreen(
 
     private fun isThermalLayout(): Boolean = handler.isThermalMode || handler.sync.isThermalMode == 1
 }
-

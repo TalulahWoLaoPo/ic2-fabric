@@ -44,11 +44,9 @@ class ElectricFurnaceScreen(
         val top = y
         val energy = handler.sync.energy.toLong().coerceAtLeast(0)
         val cap = ElectricFurnaceSync.ENERGY_CAPACITY
-        val energyFraction = if (cap > 0) (energy.toFloat() / cap).coerceIn(0f, 1f) else 0f
-        val progressFrac = if (ElectricFurnaceSync.PROGRESS_MAX > 0) {
-            (handler.sync.progress.coerceIn(0, ElectricFurnaceSync.PROGRESS_MAX)
-                .toFloat() / ElectricFurnaceSync.PROGRESS_MAX).coerceIn(0f, 1f)
-        } else 0f
+        val energyFraction = (energy.toFloat() / cap).coerceIn(0f, 1f)
+        val progressFrac = (handler.sync.progress.coerceIn(0, ElectricFurnaceSync.PROGRESS_MAX)
+            .toFloat() / ElectricFurnaceSync.PROGRESS_MAX).coerceIn(0f, 1f)
         val inputRate = handler.sync.getSyncedInsertedAmount()
         val consumeRate = handler.sync.getSyncedConsumedAmount()
 

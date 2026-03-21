@@ -73,30 +73,21 @@ class ElectricHeatGeneratorScreen(
                     Text(energyText, color = 0xFFFFFF)
                 }
                 EnergyBar(fraction)
-
                 // 10个线圈槽位（2行5列）
-                Flex(
-                    direction = FlexDirection.ROW,
-                    justifyContent = JustifyContent.SPACE_BETWEEN,
-                ) {
-                    Row(spacing = 4) {
-                        repeat(5) { index ->
-                            SlotAnchor(id = "slot.$index")
+                Column {
+                    repeat(2) {
+                        Flex(
+                            direction = FlexDirection.ROW,
+                            justifyContent = JustifyContent.CENTER,
+                            alignItems = AlignItems.CENTER,
+                        ) {
+                            repeat(5) { index ->
+                                SlotAnchor(id = "slot.$index")
+                            }
                         }
                     }
                 }
-                Flex(
-                    direction = FlexDirection.ROW,
-                    justifyContent = JustifyContent.SPACE_BETWEEN,
-                ) {
-                    Row(spacing = 4) {
-                        repeat(5) { index ->
-                            SlotAnchor(id = "slot.${index + 5}")
-                        }
-                    }
-                }
-
-                Text("线圈 $coils/10", color = 0xFFFFFF, shadow = false)
+//                Text("线圈 $coils/10", color = 0xFFFFFF, shadow = false)
             }
         }
 
@@ -117,6 +108,7 @@ class ElectricHeatGeneratorScreen(
         ui.render(context, textRenderer, mouseX, mouseY, content = content)
         context.drawText(textRenderer, generatedText, sideTextX, top + 8, 0xAAAAAA, false)
         context.drawText(textRenderer, outputText, sideTextX, top + 20, 0xAAAAAA, false)
+        context.drawText(textRenderer, "线圈 $coils/10", sideTextX, top + 32, 0xAAAAAA, false)
 
         drawMouseoverTooltip(context, mouseX, mouseY)
     }

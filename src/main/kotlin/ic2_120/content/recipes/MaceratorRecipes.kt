@@ -6,7 +6,7 @@ import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
 
 /**
- * 粉碎机配方：输入物品 -> 输出物品及数量。
+ * 打粉机配方：输入物品 -> 输出物品及数量。
  * 使用原版与模组物品 ID 匹配。
  */
 object MaceratorRecipes {

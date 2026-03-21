@@ -31,7 +31,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
 import java.util.function.Consumer
 
-@ModBlock(name = "stirling_generator", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "stirling_generator", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "generator")
 class StirlingGeneratorBlock : MachineBlock() {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity =

@@ -7,7 +7,6 @@ import ic2_120.content.sync.TeslaCoilSync
 import ic2_120.content.block.TeslaCoilBlock
 import ic2_120.content.screen.TeslaCoilScreenHandler
 import ic2_120.registry.annotation.ModScreen
-import ic2_120.registry.type
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.entity.player.PlayerInventory
@@ -23,8 +22,8 @@ class TeslaCoilScreen(
     private val ui = ComposeUI()
 
     init {
-        backgroundWidth = PANEL_WIDTH
-        backgroundHeight = PANEL_HEIGHT
+        backgroundWidth = GUI_SIZE.width
+        backgroundHeight = GUI_SIZE.height
     }
 
     override fun drawBackground(context: DrawContext, delta: Float, mouseX: Int, mouseY: Int) {
@@ -47,7 +46,7 @@ class TeslaCoilScreen(
         val consumeRate = handler.sync.getSyncedConsumedAmount()
         val cap = TeslaCoilSync.ENERGY_CAPACITY
         val fraction = if (cap > 0) (energy.toFloat() / cap).coerceIn(0f, 1f) else 0f
-        val contentW = (backgroundWidth - 16).coerceAtLeast(0)
+        val contentW = GUI_SIZE.contentWidth
 
         val energyText = "$energy / $cap EU"
         val inputText = "输入 ${formatEu(inputRate)} EU/t"
@@ -84,8 +83,7 @@ class TeslaCoilScreen(
         ui.mouseClicked(mouseX, mouseY, button) || super.mouseClicked(mouseX, mouseY, button)
 
     companion object {
-        private const val PANEL_WIDTH = 176
-        private const val PANEL_HEIGHT = 166
+        private val GUI_SIZE = GuiSize.STANDARD
     }
 
     private fun formatEu(value: Long): String {
@@ -96,4 +94,3 @@ class TeslaCoilScreen(
         }
     }
 }
-

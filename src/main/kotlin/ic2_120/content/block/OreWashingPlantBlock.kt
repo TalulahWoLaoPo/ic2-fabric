@@ -23,7 +23,7 @@ import net.minecraft.world.World
  * 洗矿机方块。消耗水和能量将粉碎矿石洗成纯净的粉碎矿石。
  * 能量等级：1
  */
-@ModBlock(name = "ore_washing_plant", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "ore_washing_plant", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "processing")
 class OreWashingPlantBlock : MachineBlock() {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =

@@ -76,6 +76,7 @@ class CreativeGeneratorScreen(
 
                 Flex(
                     direction = FlexDirection.ROW,
+                    justifyContent = JustifyContent.CENTER,
                     alignItems = AlignItems.CENTER,
                     gap = 4
                 ) {

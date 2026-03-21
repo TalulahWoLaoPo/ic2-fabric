@@ -54,24 +54,24 @@ class WindGeneratorScreen(
         val sideTextWidth = maxOf(textRenderer.getWidth(inputText), textRenderer.getWidth(outputText))
         val sideTextX = left - sideTextWidth - 4
 
-        // 绘制风力图标
-        val iconU = if (isGenerating) 16f else 0f
-        context.drawTexture(
-            Identifier("ic2", "textures/gui/overlay/solar_sun.png"),
-            left + 8, top + 8,
-            iconU, 0f,
-            16, 16,
-            32, 16
-        )
-
         val content: UiScope.() -> Unit = {
             Column(
-                x = left + 28,
+                x = left + 8,
                 y = top + 8,
                 spacing = 6,
-                modifier = Modifier.EMPTY.width(GUI_SIZE.contentWidth - 20)
+                modifier = Modifier.EMPTY.width(GUI_SIZE.contentWidth)
             ) {
                 Flex(direction = FlexDirection.ROW, alignItems = AlignItems.CENTER, gap = 8) {
+                    // 风力图标
+                    Image(
+                        texture = Identifier("ic2", "textures/gui/overlay/solar_sun.png"),
+                        width = 16,
+                        height = 16,
+                        u = if (isGenerating) 16f else 0f,
+                        v = 0f,
+                        textureWidth = 32,
+                        textureHeight = 16
+                    )
                     Text(title.string, color = 0xFFFFFF)
                     Text("$energy / $cap EU", color = 0xFFFFFF, shadow = false)
                 }
@@ -82,6 +82,7 @@ class WindGeneratorScreen(
 
                 Flex(
                     direction = FlexDirection.ROW,
+                    justifyContent = JustifyContent.CENTER,
                     alignItems = AlignItems.CENTER,
                     gap = 4
                 ) {

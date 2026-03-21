@@ -71,36 +71,21 @@ class RtGeneratorScreen(
 
                 Flex(
                     direction = FlexDirection.ROW,
+                    justifyContent = JustifyContent.SPACE_AROUND,
                     alignItems = AlignItems.CENTER,
                     gap = 4
                 ) {
-                    // 燃料槽 2x3 网格
-                    Column(spacing = 4) {
-                        Row(spacing = 4) {
-                            for (i in 0..1) {
-                                SlotAnchor(
-                                    id = slotAnchorId(i),
-                                    width = RtGeneratorScreenHandler.SLOT_SIZE,
-                                    height = RtGeneratorScreenHandler.SLOT_SIZE
-                                )
-                            }
-                        }
-                        Row(spacing = 4) {
-                            for (i in 2..3) {
-                                SlotAnchor(
-                                    id = slotAnchorId(i),
-                                    width = RtGeneratorScreenHandler.SLOT_SIZE,
-                                    height = RtGeneratorScreenHandler.SLOT_SIZE
-                                )
-                            }
-                        }
-                        Row(spacing = 4) {
-                            for (i in 4..5) {
-                                SlotAnchor(
-                                    id = slotAnchorId(i),
-                                    width = RtGeneratorScreenHandler.SLOT_SIZE,
-                                    height = RtGeneratorScreenHandler.SLOT_SIZE
-                                )
+                    // 燃料槽 2行3列
+                    Column {
+                        repeat(2) { i ->
+                            Row {
+                                repeat(3) { j ->
+                                    SlotAnchor(
+                                        id = slotAnchorId(i * 2 + j),
+                                        width = RtGeneratorScreenHandler.SLOT_SIZE,
+                                        height = RtGeneratorScreenHandler.SLOT_SIZE
+                                    )
+                                }
                             }
                         }
                     }

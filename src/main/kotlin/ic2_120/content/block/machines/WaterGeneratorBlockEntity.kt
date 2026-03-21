@@ -9,6 +9,8 @@ import ic2_120.content.item.energy.canBeCharged
 import ic2_120.content.sync.WaterGeneratorSync
 import ic2_120.content.screen.WaterGeneratorScreenHandler
 import ic2_120.content.syncs.SyncedData
+import ic2_120.content.upgrade.FluidPipeUpgradeComponent
+import ic2_120.content.upgrade.IFluidPipeUpgradeSupport
 import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.type
 import ic2_120.registry.annotation.RegisterEnergy
@@ -48,14 +50,25 @@ import net.minecraft.world.World
  * 发电机制：
  * - 水罐（Fabric Transfer API）：1 桶容量，500 EU 总量，1 EU/t 速率
  * - 周围 3x3x3 水方块：每个水方块 +0.01 EU/t（常见水塔约 0.25 EU/t）
+ *
+ * 升级支持：
+ * - 流体抽取升级：作为 receiver 从管道接收水
  */
 @ModBlockEntity(block = WaterGeneratorBlock::class)
 class WaterGeneratorBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : MachineBlockEntity(type, pos, state), Inventory, IGenerator,
+) : MachineBlockEntity(type, pos, state), Inventory, IGenerator, IFluidPipeUpgradeSupport,
     net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
+
+    // 流体管道升级支持属性（IFluidPipeUpgradeSupport 接口实现）
+    override var fluidPipeProviderEnabled: Boolean = false  // 是否作为 provider 向管道输出流体
+    override var fluidPipeReceiverEnabled: Boolean = false  // 是否作为 receiver 从管道接收流体
+    override var fluidPipeProviderFilter: net.minecraft.fluid.Fluid? = null     // provider 流体过滤器（null = 不过滤）
+    override var fluidPipeReceiverFilter: net.minecraft.fluid.Fluid? = null    // receiver 流体过滤器（null = 不过滤）
+    override var fluidPipeProviderSide: Direction? = null   // provider 工作面（null = 任意面）
+    override var fluidPipeReceiverSide: Direction? = null   // receiver 工作面（null = 任意面）
 
     companion object {
         const val GENERATOR_TIER = 1
@@ -68,9 +81,16 @@ class WaterGeneratorBlockEntity(
 
         private val random = Random.create()
 
+        /** 水力发电机槽位：燃料输入、空容器输出、电池充电、4个升级槽 */
         const val FUEL_SLOT = 0
         const val EMPTY_CONTAINER_SLOT = 1
         const val BATTERY_SLOT = 2
+        const val SLOT_UPGRADE_0 = 3
+        const val SLOT_UPGRADE_1 = 4
+        const val SLOT_UPGRADE_2 = 5
+        const val SLOT_UPGRADE_3 = 6
+        val SLOT_UPGRADE_INDICES = intArrayOf(SLOT_UPGRADE_0, SLOT_UPGRADE_1, SLOT_UPGRADE_2, SLOT_UPGRADE_3)
+        const val INVENTORY_SIZE = 7
 
         @Volatile
         private var fluidLookupRegistered = false
@@ -85,7 +105,7 @@ class WaterGeneratorBlockEntity(
 
     override val tier: Int = GENERATOR_TIER
 
-    private val inventory = DefaultedList.ofSize(3, ItemStack.EMPTY)
+    private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
 
     val syncedData = SyncedData(this)
 
@@ -174,7 +194,7 @@ class WaterGeneratorBlockEntity(
 
     override fun getInventory(): Inventory = this
 
-    override fun size(): Int = 3
+    override fun size(): Int = INVENTORY_SIZE
 
     override fun isEmpty(): Boolean = inventory.all { it.isEmpty }
 
@@ -264,6 +284,9 @@ class WaterGeneratorBlockEntity(
 
     fun tick(world: World, pos: BlockPos, state: BlockState) {
         if (world.isClient) return
+
+        // 应用流体管道升级
+        FluidPipeUpgradeComponent.apply(this, SLOT_UPGRADE_INDICES)
 
         sync.energy = sync.amount.toInt().coerceAtLeast(0)
 

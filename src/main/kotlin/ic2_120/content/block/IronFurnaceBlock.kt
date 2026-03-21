@@ -39,7 +39,7 @@ import java.util.function.Consumer
  * - 岩浆效率低：岩浆只能烧制12.5个物品（原版100个）
  * - 工作时不发光
  */
-@ModBlock(name = "iron_furnace", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "iron_furnace", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "processing")
 class IronFurnaceBlock : MachineBlock() {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =

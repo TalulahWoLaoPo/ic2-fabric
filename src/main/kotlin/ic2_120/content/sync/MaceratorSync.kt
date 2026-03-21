@@ -5,7 +5,7 @@ import ic2_120.content.sync.EnergyFlowSync
 import ic2_120.content.syncs.SyncSchema
 
 /**
- * 粉碎机的同步属性与能量存储。
+ * 打粉机的同步属性与能量存储。
  * 支持储能升级带来的额外容量、高压升级带来的输入速度。
  */
 class MaceratorSync(

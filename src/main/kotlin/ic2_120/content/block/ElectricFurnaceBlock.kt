@@ -22,7 +22,7 @@ import net.minecraft.world.World
  * 电力熔炉方块。支持 facing（朝向）与 active（工作中）状态，与 ic2 行为一致。
  * 能量等级：1
  */
-@ModBlock(name = "electric_furnace", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "electric_furnace", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "processing")
 class ElectricFurnaceBlock : MachineBlock() {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =

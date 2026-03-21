@@ -33,7 +33,7 @@ import java.util.function.Consumer
  * 压缩机方块。消耗电力将物品压缩。
  * 能量等级：1
  */
-@ModBlock(name = "compressor", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "compressor", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "processing")
 class CompressorBlock : MachineBlock() {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =

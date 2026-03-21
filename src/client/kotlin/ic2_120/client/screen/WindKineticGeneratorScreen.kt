@@ -5,7 +5,6 @@ import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.WindKineticGeneratorBlock
 import ic2_120.content.screen.WindKineticGeneratorScreenHandler
 import ic2_120.registry.annotation.ModScreen
-import ic2_120.registry.type
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.entity.player.PlayerInventory
@@ -21,43 +20,69 @@ class WindKineticGeneratorScreen(
     private val ui = ComposeUI()
 
     init {
-        backgroundWidth = PANEL_WIDTH
-        backgroundHeight = PANEL_HEIGHT
+        backgroundWidth = GUI_SIZE.width
+        backgroundHeight = GUI_SIZE.height
         titleY = -1000
     }
 
     override fun drawBackground(context: DrawContext, delta: Float, mouseX: Int, mouseY: Int) {
-        GuiBackground.draw(context, x, y, backgroundWidth, backgroundHeight)
+        GuiBackground.drawVanillaLikePanel(context, x, y, backgroundWidth, backgroundHeight)
         GuiBackground.drawPlayerInventorySlotBorders(
             context, x, y,
             WindKineticGeneratorScreenHandler.PLAYER_INV_Y,
             WindKineticGeneratorScreenHandler.HOTBAR_Y,
             WindKineticGeneratorScreenHandler.SLOT_SIZE
         )
-        val borderColor = GuiBackground.BORDER_COLOR
-        val slotSize = WindKineticGeneratorScreenHandler.SLOT_SIZE
-        val borderOffset = 1
-        val rotorSlot = handler.slots[0]
-        context.drawBorder(x + rotorSlot.x - borderOffset, y + rotorSlot.y - borderOffset, slotSize, slotSize, borderColor)
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        super.render(context, mouseX, mouseY, delta)
         val left = x
         val top = y
-        ui.render(context, textRenderer, mouseX, mouseY) {
-            Text(title.string, x = left + 8, y = top + 8, color = 0xFFFFFF, absolute = true)
-            Text("转子槽", x = left + 72, y = top + 34, color = 0xAAAAAA, absolute = true, shadow = false)
-            Text("放入木/铁/钢/碳转子后显示叶片", x = left + 8, y = top + 70, color = 0xAAAAAA, absolute = true, shadow = false)
+        val content: UiScope.() -> Unit = {
+            Column(
+                x = left + 8,
+                y = top + 8,
+                spacing = 6,
+                modifier = Modifier.EMPTY.width(GUI_SIZE.contentWidth)
+            ) {
+                Text(title.string, color = 0xFFFFFF)
+                Row(spacing = 8) {
+                    SlotHost(0)
+                    Text("转子槽", color = 0xAAAAAA, shadow = false)
+                }
+                Text("放入木/铁/钢/碳转子后显示叶片", color = 0xAAAAAA, shadow = false)
+            }
         }
+        val layout = ui.layout(context, textRenderer, mouseX, mouseY, content = content)
+        applyAnchoredSlots(layout, left, top)
+
+        super.render(context, mouseX, mouseY, delta)
+        ui.render(context, textRenderer, mouseX, mouseY, content = content)
         drawMouseoverTooltip(context, mouseX, mouseY)
     }
+
+    private fun UiScope.SlotHost(slotIndex: Int) {
+        SlotAnchor(
+            id = slotAnchorId(slotIndex),
+            width = WindKineticGeneratorScreenHandler.SLOT_SIZE,
+            height = WindKineticGeneratorScreenHandler.SLOT_SIZE
+        )
+    }
+
+    private fun applyAnchoredSlots(layout: ComposeUI.LayoutSnapshot, left: Int, top: Int) {
+        handler.slots.forEachIndexed { index, slot ->
+            val anchor = layout.anchors[slotAnchorId(index)] ?: return@forEachIndexed
+            slot.x = anchor.x - left
+            slot.y = anchor.y - top
+        }
+    }
+
+    private fun slotAnchorId(slotIndex: Int): String = "slot.$slotIndex"
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean =
         ui.mouseClicked(mouseX, mouseY, button) || super.mouseClicked(mouseX, mouseY, button)
 
     companion object {
-        private const val PANEL_WIDTH = 176
-        private const val PANEL_HEIGHT = 166
+        private val GUI_SIZE = GuiSize.STANDARD
     }
 }

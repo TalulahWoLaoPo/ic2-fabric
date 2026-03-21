@@ -123,8 +123,8 @@ class SemifluidGeneratorScreenHandler(
         const val EMPTY_CONTAINER_SLOT_X = 86
         const val BATTERY_SLOT_X = 116
         const val BLOCK_SLOTS_Y = 54
-        const val PLAYER_INV_Y = 84
-        const val HOTBAR_Y = 142
+        const val PLAYER_INV_Y = 108
+        const val HOTBAR_Y = 166
         const val SLOT_SIZE = 18
 
         private val FUEL_SLOT_SPEC = SlotSpec(

@@ -49,7 +49,8 @@ class CentrifugeScreen(
                 .toFloat() / CentrifugeSync.PROGRESS_MAX).coerceIn(0f, 1f)
         } else 0f
         val heat = handler.sync.heat.toLong().coerceAtLeast(0)
-        val heatFrac = if (CentrifugeSync.HEAT_MAX > 0) (heat.toFloat() / CentrifugeSync.HEAT_MAX).coerceIn(0f, 1f) else 0f
+        val heatFrac =
+            if (CentrifugeSync.HEAT_MAX > 0) (heat.toFloat() / CentrifugeSync.HEAT_MAX).coerceIn(0f, 1f) else 0f
         val inputRate = handler.sync.getSyncedInsertedAmount()
         val consumeRate = handler.sync.getSyncedConsumedAmount()
         val isProcessing = handler.sync.progress > 0
@@ -88,7 +89,41 @@ class CentrifugeScreen(
                             SlotHost(CentrifugeScreenHandler.SLOT_INPUT_INDEX)
                             SlotHost(CentrifugeScreenHandler.SLOT_DISCHARGING_INDEX)
                         }
-                        EnergyBar(progressFrac, modifier = Modifier.EMPTY.fractionWidth(1.0f))
+                        // 热量条
+                        Column(
+//                            direction = FlexDirection.COLUMN,
+//                            justifyContent = JustifyContent.CENTER,
+//                            alignItems = AlignItems.CENTER,
+//                            gap = 2
+                            spacing = 2,
+                            modifier = Modifier().fractionWidth(1f)
+                        ) {
+                            EnergyBar(progressFrac, modifier = Modifier.EMPTY.fractionWidth(1.0f))
+                            Row {
+                                Text("热量", color = 0xAAAAAA)
+                                HeatProgressBar(
+                                    heatFrac,
+//                                barWidth = 0,
+                                    barHeight = 8,
+                                    startColor = 0xFF660000.toInt(),
+                                    endColor = 0xFFCC0000.toInt(),
+                                    gradient = true,
+//                                    modifier = Modifier().fractionWidth(1.0f)
+                                )
+                                Text("$heat/${CentrifugeSync.HEAT_MAX}", color = 0xFFFFFF, shadow = false)
+                            }
+                            Text(
+                                "${if (isProcessing) "加工" else "预热"} | 入${formatEu(inputRate)} 耗${
+                                    formatEu(
+                                        consumeRate
+                                    )
+                                } EU/t",
+                                color = if (isProcessing) 0x00CC00 else 0xCC0000,
+                                shadow = false
+                            )
+
+                        }
+
                         Column(spacing = 4) {
                             SlotHost(CentrifugeScreenHandler.SLOT_OUTPUT_1_INDEX)
                             SlotHost(CentrifugeScreenHandler.SLOT_OUTPUT_2_INDEX)
@@ -96,30 +131,7 @@ class CentrifugeScreen(
                         }
                     }
 
-                    // 热量条
-                    Flex(
-                        direction = FlexDirection.ROW,
-                        alignItems = AlignItems.CENTER,
-                        gap = 8
-                    ) {
-                        Text("热量", color = 0xAAAAAA)
-                        HeatProgressBar(
-                            heatFrac,
-                            barWidth = 0,
-                            barHeight = 8,
-                            startColor = 0xFF660000.toInt(),
-                            endColor = 0xFFCC0000.toInt(),
-                            gradient = true,
-                            modifier = Modifier.EMPTY.fractionWidth(1.0f)
-                        )
-                        Text("$heat/${CentrifugeSync.HEAT_MAX}", color = 0xFFFFFF, shadow = false)
-                    }
 
-                    Text(
-                        "${if (isProcessing) "加工" else "预热"} | 入${formatEu(inputRate)} 耗${formatEu(consumeRate)} EU/t",
-                        color = if (isProcessing) 0x00CC00 else 0xCC0000,
-                        shadow = false
-                    )
                 }
 
                 Column(

@@ -32,7 +32,7 @@ import java.util.function.Consumer
  * 热量机制：持续红石信号时热量上升（消耗 1 EU/t），无信号时热量衰减。
  * 能量等级：2（MV, 最高 128 EU/t）
  */
-@ModBlock(name = "induction_furnace", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "induction_furnace", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "processing")
 class InductionFurnaceBlock : MachineBlock() {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =

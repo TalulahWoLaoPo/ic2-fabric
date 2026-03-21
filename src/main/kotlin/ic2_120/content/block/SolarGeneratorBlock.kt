@@ -34,7 +34,7 @@ import java.util.function.Consumer
  * 太阳能发电机方块。
  * 仅在白天、主世界、无遮挡、无雨雪时发电，1 EU/t 输出。
  */
-@ModBlock(name = "solar_generator", registerItem = true, tab = CreativeTab.IC2_MACHINES)
+@ModBlock(name = "solar_generator", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "generator")
 class SolarGeneratorBlock : MachineBlock() {
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =
