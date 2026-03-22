@@ -1,6 +1,7 @@
 package ic2_120.mixin;
 
 import ic2_120.content.item.armor.ElectricArmorItem;
+import ic2_120.content.item.armor.JetpackItem;
 import ic2_120.content.item.armor.NanoArmorItem;
 import ic2_120.content.item.armor.QuantumArmorItem;
 import ic2_120.content.item.armor.QuantumChestplate;
@@ -37,6 +38,12 @@ public abstract class PlayerEntityMixin {
     private static final int FLIGHT_COST = 417;  // 10M EU / 20min = 24000 ticks ≈ 417 EU/tick
     @Unique
     private static final int DAMAGE_COST_PER_POINT = 5000;
+
+    // 喷气背包相关常量
+    @Unique
+    private static final String JETPACK_HOVER_KEY = "IsHover";
+    @Unique
+    private boolean jetpackFlightGranted = false;
 
     // ========== 伤害减伤 Mixin ==========
 
@@ -149,6 +156,17 @@ public abstract class PlayerEntityMixin {
         PlayerEntity player = (PlayerEntity) (Object) this;
         if (player.getWorld().isClient) return; // 只在服务端处理
 
+        // ========== 喷气背包处理 ==========
+        ItemStack chestStack = player.getEquippedStack(EquipmentSlot.CHEST);
+        if (chestStack.getItem() instanceof JetpackItem) {
+            handleJetpackFlight(player, chestStack);
+            // 如果正在使用喷气背包，不继续处理量子胸甲
+            return;
+        }
+        // 卸下喷气背包后，清理由喷气背包赋予的飞行能力
+        disableJetpackFlight(player, null);
+
+        // ========== 量子胸甲处理 ==========
         // 检查全套量子护甲
         if (!hasFullQuantumArmor(player)) {
             if (player.getAbilities().flying && isInQuantumFlight(player)) {
@@ -156,16 +174,15 @@ public abstract class PlayerEntityMixin {
                 player.getAbilities().flying = false;
                 player.sendAbilitiesUpdate();
                 // 清除量子飞行标记
-                ItemStack chestStack = player.getEquippedStack(EquipmentSlot.CHEST);
-                if (chestStack.getItem() instanceof QuantumChestplate) {
-                    chestStack.getOrCreateNbt().putBoolean(QUANTUM_FLIGHT_ACTIVE_KEY, false);
+                ItemStack quantumChestStack = player.getEquippedStack(EquipmentSlot.CHEST);
+                if (quantumChestStack.getItem() instanceof QuantumChestplate) {
+                    quantumChestStack.getOrCreateNbt().putBoolean(QUANTUM_FLIGHT_ACTIVE_KEY, false);
                 }
             }
             return;
         }
 
         // 获取量子胸甲
-        ItemStack chestStack = player.getEquippedStack(EquipmentSlot.CHEST);
         if (!(chestStack.getItem() instanceof QuantumChestplate)) return;
 
         QuantumChestplate chestplate = (QuantumChestplate) chestStack.getItem();
@@ -260,5 +277,92 @@ public abstract class PlayerEntityMixin {
         if (!(chestStack.getItem() instanceof QuantumChestplate)) return false;
         NbtCompound nbt = chestStack.getOrCreateNbt();
         return nbt.getBoolean(QUANTUM_FLIGHT_ACTIVE_KEY);
+    }
+
+    // ========== 喷气背包飞行处理 ==========
+
+    @Unique
+    private void handleJetpackFlight(PlayerEntity player, ItemStack jetpackStack) {
+        NbtCompound nbt = jetpackStack.getOrCreateNbt();
+
+        long fuel = JetpackItem.getFuel(jetpackStack);
+        // 燃料不足，取消飞行
+        if (fuel <= 0) {
+            disableJetpackFlight(player, nbt);
+            return;
+        }
+
+        // 如果玩家是创造模式，喷气背包不干扰
+        if (player.isCreative() || player.isSpectator()) {
+            disableJetpackFlight(player, nbt);
+            return;
+        }
+
+        // 飞行开关关闭时，不启用喷气背包飞行
+        if (!JetpackItem.isFlightEnabled(jetpackStack)) {
+            disableJetpackFlight(player, nbt);
+            return;
+        }
+
+        // 喷气背包仅保留垂直飞行模式
+        handleVerticalFlight(player, jetpackStack, nbt, fuel);
+    }
+
+    @Unique
+    private void handleVerticalFlight(PlayerEntity player, ItemStack jetpackStack, NbtCompound nbt, long fuel) {
+        // 在地面时不启用飞行
+        if (player.isOnGround() || player.isTouchingWater() || player.isClimbing()) {
+            disableJetpackFlight(player, nbt);
+            return;
+        }
+
+        // 消耗燃料并启用飞行
+        JetpackItem.setFuel(jetpackStack, fuel - JetpackItem.FUEL_CONSUMPTION);
+        enableJetpackFlight(player, nbt);
+    }
+
+    @Unique
+    private void enableJetpackFlight(PlayerEntity player, NbtCompound nbt) {
+        boolean changed = false;
+        if (!player.getAbilities().allowFlying) {
+            player.getAbilities().allowFlying = true;
+            changed = true;
+        }
+        if (!player.getAbilities().flying) {
+            player.getAbilities().flying = true;
+            changed = true;
+        }
+        if (changed) {
+            player.sendAbilitiesUpdate();
+        }
+        nbt.putBoolean(JETPACK_HOVER_KEY, true);
+        jetpackFlightGranted = true;
+    }
+
+    @Unique
+    private void disableJetpackFlight(PlayerEntity player, NbtCompound nbt) {
+        if (!jetpackFlightGranted && (nbt == null || !nbt.getBoolean(JETPACK_HOVER_KEY))) {
+            return;
+        }
+
+        if (!player.isCreative() && !player.isSpectator()) {
+            boolean changed = false;
+            if (player.getAbilities().flying) {
+                player.getAbilities().flying = false;
+                changed = true;
+            }
+            if (player.getAbilities().allowFlying) {
+                player.getAbilities().allowFlying = false;
+                changed = true;
+            }
+            if (changed) {
+                player.sendAbilitiesUpdate();
+            }
+        }
+
+        if (nbt != null) {
+            nbt.putBoolean(JETPACK_HOVER_KEY, false);
+        }
+        jetpackFlightGranted = false;
     }
 }

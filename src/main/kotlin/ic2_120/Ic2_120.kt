@@ -43,6 +43,7 @@ import ic2_120.registry.type
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents
+import ic2_120.content.item.armor.JetpackItem
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant
@@ -168,6 +169,19 @@ object Ic2_120 : ModInitializer {
                 val fullStack = ItemStack(Registries.ITEM.get(Identifier(MOD_ID, id)))
                 fullStack.orCreateNbt.putBoolean(EnergyStorageBlock.NBT_FULL, true)
                 entries.add(fullStack)
+            }
+        }
+
+        // 注册满燃料喷气背包到创造模式
+        val jetpackItem = Registries.ITEM.get(Identifier(MOD_ID, "jetpack"))
+        if (jetpackItem != null) {
+            val ic2MaterialsKey = RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier(MOD_ID, CreativeTab.IC2_MATERIALS.id))
+            ItemGroupEvents.modifyEntriesEvent(ic2MaterialsKey).register { entries ->
+                // 添加满燃料的喷气背包
+                val fullFuelJetpack = ItemStack(jetpackItem).also {
+                    JetpackItem.setFuel(it, JetpackItem.MAX_FUEL)
+                }
+                entries.addAfter(jetpackItem, fullFuelJetpack)
             }
         }
 

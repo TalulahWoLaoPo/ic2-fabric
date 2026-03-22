@@ -4,6 +4,7 @@ import ic2_120.content.block.FluidBottlerBlock
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.energy.charge.BatteryDischargerComponent
 import ic2_120.content.fluid.ModFluids
+import ic2_120.content.item.armor.JetpackItem
 import ic2_120.content.pullEnergyFromNeighbors
 import ic2_120.content.screen.FluidBottlerScreenHandler
 import ic2_120.content.sync.FluidBottlerSync
@@ -32,6 +33,7 @@ import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
+import net.minecraft.fluid.Fluid
 import net.minecraft.fluid.Fluids
 import net.minecraft.inventory.Inventories
 import net.minecraft.inventory.Inventory
@@ -294,6 +296,23 @@ class FluidBottlerBlockEntity(
 
     private fun tryFill(empty: ItemStack, outputSlot: ItemStack, isPrimarySlot: Boolean): Boolean {
         if (tankInternal.amount < FluidConstants.BUCKET || tankInternal.variant.isBlank) return false
+
+        // 特殊处理：喷气背包
+        if (empty.item is JetpackItem) {
+            val fluid = tankInternal.variant.fluid
+            // 喷气背包只接受生物燃料
+            val isBioFuel = fluid == ModFluids.BIOFUEL_STILL || fluid == ModFluids.BIOFUEL_FLOWING
+            if (!isBioFuel) return false
+
+            val currentFuel = JetpackItem.getFuel(empty)
+            if (currentFuel >= JetpackItem.MAX_FUEL) return false // 已满
+
+            if (!canAcceptOutput(outputSlot, empty)) return false
+            lastOperationPourOut = false
+            lastOperationWasPrimarySlot = isPrimarySlot
+            return true
+        }
+
         val ctx = ContainerItemContext.withConstant(empty)
         val itemStorage = ctx.find(FluidStorage.ITEM) ?: return false
         if (!itemStorage.supportsInsertion()) return false
@@ -379,14 +398,32 @@ class FluidBottlerBlockEntity(
                     }
                 }
             }
-        } else {
-            // Fill: 从储罐填充容器
-            val inputSlot = if (wasPrimarySlot) getStack(SLOT_INPUT_FILLED) else getStack(SLOT_INPUT_EMPTY)
-            val outputSlot = getStack(SLOT_OUTPUT)
-            val variant = tankInternal.variant
-            if (variant.isBlank) return
-            val fluid = variant.fluid
-            val filledResult = getFilledContainerFor(inputSlot, fluid) ?: return
+                } else {
+                    // Fill: 从储罐填充容器
+                    val inputSlot = if (wasPrimarySlot) getStack(SLOT_INPUT_FILLED) else getStack(SLOT_INPUT_EMPTY)
+                    val outputSlot = getStack(SLOT_OUTPUT)
+                    val variant = tankInternal.variant
+                    if (variant.isBlank) return
+                    val fluid = variant.fluid
+
+                    // 特殊处理：喷气背包
+                    if (inputSlot.item is JetpackItem) {
+                        val isBioFuel = fluid == ModFluids.BIOFUEL_STILL || fluid == ModFluids.BIOFUEL_FLOWING
+                        if (!isBioFuel) return
+
+                        val currentFuel = JetpackItem.getFuel(inputSlot)
+                        val space = JetpackItem.MAX_FUEL - currentFuel
+                        if (space <= 0) return
+
+                        val fuelToAdd = minOf(space, FluidConstants.BUCKET)
+                        JetpackItem.setFuel(inputSlot, currentFuel + fuelToAdd)
+                        tankInternal.amount -= fuelToAdd
+                        sync.fluidAmountMb = (tankInternal.amount * 1000L / FluidConstants.BUCKET).toInt().coerceAtLeast(0)
+                        markDirty()
+                        return
+                    }
+
+                    val filledResult = getFilledContainerFor(inputSlot, fluid) ?: return
 
             Transaction.openOuter().use { tx ->
                 val ctx = ContainerItemContext.withInitial(inputSlot)

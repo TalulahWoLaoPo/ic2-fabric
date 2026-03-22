@@ -1,7 +1,7 @@
 package ic2_120.client
 
 import ic2_120.content.item.IridiumDrill
-import ic2_120.content.item.NightVisionGoggles
+import ic2_120.content.item.armor.JetpackItem
 import ic2_120.content.network.NetworkManager
 import io.netty.buffer.Unpooled
 import net.fabricmc.api.EnvType
@@ -16,7 +16,7 @@ import net.minecraft.network.PacketByteBuf
 import org.lwjgl.glfw.GLFW
 
 /**
- * 通用模式切换按键（默认 Alt+M）
+ * 通用功能切换按键（默认 Alt+M）
  *
  * 用于手持类设备的模式切换：
  * - 夜视仪：夜视开关
@@ -43,7 +43,17 @@ object ModeKeybinds {
             while (toggleModeKey.wasPressed()) {
                 if (!isAltDown(client)) continue
 
-                // 优先级 1：主手铱钻头 → 精准采集
+                // 优先级 1：胸甲 → 喷气背包飞行开关
+                val chest = player.getEquippedStack(EquipmentSlot.CHEST)
+                if (chest.item is JetpackItem) {
+                    ClientPlayNetworking.send(
+                        NetworkManager.TOGGLE_JETPACK_FLIGHT_PACKET,
+                        PacketByteBuf(Unpooled.buffer())
+                    )
+                    return@register
+                }
+
+                // 优先级 2：主手铱钻头 → 精准采集
                 val mainHand = player.mainHandStack
                 if (mainHand.item is IridiumDrill) {
                     ClientPlayNetworking.send(
@@ -51,15 +61,6 @@ object ModeKeybinds {
                         PacketByteBuf(Unpooled.buffer())
                     )
                     return@register
-                }
-
-                // 优先级 2：头盔 → 夜视仪（量子套夜视用 Alt+N，不在此处理）
-                val helmet = player.getEquippedStack(EquipmentSlot.HEAD)
-                if (helmet.item is NightVisionGoggles) {
-                    ClientPlayNetworking.send(
-                        NetworkManager.TOGGLE_NIGHT_VISION_GOGGLES_PACKET,
-                        PacketByteBuf(Unpooled.buffer())
-                    )
                 }
             }
         }

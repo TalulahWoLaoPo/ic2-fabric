@@ -95,4 +95,44 @@ object ModArmorMaterials {
         knockbackResistance = 0.4f,
         repairIngredient = iridium
     )
+
+    // ========== 喷气背包护甲材料 ==========
+    /**
+     * 喷气背包护甲材料（钻石级护甲值）
+     */
+    val JETPACK_ARMOR = createArmorMaterial(
+        name = "ic2_jet_pack",
+        durabilityMultiplier = 15,
+        protection = mapOf(
+            ArmorItem.Type.HELMET to 0,
+            ArmorItem.Type.CHESTPLATE to 8,  // 钻石胸甲级别
+            ArmorItem.Type.LEGGINGS to 0,
+            ArmorItem.Type.BOOTS to 0
+        ),
+        enchantability = 10,
+        equipSound = SoundEvents.ITEM_ARMOR_EQUIP_LEATHER,
+        toughness = 2f,  // 钻石级韧性
+        knockbackResistance = 0f,
+        repairIngredient = bronzeIngot
+    )
+
+    // ========== 电力喷气背包护甲材料 ==========
+    /**
+     * 电力喷气背包护甲材料（钻石级护甲值）
+     */
+    val ELECTRIC_JETPACK_ARMOR = createArmorMaterial(
+        name = "ic2_electric_jet_pack",
+        durabilityMultiplier = 15,
+        protection = mapOf(
+            ArmorItem.Type.HELMET to 0,
+            ArmorItem.Type.CHESTPLATE to 8,  // 钻石胸甲级别
+            ArmorItem.Type.LEGGINGS to 0,
+            ArmorItem.Type.BOOTS to 0
+        ),
+        enchantability = 10,
+        equipSound = SoundEvents.ITEM_ARMOR_EQUIP_DIAMOND,
+        toughness = 2f,  // 钻石级韧性
+        knockbackResistance = 0f,
+        repairIngredient = carbonFibre
+    )
 }

@@ -1,5 +1,6 @@
 package ic2_120.client
 
+import ic2_120.content.item.NightVisionGoggles
 import ic2_120.content.item.armor.NanoHelmet
 import ic2_120.content.item.armor.QuantumChestplate
 import ic2_120.content.item.armor.QuantumHelmet
@@ -51,7 +52,17 @@ object ArmorKeybinds {
             while (toggleVisionKey.wasPressed()) {
                 if (!isAltDown(client)) continue
 
+                // 优先级 1：头盔 → 夜视眼镜
                 val helmet = player.getEquippedStack(EquipmentSlot.HEAD)
+                if (helmet.item is NightVisionGoggles) {
+                    ClientPlayNetworking.send(
+                        NetworkManager.TOGGLE_NIGHT_VISION_GOGGLES_PACKET,
+                        PacketByteBuf(Unpooled.buffer())
+                    )
+                    return@register
+                }
+
+                // 优先级 2：头盔 → 纳米/量子头盔夜视
                 if (helmet.item is NanoHelmet || helmet.item is QuantumHelmet) {
                     ClientPlayNetworking.send(
                         NetworkManager.TOGGLE_NANO_VISION_PACKET,

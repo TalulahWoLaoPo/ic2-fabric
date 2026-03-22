@@ -1,5 +1,6 @@
 package ic2_120.integration.jei
 
+import ic2_120.content.item.armor.JetpackItem
 import ic2_120.content.item.energy.IBatteryItem
 import ic2_120.content.item.energy.IElectricTool
 import mezz.jei.api.IModPlugin
@@ -35,6 +36,13 @@ class Ic2JeiPlugin : IModPlugin {
                     ElectricItemSubtypeInterpreter()
                 )
             }
+            // 检查物品是否为喷气背包
+            if (item is JetpackItem) {
+                registration.registerSubtypeInterpreter(
+                    item,
+                    JetpackItemSubtypeInterpreter()
+                )
+            }
         }
     }
 
@@ -60,6 +68,16 @@ class Ic2JeiPlugin : IModPlugin {
                     }
                     extraStacks += ItemStack(item as Item).also { stack ->
                         item.setEnergy(stack, item.maxCapacity)
+                    }
+                }
+
+                is JetpackItem -> {
+                    // 喷气背包：补充空燃料 + 满燃料两个明确变体
+                    extraStacks += ItemStack(item as Item).also { stack ->
+                        JetpackItem.setFuel(stack, 0L)
+                    }
+                    extraStacks += ItemStack(item as Item).also { stack ->
+                        JetpackItem.setFuel(stack, JetpackItem.MAX_FUEL)
                     }
                 }
             }
@@ -106,6 +124,36 @@ class Ic2JeiPlugin : IModPlugin {
                 energy <= 0 -> EMPTY_TAG
                 energy >= maxCapacity -> FULL_TAG
                 else -> "$PARTIAL_TAG:$energy"
+            }
+        }
+    }
+
+    /**
+     * 喷气背包 NBT 子类型解释器
+     *
+     * 使用 "Fuel" NBT 标签来区分不同燃料状态的物品。
+     * JEI 会根据此解释器识别不同的 ItemStack 为独立的物品。
+     */
+    class JetpackItemSubtypeInterpreter : IIngredientSubtypeInterpreter<ItemStack> {
+        companion object {
+            /** 子类型标识符：空燃料版本 */
+            private const val EMPTY_TAG = "empty"
+
+            /** 子类型标识符：满燃料版本 */
+            private const val FULL_TAG = "full"
+
+            /** 子类型标识符：部分燃料 */
+            private const val PARTIAL_TAG = "partial"
+        }
+
+        override fun apply(itemStack: ItemStack, uidContext: mezz.jei.api.ingredients.subtypes.UidContext): String {
+            val fuel = JetpackItem.getFuel(itemStack)
+
+            // 根据燃料比例返回子类型标识符
+            return when {
+                fuel <= 0 -> EMPTY_TAG
+                fuel >= JetpackItem.MAX_FUEL -> FULL_TAG
+                else -> "$PARTIAL_TAG:$fuel"
             }
         }
     }

@@ -26,7 +26,7 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
-import net.minecraft.fluid.Fluids
+import ic2_120.content.item.armor.JetpackItem
 
 
 //todo 全套防化服，防化三件套加橡胶靴 可免疫特斯拉线圈伤害 可免疫触电伤害，只要有单个防化头盔，物品栏有压缩空气单元，就可以在气泡值用尽时消耗压缩空气单元回满
@@ -329,21 +329,7 @@ private val LAPPACK_ARMOR = createArmorMaterial(
 )
 
 // 喷气背包护甲材料
-private val JETPACK_ARMOR = createArmorMaterial(
-    name = "ic2_jet_pack",  // 查找 ic2_jet_pack_layer_1.png
-    durabilityMultiplier = 10,
-    protection = mapOf(
-        ArmorItem.Type.HELMET to 0,
-        ArmorItem.Type.CHESTPLATE to 3,
-        ArmorItem.Type.LEGGINGS to 0,
-        ArmorItem.Type.BOOTS to 0
-    ),
-    enchantability = 10,
-    equipSound = SoundEvents.ITEM_ARMOR_EQUIP_LEATHER,
-    toughness = 0f,
-    knockbackResistance = 0f,
-    repairIngredient = bronzeIngot
-)
+// 已移至 ModArmorMaterials.JETPACK_ARMOR
 
 // 建筑泡沫背包护甲材料
 private val CF_PACK_ARMOR = createArmorMaterial(
@@ -616,11 +602,11 @@ class CfPack : ArmorItem(CF_PACK_ARMOR, ArmorItem.Type.CHESTPLATE, FabricItemSet
 /**
  * 喷气背包 (Jetpack)
  * 允许玩家在空中飞行的喷气推进装置。
- * 需要燃料才能运行。
+ * 需要生物燃料才能运行。
  * 作为胸甲装备。
  */
 @ModItem(name = "jetpack", tab = CreativeTab.IC2_MATERIALS, group = "armor")
-class Jetpack : ArmorItem(JETPACK_ARMOR, ArmorItem.Type.CHESTPLATE, FabricItemSettings().maxCount(1))
+class Jetpack : JetpackItem()
 
 /**
  * 电力喷气背包 (Electric Jetpack)
@@ -628,7 +614,7 @@ class Jetpack : ArmorItem(JETPACK_ARMOR, ArmorItem.Type.CHESTPLATE, FabricItemSe
  * 作为胸甲装备。
  */
 @ModItem(name = "electric_jetpack", tab = CreativeTab.IC2_MATERIALS, group = "armor")
-class ElectricJetpack : ArmorItem(JETPACK_ARMOR, ArmorItem.Type.CHESTPLATE, FabricItemSettings().maxCount(1))
+class ElectricJetpack : ArmorItem(ModArmorMaterials.ELECTRIC_JETPACK_ARMOR, ArmorItem.Type.CHESTPLATE, FabricItemSettings().maxCount(1))
 
 /**
  * 夜视镜 (Night Vision Goggles)
