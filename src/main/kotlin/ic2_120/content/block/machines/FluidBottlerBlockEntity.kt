@@ -210,13 +210,19 @@ class FluidBottlerBlockEntity(
         val empty = getStack(SLOT_INPUT_EMPTY)
         val outputSlot = getStack(SLOT_OUTPUT)
 
-        // 优先：若 A 和 B 都有物品，先倒 A 入储罐
-        val doPourOut = !filled.isEmpty
-        val doFill = !empty.isEmpty && filled.isEmpty && tankInternal.amount >= FluidConstants.BUCKET
+        // 判断左上角槽位是空容器还是流体容器
+        val isEmptyContainer = isEmptyContainer(filled)
+        val isFluidContainer = isFluidContainer(filled)
+
+        // 优先级：空容器填充 > 流体容器倒出 > 第二槽的空容器填充
+        val doFillFromFilled = isEmptyContainer && tankInternal.amount >= FluidConstants.BUCKET
+        val doPourOutFromFilled = isFluidContainer
+        val doFillFromEmpty = !empty.isEmpty && !doFillFromFilled && !doPourOutFromFilled && tankInternal.amount >= FluidConstants.BUCKET
 
         val operating = when {
-            doPourOut -> tryPourOut(filled, outputSlot)
-            doFill -> tryFill(empty, outputSlot)
+            doFillFromFilled -> tryFill(filled, outputSlot, isPrimarySlot = true)
+            doPourOutFromFilled -> tryPourOut(filled, outputSlot)
+            doFillFromEmpty -> tryFill(empty, outputSlot, isPrimarySlot = false)
             else -> false
         }
 
@@ -227,7 +233,7 @@ class FluidBottlerBlockEntity(
                 sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
                 sync.progress += progressIncrement
                 if (sync.progress >= FluidBottlerSync.PROGRESS_MAX) {
-                    completeCurrentOperation(doPourOut)
+                    completeCurrentOperation(doFillFromFilled || doFillFromEmpty, doFillFromFilled)
                     sync.progress = 0
                 }
                 markDirty()
@@ -244,6 +250,27 @@ class FluidBottlerBlockEntity(
     }
 
     private var lastOperationPourOut: Boolean = true
+    private var lastOperationWasPrimarySlot: Boolean = true
+
+    private fun isEmptyContainer(stack: ItemStack): Boolean {
+        if (stack.isEmpty) return false
+        val ctx = ContainerItemContext.withConstant(stack)
+        val itemStorage = ctx.find(FluidStorage.ITEM) ?: return false
+        for (view in itemStorage) {
+            if (view.amount > 0 && !view.resource.isBlank) return false
+        }
+        return true
+    }
+
+    private fun isFluidContainer(stack: ItemStack): Boolean {
+        if (stack.isEmpty) return false
+        val ctx = ContainerItemContext.withConstant(stack)
+        val itemStorage = ctx.find(FluidStorage.ITEM) ?: return false
+        for (view in itemStorage) {
+            if (view.amount >= FluidConstants.BUCKET && !view.resource.isBlank) return true
+        }
+        return false
+    }
 
     private fun tryPourOut(filled: ItemStack, outputSlot: ItemStack): Boolean {
         val ctx = ContainerItemContext.withConstant(filled)
@@ -261,25 +288,20 @@ class FluidBottlerBlockEntity(
         val emptyResult = getEmptyContainerFor(filled) ?: return false
         if (!canAcceptOutput(outputSlot, emptyResult)) return false
         lastOperationPourOut = true
+        lastOperationWasPrimarySlot = true
         return true
     }
 
-    private fun tryFill(empty: ItemStack, outputSlot: ItemStack): Boolean {
+    private fun tryFill(empty: ItemStack, outputSlot: ItemStack, isPrimarySlot: Boolean): Boolean {
         if (tankInternal.amount < FluidConstants.BUCKET || tankInternal.variant.isBlank) return false
         val ctx = ContainerItemContext.withConstant(empty)
         val itemStorage = ctx.find(FluidStorage.ITEM) ?: return false
         if (!itemStorage.supportsInsertion()) return false
         val fluid = tankInternal.variant.fluid
-        val filledResult = when (empty.item) {
-            Items.BUCKET -> when (fluid) {
-                Fluids.WATER, Fluids.FLOWING_WATER -> ItemStack(Items.WATER_BUCKET)
-                Fluids.LAVA, Fluids.FLOWING_LAVA -> ItemStack(Items.LAVA_BUCKET)
-                else -> return false  // 桶只支持水/岩浆
-            }
-            else -> fluidToFilledCellStack(fluid)
-        }
+        val filledResult = getFilledContainerFor(empty, fluid) ?: return false
         if (!canAcceptOutput(outputSlot, filledResult)) return false
         lastOperationPourOut = false
+        lastOperationWasPrimarySlot = isPrimarySlot
         return true
     }
 
@@ -294,31 +316,63 @@ class FluidBottlerBlockEntity(
         }
     }
 
+    private fun getFilledContainerFor(empty: ItemStack, fluid: Fluid): ItemStack? = when (empty.item) {
+        Items.BUCKET -> when (fluid) {
+            Fluids.WATER, Fluids.FLOWING_WATER -> ItemStack(Items.WATER_BUCKET)
+            Fluids.LAVA, Fluids.FLOWING_LAVA -> ItemStack(Items.LAVA_BUCKET)
+            else -> null  // 桶只支持水/岩浆
+        }
+        is ModFluidCell -> {
+            val emptyCellItem = empty.item as ModFluidCell
+            // 检查流体是否匹配此单元类型
+            if (emptyCellItem.getFluid() == fluid ||
+                (emptyCellItem.getFluid() == Fluids.WATER && fluid == Fluids.FLOWING_WATER) ||
+                (emptyCellItem.getFluid() == Fluids.LAVA && fluid == Fluids.FLOWING_LAVA)) {
+                fluidToFilledCellStack(fluid)
+            } else {
+                // 流体不匹配，尝试使用通用单元
+                fluidToFilledCellStack(fluid)
+            }
+        }
+        else -> {
+            val path = Registries.ITEM.getId(empty.item).path
+            if (path == "empty_cell") {
+                fluidToFilledCellStack(fluid)
+            } else null
+        }
+    }
+
     private fun canAcceptOutput(outputSlot: ItemStack, result: ItemStack): Boolean {
         if (outputSlot.isEmpty) return true
         return ItemStack.areItemsEqual(outputSlot, result) && outputSlot.count + result.count <= result.maxCount
     }
 
-    private fun completeCurrentOperation(wasPourOut: Boolean) {
-        if (wasPourOut) {
+    private fun completeCurrentOperation(wasFill: Boolean, wasPrimarySlot: Boolean) {
+        if (!wasFill) {
+            // Pour Out: 从流体容器倒入储罐
             val filled = getStack(SLOT_INPUT_FILLED)
             val outputSlot = getStack(SLOT_OUTPUT)
-            val ctx = ContainerItemContext.withConstant(filled)
-            val itemStorage = ctx.find(FluidStorage.ITEM) ?: return
+            val emptyResult = getEmptyContainerFor(filled) ?: return
+
             Transaction.openOuter().use { tx ->
+                val ctx = ContainerItemContext.withInitial(filled)
+                val itemStorage = ctx.find(FluidStorage.ITEM) ?: return@use
                 for (view in itemStorage) {
                     if (view.amount >= FluidConstants.BUCKET && !view.resource.isBlank) {
                         val extracted = view.extract(view.resource, FluidConstants.BUCKET, tx)
                         if (extracted > 0) {
                             val inserted = tankInternal.insert(FluidVariant.of(view.resource.fluid), extracted, tx)
-                            if (inserted > 0) {
-                                tx.commit()
-                                val emptyResult = ctx.itemVariant.toStack(ctx.amount.toInt().coerceAtLeast(1))
+                            if (inserted == extracted) {
+                                val remaining = ctx.itemVariant.toStack(ctx.amount.toInt().coerceAtLeast(0))
                                 filled.decrement(1)
                                 if (filled.isEmpty) setStack(SLOT_INPUT_FILLED, ItemStack.EMPTY)
+                                else setStack(SLOT_INPUT_FILLED, remaining)
+
                                 if (outputSlot.isEmpty) setStack(SLOT_OUTPUT, emptyResult)
                                 else outputSlot.increment(emptyResult.count)
+
                                 sync.fluidAmountMb = (tankInternal.amount * 1000L / FluidConstants.BUCKET).toInt().coerceAtLeast(0)
+                                tx.commit()
                                 return
                             }
                         }
@@ -326,32 +380,36 @@ class FluidBottlerBlockEntity(
                 }
             }
         } else {
-            val empty = getStack(SLOT_INPUT_EMPTY)
+            // Fill: 从储罐填充容器
+            val inputSlot = if (wasPrimarySlot) getStack(SLOT_INPUT_FILLED) else getStack(SLOT_INPUT_EMPTY)
             val outputSlot = getStack(SLOT_OUTPUT)
-            val ctx = ContainerItemContext.withConstant(empty)
-            val itemStorage = ctx.find(FluidStorage.ITEM) ?: return
             val variant = tankInternal.variant
             if (variant.isBlank) return
             val fluid = variant.fluid
+            val filledResult = getFilledContainerFor(inputSlot, fluid) ?: return
+
             Transaction.openOuter().use { tx ->
+                val ctx = ContainerItemContext.withInitial(inputSlot)
+                val itemStorage = ctx.find(FluidStorage.ITEM) ?: return@use
                 val inserted = itemStorage.insert(variant, FluidConstants.BUCKET, tx)
-                if (inserted > 0) {
+                if (inserted == FluidConstants.BUCKET) {
                     val extracted = tankInternal.extract(variant, inserted, tx)
-                    if (extracted > 0) {
-                        tx.commit()
-                        val filledResult = when (empty.item) {
-                            Items.BUCKET -> when (fluid) {
-                                Fluids.WATER, Fluids.FLOWING_WATER -> ItemStack(Items.WATER_BUCKET)
-                                Fluids.LAVA, Fluids.FLOWING_LAVA -> ItemStack(Items.LAVA_BUCKET)
-                                else -> return@use
-                            }
-                            else -> fluidToFilledCellStack(fluid)
+                    if (extracted == inserted) {
+                        val remaining = ctx.itemVariant.toStack(ctx.amount.toInt().coerceAtLeast(0))
+                        inputSlot.decrement(1)
+                        if (inputSlot.isEmpty) {
+                            if (wasPrimarySlot) setStack(SLOT_INPUT_FILLED, ItemStack.EMPTY)
+                            else setStack(SLOT_INPUT_EMPTY, ItemStack.EMPTY)
+                        } else {
+                            if (wasPrimarySlot) setStack(SLOT_INPUT_FILLED, remaining)
+                            else setStack(SLOT_INPUT_EMPTY, remaining)
                         }
-                        empty.decrement(1)
-                        if (empty.isEmpty) setStack(SLOT_INPUT_EMPTY, ItemStack.EMPTY)
+
                         if (outputSlot.isEmpty) setStack(SLOT_OUTPUT, filledResult)
                         else outputSlot.increment(filledResult.count)
+
                         sync.fluidAmountMb = (tankInternal.amount * 1000L / FluidConstants.BUCKET).toInt().coerceAtLeast(0)
+                        tx.commit()
                     }
                 }
             }

@@ -43,16 +43,15 @@ class BlockCutterScreen(
         val energy = handler.sync.energy.toLong().coerceAtLeast(0)
         val cap = handler.sync.energyCapacity.toLong().coerceAtLeast(1)
         val energyFraction = if (cap > 0) (energy.toFloat() / cap).coerceIn(0f, 1f) else 0f
-        val progressFrac = if (BlockCutterSync.PROGRESS_MAX > 0) {
-            (handler.sync.progress.coerceIn(0, BlockCutterSync.PROGRESS_MAX)
-                .toFloat() / BlockCutterSync.PROGRESS_MAX).coerceIn(0f, 1f)
-        } else 0f
+        val progressFrac = (handler.sync.progress.coerceIn(0, BlockCutterSync.PROGRESS_MAX)
+            .toFloat() / BlockCutterSync.PROGRESS_MAX).coerceIn(0f, 1f)
         val inputRate = handler.sync.getSyncedInsertedAmount()
         val consumeRate = handler.sync.getSyncedConsumedAmount()
 
         val inputText = "输入 ${formatEu(inputRate)} EU/t"
         val consumeText = "耗能 ${formatEu(consumeRate)} EU/t"
         val sideTextWidth = maxOf(textRenderer.getWidth(inputText), textRenderer.getWidth(consumeText))
+        val sideTextX = left - sideTextWidth - 4
 
         val content: UiScope.() -> Unit = {
             Row(
@@ -61,15 +60,6 @@ class BlockCutterScreen(
                 spacing = 8,
                 modifier = Modifier.EMPTY.width(GUI_SIZE.contentWidth)
             ) {
-                // 左侧信息文本
-                Column(
-                    spacing = 4,
-                    modifier = Modifier.EMPTY.width(sideTextWidth)
-                ) {
-                    Text(inputText, color = 0xAAAAAA, shadow = false)
-                    Text(consumeText, color = 0xAAAAAA, shadow = false)
-                }
-
                 Column(
                     spacing = 6,
                     modifier = Modifier.EMPTY.width(GuiSize.STANDARD.contentWidth)
@@ -85,6 +75,7 @@ class BlockCutterScreen(
 
                     Flex(
                         direction = FlexDirection.ROW,
+                        justifyContent = JustifyContent.SPACE_AROUND,
                         alignItems = AlignItems.CENTER,
                         gap = 4
                     ) {
@@ -92,19 +83,26 @@ class BlockCutterScreen(
                             SlotHost(BlockCutterScreenHandler.SLOT_INPUT_INDEX)
                             SlotHost(BlockCutterScreenHandler.SLOT_DISCHARGING_INDEX)
                         }
-                        EnergyBar(progressFrac, modifier = Modifier.EMPTY.fractionWidth(1.0f))
+                        Flex(
+                            direction = FlexDirection.COLUMN, justifyContent = JustifyContent.CENTER,
+                            alignItems = AlignItems.CENTER, gap = 8
+                        ) {
+                            EnergyBar(progressFrac, modifier = Modifier.EMPTY.fractionWidth(1.0f))
+                            SlotHost(BlockCutterScreenHandler.SLOT_BLADE_INDEX)
+                        }
+
+
                         Column(spacing = 4) {
                             SlotHost(BlockCutterScreenHandler.SLOT_OUTPUT_INDEX)
-                            SlotHost(BlockCutterScreenHandler.SLOT_BLADE_INDEX)
-                            // 刀片警告文本
-                            if (handler.sync.bladeTooWeak != 0) {
-                                Text(
-                                    Text.translatable("gui.ic2_120.block_cutter.blade_too_weak").string,
-                                    color = 0xFF5555,
-                                    shadow = false
-                                )
-                            }
                         }
+                    }
+                    // 刀片警告文本
+                    if (handler.sync.bladeTooWeak != 0) {
+                        Text(
+                            Text.translatable("gui.ic2_120.block_cutter.blade_too_weak").string,
+                            color = 0xFF5555,
+                            shadow = false
+                        )
                     }
                 }
 
@@ -126,6 +124,8 @@ class BlockCutterScreen(
 
         super.render(context, mouseX, mouseY, delta)
         ui.render(context, textRenderer, mouseX, mouseY, content = content)
+        context.drawText(textRenderer, inputText, sideTextX, top + 8, 0xAAAAAA, false)
+        context.drawText(textRenderer, consumeText, sideTextX, top + 20, 0xAAAAAA, false)
         drawMouseoverTooltip(context, mouseX, mouseY)
     }
 

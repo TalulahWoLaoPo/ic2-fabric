@@ -52,8 +52,8 @@ class FluidBottlerScreen(
         val fluidCapacity = handler.sync.fluidCapacityMb.toLong().coerceAtLeast(1)
         val fluidFraction = if (fluidCapacity > 0) (fluidAmount.toFloat() / fluidCapacity).coerceIn(0f, 1f) else 0f
         val progress = handler.sync.progress.coerceIn(0, FluidBottlerSync.PROGRESS_MAX)
-        val progressFrac = if (FluidBottlerSync.PROGRESS_MAX > 0) (progress.toFloat() / FluidBottlerSync.PROGRESS_MAX).coerceIn(0f, 1f) else 0f
-        val contentW = (backgroundWidth - 16).coerceAtLeast(0)
+        val progressFrac = (progress.toFloat() / FluidBottlerSync.PROGRESS_MAX).coerceIn(0f, 1f)
+//        val contentW = (backgroundWidth - 16).coerceAtLeast(0)
 
         val energyText = "$energy / $cap EU"
         val fluidText = "$fluidAmount/$fluidCapacity mB"
@@ -70,41 +70,45 @@ class FluidBottlerScreen(
         val sideTextX = left - sideTextWidth - 4
 
         val content: UiScope.() -> Unit = {
-            Column(
+            Row(
                 x = left + 8,
                 y = top + 8,
-                spacing = 6,
-                modifier = Modifier().width(contentW).height(backgroundHeight - 16),
+                spacing = 8,
+                modifier = Modifier.EMPTY.width(GUI_SIZE.contentWidth)
             ) {
-                Row(spacing = 8) {
-                    Text(title.string, color = 0xFFFFFF)
-                    Text(energyText, color = 0xFFFFFF)
-                    Text(fluidText, color = 0xFFFFFF)
-                }
-                EnergyBar(energyFraction, modifier = Modifier().width(contentW - 36))
-
-                // 机器槽位 + 进度条
-                Flex(
-                    direction = FlexDirection.ROW,
-                    justifyContent = JustifyContent.SPACE_BETWEEN,
-                    alignItems = AlignItems.CENTER,
+                Column(
+                    spacing = 6,
+                    modifier = Modifier.EMPTY.width(GuiSize.STANDARD.contentWidth)
                 ) {
-                    SlotAnchor(id = "slot.${FluidBottlerScreenHandler.SLOT_INPUT_FILLED_INDEX}")
-                    EnergyBar(progressFrac, modifier = Modifier().width(60))
-                    SlotAnchor(id = "slot.${FluidBottlerScreenHandler.SLOT_INPUT_EMPTY_INDEX}")
-                    SlotAnchor(id = "slot.${FluidBottlerScreenHandler.SLOT_OUTPUT_INDEX}")
+                    Flex(direction = FlexDirection.ROW, alignItems = AlignItems.CENTER, gap = 8) {
+                        Text(title.string, color = 0xFFFFFF)
+                        Text(energyText, color = 0xFFFFFF, shadow = false)
+                        Text(fluidText, color = 0xFFFFFF, shadow = false)
+                    }
+                    EnergyBar(energyFraction)
+
+                    Flex(
+                        direction = FlexDirection.ROW,
+                        alignItems = AlignItems.CENTER,
+                        gap = 4
+                    ) {
+                        SlotHost(FluidBottlerScreenHandler.SLOT_INPUT_FILLED_INDEX)
+                        SlotHost(FluidBottlerScreenHandler.SLOT_INPUT_EMPTY_INDEX)
+                        EnergyBar(progressFrac, modifier = Modifier.EMPTY.fractionWidth(1.0f))
+                        SlotHost(FluidBottlerScreenHandler.SLOT_OUTPUT_INDEX)
+                    }
+
+                    SlotHost(FluidBottlerScreenHandler.SLOT_DISCHARGING_INDEX)
                 }
 
-                // 放电槽
-                SlotAnchor(id = "slot.${FluidBottlerScreenHandler.SLOT_DISCHARGING_INDEX}")
-
-                // 升级槽
-                Flex(
-                    direction = FlexDirection.ROW,
-                    justifyContent = JustifyContent.SPACE_BETWEEN,
+                Column(
+                    spacing = 4,
+                    modifier = Modifier.EMPTY
+                        .width(GuiSize.UPGRADE_COLUMN_WIDTH)
+                        .padding(0, 8, 0, 0)
                 ) {
-                    repeat(4) { index ->
-                        SlotAnchor(id = "slot.${FluidBottlerScreenHandler.SLOT_UPGRADE_INDEX_START + index}")
+                    for (slotIndex in FluidBottlerScreenHandler.SLOT_UPGRADE_INDEX_START..FluidBottlerScreenHandler.SLOT_UPGRADE_INDEX_END) {
+                        SlotHost(slotIndex)
                     }
                 }
             }
@@ -114,11 +118,7 @@ class FluidBottlerScreen(
         val layout = ui.layout(context, textRenderer, mouseX, mouseY, content = content)
 
         // 2) 锚点写回 slot 相对坐标
-        handler.slots.forEachIndexed { index, slot ->
-            val anchor = layout.anchors["slot.$index"] ?: return@forEachIndexed
-            slot.x = anchor.x - left
-            slot.y = anchor.y - top
-        }
+        applyAnchoredSlots(layout, left, top)
 
         // 3) 原生 slot 渲染 + 交互
         super.render(context, mouseX, mouseY, delta)
@@ -131,12 +131,31 @@ class FluidBottlerScreen(
         drawMouseoverTooltip(context, mouseX, mouseY)
     }
 
+    private fun UiScope.SlotHost(slotIndex: Int) {
+        SlotAnchor(
+            id = slotAnchorId(slotIndex),
+            width = FluidBottlerScreenHandler.SLOT_SIZE,
+            height = FluidBottlerScreenHandler.SLOT_SIZE
+        )
+    }
+
+    private fun applyAnchoredSlots(layout: ComposeUI.LayoutSnapshot, left: Int, top: Int) {
+        handler.slots.forEachIndexed { index, slot ->
+            val anchor = layout.anchors[slotAnchorId(index)] ?: return@forEachIndexed
+            slot.x = anchor.x - left
+            slot.y = anchor.y - top
+        }
+    }
+
+    private fun slotAnchorId(slotIndex: Int): String = "slot.$slotIndex"
+
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean =
         ui.mouseClicked(mouseX, mouseY, button) || super.mouseClicked(mouseX, mouseY, button)
 
     companion object {
-        private val PANEL_WIDTH = GuiSize.STANDARD_UPGRADE.width
-        private val PANEL_HEIGHT = GuiSize.STANDARD_UPGRADE.height
+        private val GUI_SIZE = GuiSize.STANDARD_UPGRADE
+        private val PANEL_WIDTH = GUI_SIZE.width
+        private val PANEL_HEIGHT = GUI_SIZE.height
     }
 
     private fun formatEu(value: Long): String {
