@@ -73,3 +73,11 @@
 - 优先复用已有组件与模式，避免引入第二套实现。
 - 发现规则冲突时：以 `docs/README.md` 导航到对应主文档修正，而不是在 AGENTS.md 堆细节。
 - 新增规范时，优先写入对应 `docs/{guides|systems|ui|registry}`，AGENTS.md 只保留摘要与入口。
+
+## 9. 物品与方块清单
+
+所有使用 `@ModBlock` / `@ModItem` 注解注册的类及其中文翻译：
+
+- 自动生成文档：`docs/item-block-list.md`（149 方块 + 286 物品）
+- 生成脚本：`docs/generate_item_block_list.py`
+- 重新生成：运行 `python docs/generate_item_block_list.py`
