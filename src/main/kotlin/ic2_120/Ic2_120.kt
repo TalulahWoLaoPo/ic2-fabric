@@ -27,6 +27,8 @@ import ic2_120.content.block.machines.CannerBlockEntity
 import ic2_120.content.block.machines.FluidBottlerBlockEntity
 import ic2_120.content.block.machines.OreWashingPlantBlockEntity
 import ic2_120.content.block.machines.PumpBlockEntity
+import ic2_120.content.block.machines.MinerBlockEntity
+import ic2_120.content.block.machines.AdvancedMinerBlockEntity
 import ic2_120.content.block.machines.SemifluidGeneratorBlockEntity
 import ic2_120.content.block.machines.SolarDistillerBlockEntity
 import ic2_120.content.block.machines.WaterGeneratorBlockEntity
@@ -127,6 +129,8 @@ object Ic2_120 : ModInitializer {
         OreWashingPlantBlockEntity.registerFluidStorageLookup()
         SolarDistillerBlockEntity.registerFluidStorageLookup()
         PumpBlockEntity.registerFluidStorageLookup()
+        MinerBlockEntity.registerFluidStorageLookup()
+        AdvancedMinerBlockEntity.registerFluidStorageLookup()
         FluidBottlerBlockEntity.registerFluidStorageLookup()
         CannerBlockEntity.registerFluidStorageLookup()
 
@@ -203,3 +207,4 @@ object Ic2_120 : ModInitializer {
      */
     fun id(path: String): Identifier = Identifier(MOD_ID, path)
 }
+

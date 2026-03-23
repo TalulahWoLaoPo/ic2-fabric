@@ -514,5 +514,9 @@
   "ic2_120.jade.fluid_name": "Fluid: %s",
   "ic2_120.jade.stalled": "Stalled: Mixed Fluids",
   "ic2_120.jade.pump": "Pump Attachment",
-  "gui.ic2_120.compose_debug.tooltip_hover": "This is a hover tooltip!"
+  "gui.ic2_120.compose_debug.tooltip_hover": "This is a hover tooltip!",
+  "block.ic2_120.miner": "Miner",
+  "block.ic2_120.advanced_miner": "Advanced Miner",
+  "item.ic2_120.miner": "Miner",
+  "item.ic2_120.advanced_miner": "Advanced Miner"
 }
