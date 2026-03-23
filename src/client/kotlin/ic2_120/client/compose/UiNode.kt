@@ -89,6 +89,24 @@ abstract class UiNode {
             ctx.drawContext.drawBorder(x, y, measuredWidth, measuredHeight, color)
         }
     }
+
+    protected fun resolveMeasuredWidth(constraints: Constraints, contentPlusPaddingWidth: Int): Int {
+        modifier.width?.let { return it }
+        val fraction = modifier.fractionWidth
+        if (fraction != null && constraints.maxWidth < Int.MAX_VALUE) {
+            return (constraints.maxWidth * fraction).toInt().coerceAtLeast(0).coerceAtMost(constraints.maxWidth)
+        }
+        return contentPlusPaddingWidth
+    }
+
+    protected fun resolveMeasuredHeight(constraints: Constraints, contentPlusPaddingHeight: Int): Int {
+        modifier.height?.let { return it }
+        val fraction = modifier.fractionHeight
+        if (fraction != null && constraints.maxHeight < Int.MAX_VALUE) {
+            return (constraints.maxHeight * fraction).toInt().coerceAtLeast(0).coerceAtMost(constraints.maxHeight)
+        }
+        return contentPlusPaddingHeight
+    }
 }
 
 // ──────────────────────────── Panel（可复用空背景）────────────────────────────
@@ -105,8 +123,8 @@ class PanelNode(
 
     override fun measure(ctx: RenderContext, constraints: Constraints) {
         val pad = modifier.padding
-        measuredWidth = modifier.width ?: (panelWidth + pad.horizontal)
-        measuredHeight = modifier.height ?: (panelHeight + pad.vertical)
+        measuredWidth = resolveMeasuredWidth(constraints, panelWidth + pad.horizontal)
+        measuredHeight = resolveMeasuredHeight(constraints, panelHeight + pad.vertical)
     }
 
     override fun render(ctx: RenderContext, originX: Int, originY: Int) {
@@ -125,6 +143,7 @@ class TextNode(
     val text: String,
     val color: Int = 0xFFFFFF,
     val shadow: Boolean = true,
+    val center: Boolean = false,
     val tooltip: List<net.minecraft.text.Text>? = null
 ) : UiNode() {
 
@@ -132,15 +151,19 @@ class TextNode(
         val pad = modifier.padding
         val textW = ctx.textRenderer.getWidth(text)
         val textH = ctx.textRenderer.fontHeight
-        measuredWidth = modifier.width ?: (textW + pad.horizontal)
-        measuredHeight = modifier.height ?: (textH + pad.vertical)
+        measuredWidth = resolveMeasuredWidth(constraints, textW + pad.horizontal)
+        measuredHeight = resolveMeasuredHeight(constraints, textH + pad.vertical)
     }
 
     override fun render(ctx: RenderContext, originX: Int, originY: Int) {
         renderModifierDecoration(ctx, originX, originY)
         val pad = modifier.padding
-        val tx = originX + pad.left
-        val ty = originY + pad.top
+        val textW = ctx.textRenderer.getWidth(text)
+        val textH = ctx.textRenderer.fontHeight
+        val contentW = (measuredWidth - pad.horizontal).coerceAtLeast(0)
+        val contentH = (measuredHeight - pad.vertical).coerceAtLeast(0)
+        val tx = originX + pad.left + if (center) ((contentW - textW) / 2).coerceAtLeast(0) else 0
+        val ty = originY + pad.top + if (center) ((contentH - textH) / 2).coerceAtLeast(0) else 0
         if (!ctx.drawEnabled) return
         if (shadow) {
             ctx.drawContext.drawTextWithShadow(ctx.textRenderer, text, tx, ty, color)
@@ -182,8 +205,8 @@ class ImageNode(
 
     override fun measure(ctx: RenderContext, constraints: Constraints) {
         val pad = modifier.padding
-        measuredWidth = modifier.width ?: (imgWidth + pad.horizontal)
-        measuredHeight = modifier.height ?: (imgHeight + pad.vertical)
+        measuredWidth = resolveMeasuredWidth(constraints, imgWidth + pad.horizontal)
+        measuredHeight = resolveMeasuredHeight(constraints, imgHeight + pad.vertical)
     }
 
     override fun render(ctx: RenderContext, originX: Int, originY: Int) {
@@ -213,8 +236,8 @@ class ItemStackNode(
 
     override fun measure(ctx: RenderContext, constraints: Constraints) {
         val pad = modifier.padding
-        measuredWidth = modifier.width ?: (size + pad.horizontal)
-        measuredHeight = modifier.height ?: (size + pad.vertical)
+        measuredWidth = resolveMeasuredWidth(constraints, size + pad.horizontal)
+        measuredHeight = resolveMeasuredHeight(constraints, size + pad.vertical)
     }
 
     override fun render(ctx: RenderContext, originX: Int, originY: Int) {
@@ -249,8 +272,8 @@ class ButtonNode(
         }
         val textW = ctx.textRenderer.getWidth(text)
         val textH = ctx.textRenderer.fontHeight
-        measuredWidth = modifier.width ?: (textW + pad.horizontal)
-        measuredHeight = modifier.height ?: (textH + pad.vertical)
+        measuredWidth = resolveMeasuredWidth(constraints, textW + pad.horizontal)
+        measuredHeight = resolveMeasuredHeight(constraints, textH + pad.vertical)
     }
 
     override fun render(ctx: RenderContext, originX: Int, originY: Int) {
@@ -316,8 +339,8 @@ class SlotAnchorNode(
 
     override fun measure(ctx: RenderContext, constraints: Constraints) {
         val pad = modifier.padding
-        measuredWidth = modifier.width ?: (anchorWidth + pad.horizontal)
-        measuredHeight = modifier.height ?: (anchorHeight + pad.vertical)
+        measuredWidth = resolveMeasuredWidth(constraints, anchorWidth + pad.horizontal)
+        measuredHeight = resolveMeasuredHeight(constraints, anchorHeight + pad.vertical)
     }
 
     override fun render(ctx: RenderContext, originX: Int, originY: Int) {
@@ -387,8 +410,8 @@ class ColumnNode(
 
         children.filter { it.isAbsolute }.forEach { it.measure(ctx, childConstraints) }
 
-        measuredWidth = modifier.width ?: (contentW + pad.horizontal)
-        measuredHeight = modifier.height ?: (contentH + pad.vertical)
+        measuredWidth = resolveMeasuredWidth(constraints, contentW + pad.horizontal)
+        measuredHeight = resolveMeasuredHeight(constraints, contentH + pad.vertical)
     }
 
     override fun render(ctx: RenderContext, originX: Int, originY: Int) {
@@ -443,8 +466,8 @@ class RowNode(
 
         children.filter { it.isAbsolute }.forEach { it.measure(ctx, childConstraints) }
 
-        measuredWidth = modifier.width ?: (contentW + pad.horizontal)
-        measuredHeight = modifier.height ?: (contentH + pad.vertical)
+        measuredWidth = resolveMeasuredWidth(constraints, contentW + pad.horizontal)
+        measuredHeight = resolveMeasuredHeight(constraints, contentH + pad.vertical)
     }
 
     override fun render(ctx: RenderContext, originX: Int, originY: Int) {
@@ -509,11 +532,11 @@ class FlexNode(
 
             // 交叉轴 fraction：按父 Flex 内尺寸直接解析，保证 fractionWidth/fractionHeight 可用。
             if (resolved.fractionWidth != null) {
-                val w = (innerMaxW * resolved.fractionWidth!!).toInt().coerceAtLeast(0).coerceAtMost(innerMaxW)
+                val w = (innerMaxW * resolved.fractionWidth).toInt().coerceAtLeast(0).coerceAtMost(innerMaxW)
                 resolved = resolved.copy(width = w, fractionWidth = null)
             }
             if (resolved.fractionHeight != null) {
-                val h = (innerMaxH * resolved.fractionHeight!!).toInt().coerceAtLeast(0).coerceAtMost(innerMaxH)
+                val h = (innerMaxH * resolved.fractionHeight).toInt().coerceAtLeast(0).coerceAtMost(innerMaxH)
                 resolved = resolved.copy(height = h, fractionHeight = null)
             }
 
@@ -607,14 +630,14 @@ class FlexNode(
             FlexDirection.ROW -> constraints.maxWidth < Int.MAX_VALUE
             FlexDirection.COLUMN -> constraints.maxHeight < Int.MAX_VALUE
         }
-        measuredWidth = modifier.width ?: (when (direction) {
+        measuredWidth = resolveMeasuredWidth(constraints, (when (direction) {
             FlexDirection.ROW -> if (mainAxisFromConstraints) constraints.maxWidth else contentW
             FlexDirection.COLUMN -> contentW
-        } + pad.horizontal)
-        measuredHeight = modifier.height ?: (when (direction) {
+        } + pad.horizontal))
+        measuredHeight = resolveMeasuredHeight(constraints, (when (direction) {
             FlexDirection.ROW -> contentH
             FlexDirection.COLUMN -> if (mainAxisFromConstraints) constraints.maxHeight else contentH
-        } + pad.vertical)
+        } + pad.vertical))
 
     }
 
@@ -742,8 +765,8 @@ class TableNode(
 
         val totalW = columnW.sum() + (colCount - 1).coerceAtLeast(0) * columnSpacing
         val totalH = rowH.sum() + (rows.size - 1).coerceAtLeast(0) * rowSpacing
-        measuredWidth = modifier.width ?: (totalW + pad.horizontal)
-        measuredHeight = modifier.height ?: (totalH + pad.vertical)
+        measuredWidth = resolveMeasuredWidth(constraints, totalW + pad.horizontal)
+        measuredHeight = resolveMeasuredHeight(constraints, totalH + pad.vertical)
     }
 
     override fun render(ctx: RenderContext, originX: Int, originY: Int) {

@@ -90,7 +90,7 @@ ui.render(context, textRenderer, mouseX, mouseY) {
 
 **原则：除非明确要求，否则不主动指定子元素的 `x` / `y`。**
 
-正确的做法是：根容器通过 `modifier = Modifier.EMPTY.width(gui.contentWidth)` 固定宽度，内部的 Column / Row / Flex 等容器依靠 flow 布局自行排列。子元素只管自己内部的内容，不需要知道父容器放在屏幕哪个位置。
+正确的做法是：根容器通过 `modifier = Modifier.EMPTY.fillMaxWidth()`（或 `width(gui.contentWidth)`）固定宽度，内部的 Column / Row / Flex 等容器依靠 flow 布局自行排列。子元素只管自己内部的内容，不需要知道父容器放在屏幕哪个位置。
 
 ```kotlin
 // ✅ 正确：根容器定宽，子元素不写 x/y
@@ -100,7 +100,7 @@ ui.render(context, textRenderer, mouseX, mouseY) {
         y = y + 6,
         direction = FlexDirection.ROW,
         gap = 12,
-        modifier = Modifier.EMPTY.width(gui.contentWidth)
+        modifier = Modifier.EMPTY.fillMaxWidth()
     ) {
         Column(spacing = 4) { ... }       // 不写 x/y
         Column(spacing = 4) { ... }       // 不写 x/y
@@ -122,3 +122,17 @@ Flex(direction = FlexDirection.ROW, gap = 12) {
 - 根容器定位到屏幕坐标时（`x = this.x + 8`, `y = this.y + 6`）
 - 需要精确覆盖特定屏幕区域时（如与背景纹理对齐的局部面板）
 - `absolute = true` 时表示绝对定位，绕开 flow 布局
+
+---
+
+## Modifier 新方法：`fillMaxWidth()`
+
+为 `Modifier` 增加了语义化方法：
+
+```kotlin
+Modifier.EMPTY.fillMaxWidth()
+```
+
+- 效果等价于 `fractionWidth(1f)`。
+- 语义上类似 CSS 的 `width: 100%`。
+- 在父容器提供有界宽度约束时生效（如 `Column` / `Row` / `Flex` / `Table` / `ScrollView`）。

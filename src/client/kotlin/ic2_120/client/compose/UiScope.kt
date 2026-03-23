@@ -60,13 +60,14 @@ class UiScope {
         text: String,
         color: Int = 0xFFFFFF,
         shadow: Boolean = true,
+        center: Boolean = false,
         tooltip: List<net.minecraft.text.Text>? = null,
         x: Int = 0,
         y: Int = 0,
         absolute: Boolean = false,
         modifier: Modifier = Modifier.EMPTY
     ) {
-        val node = TextNode(text, color, shadow, tooltip).apply {
+        val node = TextNode(text, color, shadow, center, tooltip).apply {
             this.position = if (absolute) Position.Absolute(x, y) else Position.Flow(x, y)
             this.modifier = modifier
         }

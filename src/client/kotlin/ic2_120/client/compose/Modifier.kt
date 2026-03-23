@@ -17,8 +17,8 @@ data class Padding(
 data class Modifier(
     val width: Int? = null,
     val height: Int? = null,
-    val fractionWidth: Float? = null, // 0.0~1.0，相对于父 Flex 容器的内尺寸
-    val fractionHeight: Float? = null, // 0.0~1.0，相对于父 Flex 容器的内尺寸
+    val fractionWidth: Float? = null, // 0.0~1.0，相对于父容器可用宽度
+    val fractionHeight: Float? = null, // 0.0~1.0，相对于父容器可用高度
     val padding: Padding = Padding.ZERO,
     val backgroundColor: Int? = null,
     val borderColor: Int? = null,
@@ -26,14 +26,17 @@ data class Modifier(
     fun width(w: Int) = copy(width = w)
     fun height(h: Int) = copy(height = h)
     /**
-     * 设置相对于父 Flex 容器内尺寸的百分比宽度。
-     * 仅在父容器为 Flex 时生效。
+     * 设置相对于父容器可用宽度的百分比宽度。
      * @param fraction 0.0~1.0，如 0.5 表示占父容器宽度的 50%
      */
     fun fractionWidth(fraction: Float) = copy(fractionWidth = fraction.coerceIn(0f, 1f))
     /**
-     * 设置相对于父 Flex 容器内尺寸的百分比高度。
-     * 仅在父容器为 Flex 时生效。
+     * 占满父容器可用宽度（等价于 fractionWidth(1f)）。
+     * 语义上类似 CSS 的 width: 100%。
+     */
+    fun fillMaxWidth() = copy(fractionWidth = 1f)
+    /**
+     * 设置相对于父容器可用高度的百分比高度。
      * @param fraction 0.0~1.0，如 0.5 表示占父容器高度的 50%
      */
     fun fractionHeight(fraction: Float) = copy(fractionHeight = fraction.coerceIn(0f, 1f))
