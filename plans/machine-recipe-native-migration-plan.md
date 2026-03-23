@@ -123,40 +123,40 @@
 
 ## 10. 批量迁移执行清单（可直接开工）
 
-### Phase A：单输入单输出（建议先做）
+### Phase A：单输入单输出
 
-1. Compressor
-- 新增：`content/recipes/compressor/`（Recipe/Serializer/Datagen）
-- 改造：`CompressorBlockEntity` 改查 `RecipeManager`
-- 接入：`CompressorBlock.Companion.generateRecipes(...)`
-- 删除：`CompressorRecipes.kt`
-
-2. Extractor
-- 新增：`content/recipes/extractor/`
-- 改造：`ExtractorBlockEntity`
-- 接入：`ExtractorBlock.Companion.generateRecipes(...)`
-- 删除：`ExtractorRecipes`（若存在）
-
-3. Recycler
-- 先确认当前是否为概率产物/黑名单逻辑主导
-- 若含概率，建议 Recipe 仅表达“输入合法性”，概率仍留机器逻辑
+| 机器 | 配方系统 | JEI | 状态 |
+|------|---------|-----|------|
+| Macerator | ✅ | ✅ | 已完成 |
+| Compressor | ✅ | ✅ | 已完成 |
+| Extractor | ✅ | ✅ | 已完成 |
+| Recycler | ✅ | ❌ | 仅更新为JSON |
 
 ### Phase B：多输出/附加条件
 
-4. Centrifuge
-- Recipe 扩展为 `outputs: List<ItemStack>` + `minHeat`
-- Serializer/json 需支持 `results[]` 与 `min_heat`
-- 机器匹配后继续沿用热量门槛与进度逻辑
-
-5. BlockCutter
-- 需保留“刀片硬度判定”机制
-- 建议 Recipe 仅存输入/输出/消耗量/材料硬度，硬度阈值仍在机器侧判定
+| 机器 | 配方系统 | JEI | 状态 |
+|------|---------|-----|------|
+| Centrifuge | ✅ | ✅ | 已完成 |
+| BlockCutter | ✅ | ✅ | 已完成 |
 
 ### Phase C：复杂机器
 
-6. Canner / FluidBottler / OreWashingPlant
-- 先拆分模式（固体/流体/混合）再建 RecipeType，避免一个类型过载
-- 尽量一个模式一个 `RecipeType`
+| 机器 | 配方系统 | JEI | 状态 |
+|------|---------|-----|------|
+| BlastFurnace | ✅ | ✅ | 已完成 |
+| OreWashingPlant | ✅ | ✅ | 已完成 |
+| MetalFormer | ✅ | ✅ | 已完成（统一RecipeType，JEI分3类） |
+| Canner | ❌ | ❌ | 待迁移 |
+| FluidBottler | ❌ | ❌ | 待迁移 |
+
+### 关键技术决策记录
+
+- **MetalFormer三模式**：共用单一 RecipeType + Serializer，JSON 中用 `mode` 字段区分。
+  JEI 层分为 Rolling/Cutting/Extruding 三个 Category。
+- **JVM签名冲突**：sealed class 中 `val id` 与 `Recipe.getId()` 冲突，
+  使用 `@JvmField val recipeId` 解决。
+- **OreWashingRecipe**：`val outputs` 与 `Recipe.getOutputs()` 冲突，
+  字段改名为 `outputItems`。
 
 ## 11. 每台机器 PR 模板（建议）
 
