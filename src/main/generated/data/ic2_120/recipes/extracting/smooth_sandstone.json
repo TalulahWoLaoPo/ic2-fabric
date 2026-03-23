@@ -1,0 +1,10 @@
+{
+  "type": "ic2_120:extracting",
+  "ingredient": {
+    "item": "minecraft:smooth_sandstone"
+  },
+  "result": {
+    "count": 1,
+    "item": "minecraft:sand"
+  }
+}

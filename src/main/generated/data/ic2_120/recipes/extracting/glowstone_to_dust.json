@@ -1,0 +1,10 @@
+{
+  "type": "ic2_120:extracting",
+  "ingredient": {
+    "item": "minecraft:glowstone"
+  },
+  "result": {
+    "count": 4,
+    "item": "minecraft:glowstone_dust"
+  }
+}
