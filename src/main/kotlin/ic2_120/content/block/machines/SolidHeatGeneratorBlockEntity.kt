@@ -37,6 +37,8 @@ class SolidHeatGeneratorBlockEntity(
     state: BlockState
 ) : HeatGeneratorBlockEntityBase(type, pos, state), Inventory, ExtendedScreenHandlerFactory {
 
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = SolidHeatGeneratorBlock.ACTIVE
+
     companion object {
         private const val SLOT_FUEL = 0
         private const val INVENTORY_SIZE = 1
@@ -136,10 +138,6 @@ class SolidHeatGeneratorBlockEntity(
 
     override fun getActiveState(state: BlockState): Boolean =
         state.get(SolidHeatGeneratorBlock.ACTIVE)
-
-    override fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
-        world.setBlockState(pos, state.with(SolidHeatGeneratorBlock.ACTIVE, active))
-    }
 
     fun tick(world: World, pos: BlockPos, state: BlockState) {
         tickHeatMachine(world, pos, state)

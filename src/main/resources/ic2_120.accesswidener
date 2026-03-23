@@ -7,3 +7,5 @@ mutable field   net/minecraft/screen/slot/Slot  y   I
 # 使 SpriteContents 的 image 字段可访问，用于流体颜色采样
 accessible	field	net/minecraft/client/texture/SpriteContents	image	Lnet/minecraft/client/texture/NativeImage;
 mutable	field	net/minecraft/client/texture/SpriteContents	image	Lnet/minecraft/client/texture/NativeImage;
+# 使 MovingSoundInstance.setDone 可访问，用于客户端循环音立即停止
+accessible	method	net/minecraft/client/sound/MovingSoundInstance	setDone	()V

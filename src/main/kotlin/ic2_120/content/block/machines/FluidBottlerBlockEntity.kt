@@ -29,7 +29,6 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleVariantStorage
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction
 import net.minecraft.block.BlockState
-import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -65,9 +64,13 @@ class FluidBottlerBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport,
+) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport,
     IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, IFluidPipeUpgradeSupport,
     ExtendedScreenHandlerFactory {
+
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = FluidBottlerBlock.ACTIVE
+
+    override fun getInventory(): net.minecraft.inventory.Inventory = this
 
     override var fluidPipeProviderEnabled: Boolean = false
     override var fluidPipeReceiverEnabled: Boolean = false
@@ -450,12 +453,6 @@ class FluidBottlerBlockEntity(
                     }
                 }
             }
-        }
-    }
-
-    private fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
-        if (state.get(FluidBottlerBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(FluidBottlerBlock.ACTIVE, active))
         }
     }
 

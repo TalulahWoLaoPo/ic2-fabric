@@ -20,7 +20,6 @@ import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.block.BlockState
-import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -48,8 +47,12 @@ class CentrifugeBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport,
+) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport,
     IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, ExtendedScreenHandlerFactory {
+
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = CentrifugeBlock.ACTIVE
+
+    override fun getInventory(): net.minecraft.inventory.Inventory = this
 
     override val tier: Int = CentrifugeSync.CENTRIFUGE_TIER
 
@@ -243,12 +246,6 @@ class CentrifugeBlockEntity(
             if (!canAccept) return false
         }
         return true
-    }
-
-    private fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
-        if (state.get(CentrifugeBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(CentrifugeBlock.ACTIVE, active))
-        }
     }
 
     private fun extractFromDischargingSlot() {

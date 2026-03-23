@@ -1,6 +1,7 @@
 package ic2_120.content.block.machines
 
 import ic2_120.Ic2_120
+import ic2_120.content.sound.MachineSoundConfig
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.block.PumpBlock
 import ic2_120.content.pullEnergyFromNeighbors
@@ -32,7 +33,7 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleVariantStorage
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction
 import net.minecraft.block.BlockState
-import net.minecraft.block.entity.BlockEntity
+import net.minecraft.sound.SoundCategory
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -58,7 +59,7 @@ class PumpBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state),
+) : MachineBlockEntity(type, pos, state),
     Inventory,
     ITieredMachine,
     IOverclockerUpgradeSupport,
@@ -66,6 +67,14 @@ class PumpBlockEntity(
     ITransformerUpgradeSupport,
     IFluidPipeUpgradeSupport,
     ExtendedScreenHandlerFactory {
+
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = PumpBlock.ACTIVE
+
+    override val soundConfig: MachineSoundConfig = MachineSoundConfig.operate(
+        soundId = "machine.pump.operate", volume = 0.5f, pitch = 1.0f, intervalTicks = 20
+    )
+
+    override fun getInventory(): net.minecraft.inventory.Inventory = this
 
     override var fluidPipeProviderEnabled: Boolean = false
     override var fluidPipeReceiverEnabled: Boolean = false
@@ -351,12 +360,6 @@ class PumpBlockEntity(
         }
     }
 
-    private fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
-        if (state.get(PumpBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(PumpBlock.ACTIVE, active))
-        }
-    }
-
     private fun extractFromDischargingSlot() {
         val space = (sync.getEffectiveCapacity() - sync.amount).coerceAtLeast(0L)
         if (space <= 0L) return
@@ -375,3 +378,4 @@ class PumpBlockEntity(
         return if (side == front) null else tank
     }
 }
+

@@ -40,6 +40,8 @@ class RtHeatGeneratorBlockEntity(
     state: BlockState
 ) : HeatGeneratorBlockEntityBase(type, pos, state), Inventory, ExtendedScreenHandlerFactory {
 
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = RtHeatGeneratorBlock.ACTIVE
+
     companion object {
         /** 燃料槽数量（6 个靶丸槽位） */
         const val FUEL_SLOT_COUNT = 6
@@ -136,10 +138,6 @@ class RtHeatGeneratorBlockEntity(
 
     override fun getActiveState(state: BlockState): Boolean =
         state.get(RtHeatGeneratorBlock.ACTIVE)
-
-    override fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
-        world.setBlockState(pos, state.with(RtHeatGeneratorBlock.ACTIVE, active))
-    }
 
     fun tick(world: World, pos: BlockPos, state: BlockState) {
         tickHeatMachine(world, pos, state)

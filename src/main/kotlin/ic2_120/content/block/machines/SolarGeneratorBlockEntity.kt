@@ -48,6 +48,8 @@ class SolarGeneratorBlockEntity(
 ) : MachineBlockEntity(type, pos, state), Inventory, IGenerator,
     net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
 
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = SolarGeneratorBlock.ACTIVE
+
     companion object {
         const val GENERATOR_TIER = 1
         const val BATTERY_SLOT = 0
@@ -163,9 +165,7 @@ class SolarGeneratorBlockEntity(
         batteryCharger.tick()
 
         val active = canGenerate
-        if (state.get(SolarGeneratorBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(SolarGeneratorBlock.ACTIVE, active))
-        }
+        setActiveState(world, pos, state, active)
         // 同步当前 tick 的实际输出/输入
         sync.syncCurrentTickFlow()
 

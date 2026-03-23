@@ -51,6 +51,8 @@ class SemifluidGeneratorBlockEntity(
 ) : MachineBlockEntity(type, pos, state), Inventory, IGenerator, IFluidPipeUpgradeSupport,
     net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
 
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = SemifluidGeneratorBlock.ACTIVE
+
     override var fluidPipeProviderEnabled: Boolean = false
     override var fluidPipeReceiverEnabled: Boolean = false
     override var fluidPipeProviderFilter: net.minecraft.fluid.Fluid? = null
@@ -332,9 +334,7 @@ class SemifluidGeneratorBlockEntity(
         val active = sync.amount < SemifluidGeneratorSync.ENERGY_CAPACITY &&
             fuelTankInternal.amount > 0L &&
             getFuelProfile(fuelTankInternal.variant.fluid) != null
-        if (state.get(SemifluidGeneratorBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(SemifluidGeneratorBlock.ACTIVE, active))
-        }
+        setActiveState(world, pos, state, active)
         sync.syncCurrentTickFlow()
     }
 

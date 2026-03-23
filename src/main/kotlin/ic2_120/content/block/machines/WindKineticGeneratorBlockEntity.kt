@@ -47,6 +47,8 @@ class WindKineticGeneratorBlockEntity(
 ) : MachineBlockEntity(type, pos, state), Inventory,
     net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
 
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = WindKineticGeneratorBlock.ACTIVE
+
     companion object {
         const val ROTOR_SLOT = 0
         private val ALLOWED_ROTORS = setOf("wooden_rotor", "iron_rotor", "steel_rotor", "carbon_rotor")

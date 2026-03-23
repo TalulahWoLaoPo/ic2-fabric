@@ -10,6 +10,7 @@ import ic2_120.content.upgrade.OverclockerUpgradeComponent
 import ic2_120.content.upgrade.ITransformerUpgradeSupport
 import ic2_120.content.upgrade.TransformerUpgradeComponent
 import ic2_120.content.pullEnergyFromNeighbors
+import ic2_120.content.sound.MachineSoundConfig
 import ic2_120.content.block.RecyclerBlock
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.screen.RecyclerScreenHandler
@@ -19,7 +20,7 @@ import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.block.BlockState
-import net.minecraft.block.entity.BlockEntity
+import net.minecraft.sound.SoundCategory
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -43,8 +44,16 @@ class RecyclerBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport, IEnergyStorageUpgradeSupport,
+) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport, IEnergyStorageUpgradeSupport,
     ITransformerUpgradeSupport, ExtendedScreenHandlerFactory {
+
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = RecyclerBlock.ACTIVE
+
+    override val soundConfig: MachineSoundConfig = MachineSoundConfig.operate(
+        soundId = "machine.recycler.operate", volume = 0.5f, pitch = 1.0f, intervalTicks = 20
+    )
+
+    override fun getInventory(): net.minecraft.inventory.Inventory = this
 
     override val tier: Int = RECYCLER_TIER
 
@@ -241,14 +250,9 @@ class RecyclerBlockEntity(
         markDirty()
     }
 
-    private fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
-        if (state.get(RecyclerBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(RecyclerBlock.ACTIVE, active))
-        }
-    }
-
     private fun getScrapItem(): Item? {
         val item = Registries.ITEM.get(SCRAP_ID)
         return if (item == net.minecraft.item.Items.AIR) null else item
     }
 }
+

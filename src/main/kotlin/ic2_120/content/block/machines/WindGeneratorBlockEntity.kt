@@ -3,6 +3,7 @@ package ic2_120.content.block.machines
 import ic2_120.content.block.IGenerator
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.block.WindGeneratorBlock
+import ic2_120.content.sound.MachineSoundConfig
 import ic2_120.content.energy.charge.BatteryChargerComponent
 import ic2_120.content.item.energy.canBeCharged
 import ic2_120.content.screen.WindGeneratorScreenHandler
@@ -63,6 +64,15 @@ class WindGeneratorBlockEntity(
     }
 
     override val tier: Int = GENERATOR_TIER
+
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = WindGeneratorBlock.ACTIVE
+
+    override val soundConfig: MachineSoundConfig = MachineSoundConfig.loop(
+        soundId = "generator.wind.loop",
+        volume = 0.5f,
+        pitch = 1.0f,
+        intervalTicks = 20
+    )
 
     private val inventory = DefaultedList.ofSize(1, ItemStack.EMPTY)
 
@@ -196,9 +206,7 @@ class WindGeneratorBlockEntity(
         batteryCharger.tick()
 
         val active = canGenerate
-        if (state.get(WindGeneratorBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(WindGeneratorBlock.ACTIVE, active))
-        }
+        setActiveState(world, pos, state, active)
         // 同步当前 tick 的实际输出/输入
         sync.syncCurrentTickFlow()
 
@@ -269,5 +277,6 @@ class WindGeneratorBlockEntity(
         return count
     }
 }
+
 
 

@@ -2,6 +2,7 @@ package ic2_120.content.block.machines
 
 import ic2_120.content.block.GeoGeneratorBlock
 import ic2_120.content.block.IGenerator
+import ic2_120.content.sound.MachineSoundConfig
 import ic2_120.content.energy.charge.BatteryChargerComponent
 import ic2_120.content.item.LavaCell
 import ic2_120.content.item.energy.IBatteryItem
@@ -96,6 +97,15 @@ class GeoGeneratorBlockEntity(
     }
 
     override val tier: Int = GENERATOR_TIER
+
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = GeoGeneratorBlock.ACTIVE
+
+    override val soundConfig: MachineSoundConfig = MachineSoundConfig.loop(
+        soundId = "generator.geothermal.loop",
+        volume = 0.5f,
+        pitch = 1.0f,
+        intervalTicks = 20
+    )
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
 
@@ -330,9 +340,7 @@ class GeoGeneratorBlockEntity(
         }
 
         val active = sync.amount < GeoGeneratorSync.ENERGY_CAPACITY && lavaTankInternal.amount > 0L && lavaTankInternal.variant.fluid == Fluids.LAVA
-        if (state.get(GeoGeneratorBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(GeoGeneratorBlock.ACTIVE, active))
-        }
+        setActiveState(world, pos, state, active)
         sync.syncCurrentTickFlow()
     }
 
@@ -344,3 +352,4 @@ class GeoGeneratorBlockEntity(
     private fun getFrontFacing(): Direction =
         world?.getBlockState(pos)?.get(Properties.HORIZONTAL_FACING) ?: Direction.NORTH
 }
+

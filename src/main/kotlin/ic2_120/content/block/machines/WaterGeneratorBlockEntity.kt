@@ -2,6 +2,7 @@ package ic2_120.content.block.machines
 
 import ic2_120.Ic2_120
 import ic2_120.content.block.WaterGeneratorBlock
+import ic2_120.content.sound.MachineSoundConfig
 import ic2_120.content.block.IGenerator
 import ic2_120.content.energy.charge.BatteryChargerComponent
 import ic2_120.content.item.isWaterFuel
@@ -104,6 +105,15 @@ class WaterGeneratorBlockEntity(
     }
 
     override val tier: Int = GENERATOR_TIER
+
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = WaterGeneratorBlock.ACTIVE
+
+    override val soundConfig: MachineSoundConfig = MachineSoundConfig.loop(
+        soundId = "generator.water.loop",
+        volume = 0.5f,
+        pitch = 1.0f,
+        intervalTicks = 20
+    )
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
 
@@ -356,9 +366,7 @@ class WaterGeneratorBlockEntity(
 
         val active = waterTankInternal.amount > 0L && waterTankInternal.variant.fluid == Fluids.WATER ||
             waterEnvAccum >= 100 || cachedWaterCount > 0
-        if (state.get(WaterGeneratorBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(WaterGeneratorBlock.ACTIVE, active))
-        }
+        setActiveState(world, pos, state, active)
         // 同步当前 tick 的实际输出/输入
         sync.syncCurrentTickFlow()
 
@@ -388,5 +396,6 @@ class WaterGeneratorBlockEntity(
         return count
     }
 }
+
 
 

@@ -105,5 +105,7 @@ abstract class HeatGeneratorBlockEntityBase(
 
     protected abstract fun getActiveState(state: BlockState): Boolean
 
-    protected abstract fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean)
+    protected open override fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
+        super.setActiveState(world, pos, state, active)
+    }
 }

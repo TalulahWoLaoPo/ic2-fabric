@@ -48,6 +48,8 @@ class RtGeneratorBlockEntity(
 ) : MachineBlockEntity(type, pos, state), Inventory, IGenerator,
     net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
 
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = RtGeneratorBlock.ACTIVE
+
     companion object {
         const val GENERATOR_TIER = 1
         /** 燃料槽数量（6 个靶丸槽位） */
@@ -187,9 +189,7 @@ class RtGeneratorBlockEntity(
         batteryCharger.tick()
 
         val active = pelletCount > 0 && sync.amount < RtGeneratorSync.ENERGY_CAPACITY
-        if (state.get(RtGeneratorBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(RtGeneratorBlock.ACTIVE, active))
-        }
+        setActiveState(world, pos, state, active)
         // 同步当前 tick 的实际输出/输入
         sync.syncCurrentTickFlow()
 

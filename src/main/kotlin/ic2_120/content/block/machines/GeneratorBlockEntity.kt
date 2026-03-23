@@ -2,6 +2,7 @@ package ic2_120.content.block.machines
 
 import ic2_120.content.sync.GeneratorSync
 import ic2_120.content.block.GeneratorBlock
+import ic2_120.content.sound.MachineSoundConfig
 import ic2_120.content.block.IGenerator
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.energy.charge.BatteryChargerComponent
@@ -13,7 +14,6 @@ import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.registry.FuelRegistry
 import net.minecraft.block.BlockState
-import net.minecraft.block.entity.BlockEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventories
@@ -48,6 +48,15 @@ class GeneratorBlockEntity(
     }
 
     override val tier: Int = GENERATOR_TIER
+
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = GeneratorBlock.ACTIVE
+
+    override val soundConfig: MachineSoundConfig = MachineSoundConfig.loop(
+        soundId = "generator.generator.loop",
+        volume = 0.5f,
+        pitch = 1.0f,
+        intervalTicks = 20
+    )
 
     private val inventory = DefaultedList.ofSize(2, ItemStack.EMPTY)  // 0: 燃料槽, 1: 电池槽
 
@@ -184,9 +193,7 @@ class GeneratorBlockEntity(
         batteryCharger.tick()
 
         val active = sync.burnTime > 0
-        if (state.get(GeneratorBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(GeneratorBlock.ACTIVE, active))
-        }
+        setActiveState(world, pos, state, active)
 
         // 同步当前 tick 的实际输出
         sync.syncCurrentTickFlow()
@@ -202,3 +209,4 @@ class GeneratorBlockEntity(
         return (furnaceTicks / GeneratorSync.BURN_TICKS_DIVISOR).coerceAtLeast(1)
     }
 }
+

@@ -14,7 +14,6 @@ import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.block.BlockState
-import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -53,8 +52,11 @@ class BlastFurnaceBlockEntity(
 ) : HeatConsumerBlockEntityBase(type, pos, state), Inventory, IFluidPipeUpgradeSupport,
     ExtendedScreenHandlerFactory {
 
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = BlastFurnaceBlock.ACTIVE
+
+    override fun getInventory(): Inventory = this
+
     override val tier: Int = 1
-    override fun getInventory(): Inventory? = this
 
     override var fluidPipeProviderEnabled: Boolean = false
     override var fluidPipeReceiverEnabled: Boolean = false
@@ -254,11 +256,5 @@ class BlastFurnaceBlockEntity(
         val steelOk = steel.isEmpty || (ItemStack.areItemsEqual(steel, steelOut) && steel.count + steelOut.count <= steel.maxCount)
         val slagOk = slag.isEmpty || (ItemStack.areItemsEqual(slag, slagOut) && slag.count + slagOut.count <= slag.maxCount)
         return steelOk && slagOk
-    }
-
-    private fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
-        if (state.get(BlastFurnaceBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(BlastFurnaceBlock.ACTIVE, active))
-        }
     }
 }

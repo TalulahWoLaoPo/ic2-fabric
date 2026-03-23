@@ -12,7 +12,6 @@ import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.block.BlockState
-import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -41,7 +40,11 @@ class ChunkLoaderBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, ITieredMachine, ExtendedScreenHandlerFactory {
+) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, ExtendedScreenHandlerFactory {
+
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = ChunkLoaderBlock.ACTIVE
+
+    override fun getInventory(): net.minecraft.inventory.Inventory = this
 
     override val tier: Int = 1
 
@@ -172,12 +175,6 @@ class ChunkLoaderBlockEntity(
         }
 
         sync.syncCurrentTickFlow()
-    }
-
-    private fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
-        if (state.get(ChunkLoaderBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(ChunkLoaderBlock.ACTIVE, active))
-        }
     }
 
     private fun extractFromDischargingSlot() {

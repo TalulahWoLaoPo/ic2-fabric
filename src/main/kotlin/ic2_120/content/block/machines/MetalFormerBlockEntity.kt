@@ -20,7 +20,6 @@ import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.block.BlockState
-import net.minecraft.block.entity.BlockEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventories
@@ -39,8 +38,12 @@ class MetalFormerBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport, IEnergyStorageUpgradeSupport,
+) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport, IEnergyStorageUpgradeSupport,
     ITransformerUpgradeSupport, ExtendedScreenHandlerFactory {
+
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = MetalFormerBlock.ACTIVE
+
+    override fun getInventory(): net.minecraft.inventory.Inventory = this
 
     override val tier: Int = METAL_FORMER_TIER
 
@@ -241,11 +244,5 @@ class MetalFormerBlockEntity(
         sync.insertEnergy(extracted)
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
         markDirty()
-    }
-
-    private fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
-        if (state.get(MetalFormerBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(MetalFormerBlock.ACTIVE, active))
-        }
     }
 }

@@ -126,7 +126,7 @@ data class MachineSoundConfig(
             loopSoundId: String? = null,
             loopIntervalTicks: Int = 20
         ) = MachineSoundConfig(
-            soundType = if (loopSoundId != null) SoundType.LOOP else SoundType.START_STOP,
+            soundType = SoundType.START_STOP,
             startSound = SoundEvent.of(Identifier("ic2", startSoundId)),
             stopSound = SoundEvent.of(Identifier("ic2", stopSoundId)),
             startVolume = volume,

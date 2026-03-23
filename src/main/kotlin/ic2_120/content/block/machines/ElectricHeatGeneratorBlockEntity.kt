@@ -46,6 +46,8 @@ class ElectricHeatGeneratorBlockEntity(
     state: BlockState
 ) : HeatGeneratorBlockEntityBase(type, pos, state), Inventory, IRedstoneControlSupport, ExtendedScreenHandlerFactory {
 
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = ElectricHeatGeneratorBlock.ACTIVE
+
     companion object {
         const val SLOT_COUNT = 10
         private const val HU_PER_COIL_PER_TICK = 10L
@@ -160,10 +162,6 @@ class ElectricHeatGeneratorBlockEntity(
 
     override fun getActiveState(state: BlockState): Boolean =
         state.get(ElectricHeatGeneratorBlock.ACTIVE)
-
-    override fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
-        world.setBlockState(pos, state.with(ElectricHeatGeneratorBlock.ACTIVE, active))
-    }
 
     fun tick(world: World, pos: BlockPos, state: BlockState) {
         tickHeatMachine(world, pos, state)

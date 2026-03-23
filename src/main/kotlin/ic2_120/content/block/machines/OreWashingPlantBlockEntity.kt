@@ -27,7 +27,6 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleVariantStorage
 import net.minecraft.block.BlockState
-import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -70,9 +69,13 @@ class OreWashingPlantBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport,
+) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport,
     IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, IFluidPipeUpgradeSupport,
     net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
+
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = OreWashingPlantBlock.ACTIVE
+
+    override fun getInventory(): net.minecraft.inventory.Inventory = this
 
     // 流体管道升级支持属性（IFluidPipeUpgradeSupport 接口实现）
     override var fluidPipeProviderEnabled: Boolean = false  // 是否作为 provider 向管道输出流体
@@ -342,12 +345,6 @@ class OreWashingPlantBlockEntity(
         }
 
         sync.syncCurrentTickFlow()
-    }
-
-    private fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
-        if (state.get(OreWashingPlantBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(OreWashingPlantBlock.ACTIVE, active))
-        }
     }
 
     private fun extractFromDischargingSlot() {

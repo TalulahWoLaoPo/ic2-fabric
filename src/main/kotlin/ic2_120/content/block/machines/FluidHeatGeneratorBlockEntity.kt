@@ -48,6 +48,8 @@ class FluidHeatGeneratorBlockEntity(
     state: BlockState
 ) : HeatGeneratorBlockEntityBase(type, pos, state), Inventory, ExtendedScreenHandlerFactory {
 
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = FluidHeatGeneratorBlock.ACTIVE
+
     enum class FuelType(
         val fluid: net.minecraft.fluid.Fluid,
         val heatPerTick: Long,
@@ -285,13 +287,8 @@ class FluidHeatGeneratorBlockEntity(
     override fun getActiveState(state: BlockState): Boolean =
         state.get(FluidHeatGeneratorBlock.ACTIVE)
 
-    override fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
-        world.setBlockState(pos, state.with(FluidHeatGeneratorBlock.ACTIVE, active))
-    }
-
     fun tick(world: World, pos: BlockPos, state: BlockState) {
         if (world.isClient) return
-
         processFuelContainers()
         tickHeatMachine(world, pos, state)
     }

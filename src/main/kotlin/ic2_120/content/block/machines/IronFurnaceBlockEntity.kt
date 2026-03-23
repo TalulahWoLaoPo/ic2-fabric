@@ -2,6 +2,7 @@ package ic2_120.content.block.machines
 
 import ic2_120.content.block.IronFurnaceBlock
 import ic2_120.content.screen.IronFurnaceScreenHandler
+import ic2_120.content.sound.MachineSoundConfig
 import ic2_120.content.sync.IronFurnaceSync
 import ic2_120.content.syncs.SyncedData
 import ic2_120.registry.annotation.ModBlockEntity
@@ -9,7 +10,6 @@ import ic2_120.registry.type
 import net.fabricmc.fabric.api.registry.FuelRegistry
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.block.BlockState
-import net.minecraft.block.entity.BlockEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventories
@@ -39,7 +39,20 @@ class IronFurnaceBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, ExtendedScreenHandlerFactory {
+) : MachineBlockEntity(type, pos, state), Inventory, ExtendedScreenHandlerFactory {
+
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = IronFurnaceBlock.ACTIVE
+
+    override val tier: Int = 1
+
+    override val soundConfig: MachineSoundConfig = MachineSoundConfig.operate(
+        soundId = "machine.furnace.iron.operate",
+        volume = 0.5f,
+        pitch = 1.0f,
+        intervalTicks = 20
+    )
+
+    override fun getInventory(): net.minecraft.inventory.Inventory = this
 
     companion object {
         const val SLOT_INPUT = 0
@@ -187,9 +200,7 @@ class IronFurnaceBlockEntity(
 
         // 更新方块状态（active）
         val active = sync.burnTime > 0
-        if (state.get(IronFurnaceBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(IronFurnaceBlock.ACTIVE, active))
-        }
+        setActiveState(world, pos, state, active)
     }
 
     /**
@@ -239,3 +250,4 @@ class IronFurnaceBlockEntity(
         }
     }
 }
+

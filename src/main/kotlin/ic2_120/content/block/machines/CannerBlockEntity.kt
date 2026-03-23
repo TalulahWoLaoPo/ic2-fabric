@@ -2,6 +2,7 @@ package ic2_120.content.block.machines
 
 import ic2_120.Ic2_120
 import ic2_120.content.block.CannerBlock
+import ic2_120.content.sound.MachineSoundConfig
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.energy.charge.BatteryDischargerComponent
 import ic2_120.content.item.ModFluidCell
@@ -33,7 +34,6 @@ import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedStorage
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleVariantStorage
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction
 import net.minecraft.block.BlockState
-import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -66,9 +66,15 @@ class CannerBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport,
+) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport,
     IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, IFluidPipeUpgradeSupport,
     ExtendedScreenHandlerFactory {
+
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = CannerBlock.ACTIVE
+
+    override val soundConfig: MachineSoundConfig = MachineSoundConfig.none()
+
+    override fun getInventory(): net.minecraft.inventory.Inventory = this
 
     override var fluidPipeProviderEnabled: Boolean = false
     override var fluidPipeReceiverEnabled: Boolean = false
@@ -470,12 +476,6 @@ class CannerBlockEntity(
         }
     }
 
-    private fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
-        if (state.get(CannerBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(CannerBlock.ACTIVE, active))
-        }
-    }
-
     private fun extractFromDischargingSlot() {
         val space = (sync.getEffectiveCapacity() - sync.amount).coerceAtLeast(0L)
         if (space <= 0L) return
@@ -487,3 +487,4 @@ class CannerBlockEntity(
         markDirty()
     }
 }
+

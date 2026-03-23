@@ -37,6 +37,8 @@ class StirlingGeneratorBlockEntity(
     state: BlockState
 ) : HeatConsumerBlockEntityBase(type, pos, state), Inventory, IGenerator, ExtendedScreenHandlerFactory {
 
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = StirlingGeneratorBlock.ACTIVE
+
     companion object {
         const val STIRLING_TIER = 2
         const val BATTERY_SLOT = 0
@@ -159,9 +161,7 @@ class StirlingGeneratorBlockEntity(
         val active = sync.amount < StirlingGeneratorSync.ENERGY_CAPACITY &&
             heatBuffered > 0L &&
             hasValidHeatSource()
-        if (state.get(StirlingGeneratorBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(StirlingGeneratorBlock.ACTIVE, active))
-        }
+        setActiveState(world, pos, state, active)
         sync.syncCurrentTickFlow()
     }
 

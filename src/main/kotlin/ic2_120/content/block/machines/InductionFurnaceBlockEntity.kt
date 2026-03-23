@@ -3,6 +3,7 @@ package ic2_120.content.block.machines
 import ic2_120.content.sync.InductionFurnaceSync
 import ic2_120.content.pullEnergyFromNeighbors
 import ic2_120.content.block.InductionFurnaceBlock
+import ic2_120.content.sound.MachineSoundConfig
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.screen.InductionFurnaceScreenHandler
 import ic2_120.content.syncs.SyncedData
@@ -12,7 +13,6 @@ import ic2_120.registry.type
 import ic2_120.registry.annotation.RegisterEnergy
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.block.BlockState
-import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -45,7 +45,20 @@ class InductionFurnaceBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, ITieredMachine, ExtendedScreenHandlerFactory {
+) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, ExtendedScreenHandlerFactory {
+
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = InductionFurnaceBlock.ACTIVE
+
+    override val soundConfig: MachineSoundConfig = MachineSoundConfig.startStop(
+        startSoundId = "machine.furnace.induction.start",
+        stopSoundId = "machine.furnace.induction.stop",
+        volume = 0.5f,
+        pitch = 1.0f,
+        loopSoundId = "machine.furnace.induction.loop",
+        loopIntervalTicks = 20
+    )
+
+    override fun getInventory(): net.minecraft.inventory.Inventory = this
 
     override val tier: Int = INDUCTION_TIER
 
@@ -288,12 +301,9 @@ class InductionFurnaceBlockEntity(
                 currentOutput.count + recipeOutput.count <= currentOutput.maxCount)
     }
 
-    private fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
-        if (state.get(InductionFurnaceBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(InductionFurnaceBlock.ACTIVE, active))
-        }
-    }
-
+    /**
+     * 从放电槽提取能量（如果需要）
+     */
     private fun extractFromDischargingSlot() {
         val space = (sync.capacity - sync.amount).coerceAtLeast(0L)
         if (space <= 0L) return
@@ -307,3 +317,4 @@ class InductionFurnaceBlockEntity(
         markDirty()
     }
 }
+

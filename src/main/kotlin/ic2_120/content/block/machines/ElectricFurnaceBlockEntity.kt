@@ -3,6 +3,7 @@ package ic2_120.content.block.machines
 import ic2_120.content.sync.ElectricFurnaceSync
 import ic2_120.content.pullEnergyFromNeighbors
 import ic2_120.content.block.ElectricFurnaceBlock
+import ic2_120.content.sound.MachineSoundConfig
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.screen.ElectricFurnaceScreenHandler
 import ic2_120.content.syncs.SyncedData
@@ -13,7 +14,6 @@ import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.block.BlockState
-import net.minecraft.block.entity.BlockEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventories
@@ -38,7 +38,20 @@ class ElectricFurnaceBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, ITieredMachine, ExtendedScreenHandlerFactory {
+) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, ExtendedScreenHandlerFactory {
+
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = ElectricFurnaceBlock.ACTIVE
+
+    override val soundConfig: MachineSoundConfig = MachineSoundConfig.startStop(
+        startSoundId = "machine.furnace.electric.start",
+        stopSoundId = "machine.furnace.electric.stop",
+        volume = 0.5f,
+        pitch = 1.0f,
+        loopSoundId = "machine.furnace.electric.loop",
+        loopIntervalTicks = 20
+    )
+
+    override fun getInventory(): net.minecraft.inventory.Inventory = this
 
     override val tier: Int = 1
 
@@ -180,13 +193,6 @@ class ElectricFurnaceBlockEntity(
         sync.syncCurrentTickFlow()
     }
 
-    /** 根据是否在工作更新方块的 active 状态，配合 blockstate 切换模型。 */
-    private fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
-        if (state.get(ElectricFurnaceBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(ElectricFurnaceBlock.ACTIVE, active))
-        }
-    }
-
     /**
      * 从放电槽提取能量（如果需要）
      */
@@ -203,6 +209,7 @@ class ElectricFurnaceBlockEntity(
         markDirty()
     }
 }
+
 
 
 

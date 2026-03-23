@@ -40,6 +40,8 @@ class CreativeGeneratorBlockEntity(
     state: BlockState
 ) : MachineBlockEntity(type, pos, state), Inventory, IGenerator, ITieredMachine, ExtendedScreenHandlerFactory {
 
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = CreativeGeneratorBlock.ACTIVE
+
     companion object {
         /** 能量等级 1（LV） */
         const val GENERATOR_TIER = 1
@@ -142,9 +144,7 @@ class CreativeGeneratorBlockEntity(
         batteryCharger.tick()
 
         // 创造发电机永远处于激活状态
-        if (!state.get(CreativeGeneratorBlock.ACTIVE)) {
-            world.setBlockState(pos, state.with(CreativeGeneratorBlock.ACTIVE, true))
-        }
+        setActiveState(world, pos, state, true)
 
         sync.syncCurrentTickFlow()
     }

@@ -64,6 +64,8 @@ class FluidHeatExchangerBlockEntity(
     state: BlockState
 ) : HeatGeneratorBlockEntityBase(type, pos, state), Inventory, IFluidPipeUpgradeSupport, ExtendedScreenHandlerFactory {
 
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = FluidHeatExchangerBlock.ACTIVE
+
     override var fluidPipeProviderEnabled: Boolean = false
     override var fluidPipeReceiverEnabled: Boolean = false
     override var fluidPipeProviderFilter: Fluid? = null
@@ -445,10 +447,6 @@ class FluidHeatExchangerBlockEntity(
 
     override fun getActiveState(state: BlockState): Boolean =
         state.get(FluidHeatExchangerBlock.ACTIVE)
-
-    override fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
-        world.setBlockState(pos, state.with(FluidHeatExchangerBlock.ACTIVE, active))
-    }
 
     private fun processFluidForHeat(targetHeat: Long): Long {
         if (targetHeat <= 0L) return 0L

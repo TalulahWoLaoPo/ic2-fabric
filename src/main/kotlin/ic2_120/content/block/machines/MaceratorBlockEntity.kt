@@ -11,6 +11,7 @@ import ic2_120.content.upgrade.ITransformerUpgradeSupport
 import ic2_120.content.upgrade.TransformerUpgradeComponent
 import ic2_120.content.pullEnergyFromNeighbors
 import ic2_120.content.block.MaceratorBlock
+import ic2_120.content.sound.MachineSoundConfig
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.screen.MaceratorScreenHandler
 import ic2_120.content.syncs.SyncedData
@@ -19,8 +20,8 @@ import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.type
 import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.type
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.block.BlockState
-import net.minecraft.block.entity.BlockEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventories
@@ -40,8 +41,19 @@ class MaceratorBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport, IEnergyStorageUpgradeSupport,
-    ITransformerUpgradeSupport, net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
+) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport, IEnergyStorageUpgradeSupport,
+    ITransformerUpgradeSupport, ExtendedScreenHandlerFactory {
+
+    override val activeProperty: net.minecraft.state.property.BooleanProperty = MaceratorBlock.ACTIVE
+
+    override val soundConfig: MachineSoundConfig = MachineSoundConfig.operate(
+        soundId = "machine.macerator.operate",
+        volume = 0.5f,
+        pitch = 1.0f,
+        intervalTicks = 20
+    )
+
+    override fun getInventory(): net.minecraft.inventory.Inventory = this
 
     override val tier: Int = MACERATOR_TIER
 
@@ -187,9 +199,7 @@ class MaceratorBlockEntity(
         }
 
         val active = sync.progress > 0
-        if (state.get(MaceratorBlock.ACTIVE) != active) {
-            world.setBlockState(pos, state.with(MaceratorBlock.ACTIVE, active))
-        }
+        setActiveState(world, pos, state, active)
         sync.syncCurrentTickFlow()
     }
     /**
@@ -208,6 +218,7 @@ class MaceratorBlockEntity(
         markDirty()
     }
 }
+
 
 
 
