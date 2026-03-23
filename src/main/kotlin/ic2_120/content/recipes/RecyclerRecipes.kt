@@ -1,5 +1,6 @@
 package ic2_120.content.recipes
 
+import ic2_120.config.Ic2Config
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
@@ -10,8 +11,8 @@ import net.minecraft.registry.Registries
  */
 object RecyclerRecipes {
 
-    /** 不允许回收的物品 ID 集合 */
-    private val BLOCKED_ITEMS: Set<Item> = setOf(
+    /** 内置黑名单（配置为空时兜底） */
+    private val FALLBACK_BLOCKED_ITEMS: Set<Item> = setOf(
         Registries.ITEM.get(net.minecraft.util.Identifier("minecraft", "stick"))
     )
 
@@ -21,6 +22,18 @@ object RecyclerRecipes {
      */
     fun canRecycle(input: ItemStack): Boolean {
         if (input.isEmpty) return false
-        return input.item !in BLOCKED_ITEMS
+        val item = input.item
+        val configured = Ic2Config.current.recycler.blacklist
+            .asSequence()
+            .map { it.trim().lowercase() }
+            .filter { it.isNotEmpty() }
+            .toSet()
+
+        if (configured.isEmpty()) {
+            return item !in FALLBACK_BLOCKED_ITEMS
+        }
+
+        val itemId = Registries.ITEM.getId(item).toString().lowercase()
+        return itemId !in configured
     }
 }

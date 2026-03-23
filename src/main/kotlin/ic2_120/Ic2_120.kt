@@ -39,6 +39,8 @@ import ic2_120.content.block.pipes.PipeBlockEntity
 import ic2_120.content.block.pipes.PipeNetworkManager
 import ic2_120.content.player.FlightManager
 import ic2_120.content.entity.ModEntities
+import ic2_120.config.Ic2Config
+import ic2_120.content.command.ConfigCommand
 import ic2_120.registry.ClassScanner
 import ic2_120.registry.type
 import ic2_120.registry.CreativeTab
@@ -75,6 +77,8 @@ object Ic2_120 : ModInitializer {
     private val logger = LoggerFactory.getLogger(MOD_ID)
 
     override fun onInitialize() {
+        Ic2Config.loadOrThrow()
+
         ModStatusEffects.register()
 
         // 流体需在 ClassScanner 之前注册（流体、方块、桶）
@@ -175,17 +179,19 @@ object Ic2_120 : ModInitializer {
             (Registries.ITEM as SimpleRegistry<Item>).set(rawId, itemKey, factory(block), Lifecycle.stable())
         }
         val ic2MachinesKey = RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier(MOD_ID, CreativeTab.IC2_MACHINES.id))
-        ItemGroupEvents.modifyEntriesEvent(ic2MachinesKey).register { entries ->
-            for ((id, _) in storageConfigs) {
-                val fullStack = ItemStack(Registries.ITEM.get(Identifier(MOD_ID, id)))
-                fullStack.orCreateNbt.putBoolean(EnergyStorageBlock.NBT_FULL, true)
-                entries.add(fullStack)
+        if (Ic2Config.current.creative.addFullChargeStorageItems) {
+            ItemGroupEvents.modifyEntriesEvent(ic2MachinesKey).register { entries ->
+                for ((id, _) in storageConfigs) {
+                    val fullStack = ItemStack(Registries.ITEM.get(Identifier(MOD_ID, id)))
+                    fullStack.orCreateNbt.putBoolean(EnergyStorageBlock.NBT_FULL, true)
+                    entries.add(fullStack)
+                }
             }
         }
 
         // 注册满燃料喷气背包到创造模式
         val jetpackItem = Registries.ITEM.get(Identifier(MOD_ID, "jetpack"))
-        if (jetpackItem != null) {
+        if (jetpackItem != null && Ic2Config.current.creative.addFullFuelJetpack) {
             val ic2MaterialsKey = RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier(MOD_ID, CreativeTab.IC2_MATERIALS.id))
             ItemGroupEvents.modifyEntriesEvent(ic2MaterialsKey).register { entries ->
                 // 添加满燃料的喷气背包
@@ -198,6 +204,8 @@ object Ic2_120 : ModInitializer {
 
         // 注册网络管理器
         NetworkManager.register()
+        // 注册配置重载命令（/ic2config reload）
+        ConfigCommand.register()
 
         logger.info("IC2 1.20 模组已加载（类注解驱动自动注册）")
     }
