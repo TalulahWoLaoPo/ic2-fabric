@@ -10,16 +10,22 @@ import net.minecraft.block.BlockRenderType
 import net.minecraft.block.Blocks
 import net.minecraft.block.BlockWithEntity
 import net.minecraft.block.entity.BlockEntity
+import net.minecraft.client.item.TooltipContext
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.loot.context.LootContext
 import net.minecraft.loot.context.LootContextParameters
 import net.minecraft.server.world.ServerWorld
+import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
+import net.minecraft.util.Formatting
 import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.minecraft.world.BlockView
 
 /**
  * 储物箱基类
@@ -36,6 +42,52 @@ abstract class StorageBoxBlock(settings: AbstractBlock.Settings) : BlockWithEnti
      * 确保方块使用模型渲染（而不是实体渲染）
      */
     override fun getRenderType(state: BlockState): BlockRenderType = BlockRenderType.MODEL
+
+    /**
+     * 添加物品提示信息
+     */
+    @Environment(EnvType.CLIENT)
+    override fun appendTooltip(
+        stack: ItemStack,
+        world: BlockView?,
+        tooltip: MutableList<Text>,
+        context: TooltipContext
+    ) {
+        super.appendTooltip(stack, world, tooltip, context)
+
+        val blockEntityTag = stack.getSubNbt("BlockEntityTag")
+        if (blockEntityTag == null || !blockEntityTag.contains("Inventory")) {
+            tooltip.add(Text.literal("物品数量: 0").formatted(Formatting.GRAY))
+            return
+        }
+
+        val inventoryNbt = blockEntityTag.getCompound("Inventory")
+        if (inventoryNbt.isEmpty) {
+            tooltip.add(Text.literal("物品数量: 0").formatted(Formatting.GRAY))
+            return
+        }
+
+        // 解析物品栏数据
+        val items = inventoryNbt.getList("Items", 10)
+        var totalItems = 0
+        var filledSlots = 0
+
+        for (i in 0 until items.size) {
+            val itemNbt = items.getCompound(i)
+            val count = itemNbt.getInt("Count")
+            if (count > 0) {
+                filledSlots++
+                totalItems += count
+            }
+        }
+
+        // 添加物品数量提示
+        if (filledSlots == 0) {
+            tooltip.add(Text.literal("物品数量: 0").formatted(Formatting.GRAY))
+        } else {
+            tooltip.add(Text.literal("物品数量: $totalItems ($filledSlots 格)").formatted(Formatting.GRAY))
+        }
+    }
 
     /**
      * 玩家右键点击打开 GUI
