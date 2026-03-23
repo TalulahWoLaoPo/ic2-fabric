@@ -140,6 +140,7 @@
   "block.ic2_120.mfsu_full": "MFSU (Full)",
   "block.ic2_120.tesla_coil": "Tesla Coil",
   "block.ic2_120.chunk_loader": "Chunk Loader",
+  "block.ic2_120.magnetizer": "Magnetizer",
   "block.ic2_120.teleporter": "Teleporter",
   "block.ic2_120.luminator_flat": "Luminator",
   "block.ic2_120.lv_transformer": "LV Transformer",
@@ -522,3 +523,5 @@
   "item.ic2_120.miner": "Miner",
   "item.ic2_120.advanced_miner": "Advanced Miner"
 }
+
+

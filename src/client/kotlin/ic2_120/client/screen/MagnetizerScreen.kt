@@ -1,0 +1,95 @@
+package ic2_120.client.screen
+
+import ic2_120.client.EnergyFormatUtils
+import ic2_120.client.compose.*
+import ic2_120.client.ui.EnergyBar
+import ic2_120.client.ui.GuiBackground
+import ic2_120.content.block.MagnetizerBlock
+import ic2_120.content.screen.MagnetizerScreenHandler
+import ic2_120.registry.annotation.ModScreen
+import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.screen.ingame.HandledScreen
+import net.minecraft.entity.player.PlayerInventory
+import net.minecraft.text.Text as McText
+
+@ModScreen(block = MagnetizerBlock::class)
+class MagnetizerScreen(
+    handler: MagnetizerScreenHandler,
+    playerInventory: PlayerInventory,
+    title: McText
+) : HandledScreen<MagnetizerScreenHandler>(handler, playerInventory, title) {
+
+    private val ui = ComposeUI()
+
+    init {
+        backgroundWidth = GUI_SIZE.width
+        backgroundHeight = GUI_SIZE.height
+    }
+
+    override fun drawBackground(context: DrawContext, delta: Float, mouseX: Int, mouseY: Int) {
+        GuiBackground.drawVanillaLikePanel(context, x, y, backgroundWidth, backgroundHeight)
+        GuiBackground.drawPlayerInventorySlotBorders(
+            context,
+            x,
+            y,
+            MagnetizerScreenHandler.PLAYER_INV_Y,
+            MagnetizerScreenHandler.HOTBAR_Y,
+            MagnetizerScreenHandler.SLOT_SIZE
+        )
+    }
+
+    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        val left = x
+        val top = y
+
+        val energy = handler.sync.energy.toLong().coerceAtLeast(0)
+        val cap = handler.sync.energyCapacity.toLong().coerceAtLeast(1)
+        val energyFraction = if (cap > 0) (energy.toFloat() / cap).coerceIn(0f, 1f) else 0f
+
+        val inputRate = handler.sync.getSyncedInsertedAmount()
+        val consumeRate = handler.sync.getSyncedConsumedAmount()
+
+        val poweredText = if (handler.sync.redstonePowered != 0) "红石: 已触发" else "红石: 未触发"
+        val fenceText = "栅栏: ${handler.sync.fenceCount}"
+        val heightText = "高度: ${handler.sync.effectiveHeight}"
+
+        val content: ic2_120.client.compose.UiScope.() -> Unit = {
+            Column(
+                x = left + 8,
+                y = top + 8,
+                spacing = 6,
+                modifier = Modifier().width(GUI_SIZE.contentWidth)
+            ) {
+                Row(spacing = 8) {
+                    Text(title.string, color = 0xFFFFFF)
+                    Text("$energy / $cap EU", color = 0xFFFFFF, shadow = false)
+                }
+                EnergyBar(energyFraction, barHeight = 12)
+                Text(poweredText, color = 0xFFFFFF, shadow = false)
+                Text(fenceText, color = 0xFFFFFF, shadow = false)
+                Text(heightText, color = 0xFFFFFF, shadow = false)
+            }
+        }
+
+        super.render(context, mouseX, mouseY, delta)
+        ui.render(context, textRenderer, mouseX, mouseY, content = content)
+
+        val inputText = "输入 ${EnergyFormatUtils.formatEu(inputRate)} EU/t"
+        val consumeText = "耗能 ${EnergyFormatUtils.formatEu(consumeRate)} EU/t"
+        val sideTextWidth = maxOf(textRenderer.getWidth(inputText), textRenderer.getWidth(consumeText))
+        val sideTextX = left - sideTextWidth - 4
+        context.drawText(textRenderer, inputText, sideTextX, top + 8, 0xAAAAAA, false)
+        context.drawText(textRenderer, consumeText, sideTextX, top + 20, 0xAAAAAA, false)
+
+        drawMouseoverTooltip(context, mouseX, mouseY)
+    }
+
+    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean =
+        ui.mouseClicked(mouseX, mouseY, button) || super.mouseClicked(mouseX, mouseY, button)
+
+    companion object {
+        private val GUI_SIZE = GuiSize.STANDARD_UPGRADE
+    }
+}
+
+
