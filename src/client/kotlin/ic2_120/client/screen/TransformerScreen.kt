@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.TransformerBlock
@@ -79,8 +80,8 @@ class TransformerScreen(
             TransformerSync.Mode.STEP_DOWN -> 0xFFAAAA
         }
 
-        val inputText = "输入 ${formatEu(filteredInputRate)} EU/t"
-        val outputText = "输出 ${formatEu(filteredOutputRate)} EU/t"
+        val inputText = "输入 ${EnergyFormatUtils.formatEu(filteredInputRate)} EU/t"
+        val outputText = "输出 ${EnergyFormatUtils.formatEu(filteredOutputRate)} EU/t"
         val sideTextWidth = maxOf(textRenderer.getWidth(inputText), textRenderer.getWidth(outputText))
         val sideTextX = left - sideTextWidth - 4
 
@@ -151,14 +152,6 @@ class TransformerScreen(
         context.drawText(textRenderer, inputText, sideTextX, top + 6, 0xFFFFAA, false)
         context.drawText(textRenderer, outputText, sideTextX, top + 18, 0xFFFFAA, false)
         drawMouseoverTooltip(context, mouseX, mouseY)
-    }
-
-    private fun formatEu(value: Long): String {
-        return when {
-            value >= 1_000_000 -> String.format("%.1fM", value / 1_000_000.0)
-            value >= 1_000 -> String.format("%.1fK", value / 1_000.0)
-            else -> value.toString()
-        }
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {

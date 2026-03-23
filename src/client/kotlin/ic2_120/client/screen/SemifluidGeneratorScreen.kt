@@ -2,6 +2,7 @@ package ic2_120.client.screen
 
 import ic2_120.client.FluidUtils
 import ic2_120.client.compose.*
+import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.EnergyBarOrientation
 import ic2_120.client.ui.GuiBackground
@@ -64,8 +65,8 @@ class SemifluidGeneratorScreen(
         val fuelColor = if (sampledColor != -1) bgrToArgb(sampledColor) else handler.sync.fuelColorArgb
         handler.sync.fuelColorArgb = fuelColor
 
-        val inputText = "发电 ${formatEu(inputRate)} EU/t"
-        val outputText = "输出 ${formatEu(outputRate)} EU/t"
+        val inputText = "发电 ${EnergyFormatUtils.formatEu(inputRate)} EU/t"
+        val outputText = "输出 ${EnergyFormatUtils.formatEu(outputRate)} EU/t"
         val sideTextWidth = maxOf(textRenderer.getWidth(inputText), textRenderer.getWidth(outputText))
         val sideTextX = left - sideTextWidth - 4
 
@@ -164,14 +165,6 @@ class SemifluidGeneratorScreen(
     }
 
     private fun slotAnchorId(slotIndex: Int): String = "slot.$slotIndex"
-
-    private fun formatEu(value: Long): String {
-        return when {
-            value >= 1_000_000 -> String.format("%.1fM", value / 1_000_000.0)
-            value >= 1_000 -> String.format("%.1fK", value / 1_000.0)
-            else -> value.toString()
-        }
-    }
 
     private fun bgrToArgb(color: Int): Int {
         val a = (color ushr 24) and 0xFF

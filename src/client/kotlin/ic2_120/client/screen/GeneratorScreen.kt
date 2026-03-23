@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.EnergyBarOrientation
 import ic2_120.client.ui.GuiBackground
@@ -54,9 +55,9 @@ class GeneratorScreen(
         val totalBurn = handler.sync.totalBurnTime.coerceAtLeast(1)
         val burnTime = handler.sync.burnTime.coerceIn(0, totalBurn)
         val burnFrac = (burnTime.toFloat() / totalBurn).coerceIn(0f, 1f)
-        val energyText = "${formatEu(energy)} / ${formatEu(cap)} EU"
-        val statusText1 = "发电 ${formatEu(inputRate)} EU/t"
-        val statusText2 = "输出 ${formatEu(outputRate)} EU/t"
+        val energyText = "${EnergyFormatUtils.formatEu(energy)} / ${EnergyFormatUtils.formatEu(cap)} EU"
+        val statusText1 = "发电 ${EnergyFormatUtils.formatEu(inputRate)} EU/t"
+        val statusText2 = "输出 ${EnergyFormatUtils.formatEu(outputRate)} EU/t"
         val sideTextWidth = maxOf(
             textRenderer.getWidth(energyText),
             textRenderer.getWidth(statusText1),
@@ -119,14 +120,6 @@ class GeneratorScreen(
         context.drawText(textRenderer, statusText2, sideTextX, top + 20, 0xAAAAAA, false)
 
         drawMouseoverTooltip(context, mouseX, mouseY)
-    }
-
-    private fun formatEu(value: Long): String {
-        return when {
-            value >= 1_000_000 -> String.format("%.1fM", value / 1_000_000.0)
-            value >= 1_000 -> String.format("%.1fK", value / 1_000.0)
-            else -> value.toString()
-        }
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean =

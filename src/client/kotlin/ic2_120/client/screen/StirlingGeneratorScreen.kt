@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.StirlingGeneratorBlock
@@ -48,9 +49,9 @@ class StirlingGeneratorScreen(
         val heatConsumeRate = (generationRate * StirlingGeneratorBlockEntity.HU_PER_EU).coerceAtLeast(0L)
         val outputRate = handler.sync.getSyncedExtractedAmount()
 
-        val generationText = "发电 ${formatEu(generationRate)} EU/t"
+        val generationText = "发电 ${EnergyFormatUtils.formatEu(generationRate)} EU/t"
         val heatConsumeText = "耗热 ${formatHu(heatConsumeRate)} HU/t"
-        val outputText = "输出 ${formatEu(outputRate)} EU/t"
+        val outputText = "输出 ${EnergyFormatUtils.formatEu(outputRate)} EU/t"
         val sideTextWidth = maxOf(
             textRenderer.getWidth(generationText),
             textRenderer.getWidth(heatConsumeText),
@@ -109,14 +110,6 @@ class StirlingGeneratorScreen(
     }
 
     private fun slotAnchorId(slotIndex: Int): String = "slot.$slotIndex"
-
-    private fun formatEu(value: Long): String {
-        return when {
-            value >= 1_000_000 -> String.format("%.1fM", value / 1_000_000.0)
-            value >= 1_000 -> String.format("%.1fK", value / 1_000.0)
-            else -> value.toString()
-        }
-    }
 
     private fun formatHu(value: Long): String {
         return when {

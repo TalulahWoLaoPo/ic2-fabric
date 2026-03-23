@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.FluidBar
 import ic2_120.client.ui.GuiBackground
@@ -59,8 +60,8 @@ class FluidBottlerScreen(
         val fluidText = "$fluidAmount/$fluidCapacity mB"
         val inputRate = handler.sync.getSyncedInsertedAmount()
         val consumeRate = handler.sync.getSyncedConsumedAmount()
-        val inputText = "输入 ${formatEu(inputRate)} EU/t"
-        val consumeText = "耗能 ${formatEu(consumeRate)} EU/t"
+        val inputText = "输入 ${EnergyFormatUtils.formatEu(inputRate)} EU/t"
+        val consumeText = "耗能 ${EnergyFormatUtils.formatEu(consumeRate)} EU/t"
         val sideTextWidth = maxOf(
             textRenderer.getWidth(energyText),
             textRenderer.getWidth(fluidText),
@@ -156,13 +157,5 @@ class FluidBottlerScreen(
         private val GUI_SIZE = GuiSize.STANDARD_UPGRADE
         private val PANEL_WIDTH = GUI_SIZE.width
         private val PANEL_HEIGHT = GUI_SIZE.height
-    }
-
-    private fun formatEu(value: Long): String {
-        return when {
-            value >= 1_000_000 -> String.format("%.1fM", value / 1_000_000.0)
-            value >= 1_000 -> String.format("%.1fK", value / 1_000.0)
-            else -> value.toString()
-        }
     }
 }

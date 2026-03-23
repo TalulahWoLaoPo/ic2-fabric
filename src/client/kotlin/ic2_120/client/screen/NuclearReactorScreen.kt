@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.nuclear.NuclearReactorBlock
 import ic2_120.content.network.SlotHeatEnergyInfo
@@ -240,8 +241,8 @@ class NuclearReactorScreen(
         // 在 GUI 左侧外部绘制状态信息（缩短文本避免溢出）
         val lines = mutableListOf<String>()
         if (!isThermalLayout()) {
-            lines.add("能量 ${formatEu(energy)}/${formatEu(cap)}")
-            lines.add("发电 ${formatEu(inputRate)} 输出 ${formatEu(outputRate)} EU/t")
+            lines.add("能量 ${EnergyFormatUtils.formatEu(energy)}/${EnergyFormatUtils.formatEu(cap)}")
+            lines.add("发电 ${EnergyFormatUtils.formatEu(inputRate)} 输出 ${EnergyFormatUtils.formatEu(outputRate)} EU/t")
         }
         lines.add("堆温 $temp")
         if (isThermalLayout()) {
@@ -323,12 +324,6 @@ class NuclearReactorScreen(
         val slotX = x + slot.x
         val slotY = y + slot.y
         return mouseX >= slotX && mouseX < slotX + 18 && mouseY >= slotY && mouseY < slotY + 18
-    }
-
-    private fun formatEu(value: Long): String = when {
-        value >= 1_000_000 -> String.format("%.1fM", value / 1_000_000.0)
-        value >= 1_000 -> String.format("%.1fK", value / 1_000.0)
-        else -> value.toString()
     }
 
     private fun formatMb(value: Int): String = when {

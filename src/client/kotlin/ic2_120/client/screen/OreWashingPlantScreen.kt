@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
 import ic2_120.client.ui.FluidBar
@@ -60,8 +61,8 @@ class OreWashingPlantScreen(
         val waterText = "$waterAmount/$waterCapacity mB"
         val inputRate = handler.sync.getSyncedInsertedAmount()
         val consumeRate = handler.sync.getSyncedConsumedAmount()
-        val inputText = "输入 ${formatEu(inputRate)} EU/t"
-        val consumeText = "耗能 ${formatEu(consumeRate)} EU/t"
+        val inputText = "输入 ${EnergyFormatUtils.formatEu(inputRate)} EU/t"
+        val consumeText = "耗能 ${EnergyFormatUtils.formatEu(consumeRate)} EU/t"
         val sideTextWidth = maxOf(
             textRenderer.getWidth(energyText),
             textRenderer.getWidth(waterText),
@@ -148,13 +149,5 @@ class OreWashingPlantScreen(
     companion object {
         private val PANEL_WIDTH = GuiSize.STANDARD_UPGRADE.width
         private val PANEL_HEIGHT = GuiSize.STANDARD_UPGRADE.height
-    }
-
-    private fun formatEu(value: Long): String {
-        return when {
-            value >= 1_000_000 -> String.format("%.1fM", value / 1_000_000.0)
-            value >= 1_000 -> String.format("%.1fK", value / 1_000.0)
-            else -> value.toString()
-        }
     }
 }

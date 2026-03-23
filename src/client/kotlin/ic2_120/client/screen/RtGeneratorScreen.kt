@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.RtGeneratorBlock
@@ -48,8 +49,8 @@ class RtGeneratorScreen(
         val inputRate = handler.sync.getSyncedInsertedAmount()
         val outputRate = handler.sync.getSyncedExtractedAmount()
 
-        val inputText = "发电 ${formatEu(inputRate)} EU/t"
-        val outputText = "输出 ${formatEu(outputRate)} EU/t"
+        val inputText = "发电 ${EnergyFormatUtils.formatEu(inputRate)} EU/t"
+        val outputText = "输出 ${EnergyFormatUtils.formatEu(outputRate)} EU/t"
         val sideTextWidth = maxOf(textRenderer.getWidth(inputText), textRenderer.getWidth(outputText))
         val sideTextX = left - sideTextWidth - 4
 
@@ -117,14 +118,6 @@ class RtGeneratorScreen(
     }
 
     private fun slotAnchorId(slotIndex: Int): String = "slot.$slotIndex"
-
-    private fun formatEu(value: Long): String {
-        return when {
-            value >= 1_000_000 -> String.format("%.1fM", value / 1_000_000.0)
-            value >= 1_000 -> String.format("%.1fK", value / 1_000.0)
-            else -> value.toString()
-        }
-    }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean =
         ui.mouseClicked(mouseX, mouseY, button) || super.mouseClicked(mouseX, mouseY, button)

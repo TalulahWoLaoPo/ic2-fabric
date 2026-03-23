@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.machines.BaseMinerBlockEntity
@@ -42,8 +43,8 @@ class MinerScreen(
         val runningText = if (handler.sync.running == 0) "已停止" else "运行中"
         val inputRate = handler.sync.getSyncedInsertedAmount()
         val consumeRate = handler.sync.getSyncedConsumedAmount()
-        val inputText = "输入 ${formatEu(inputRate)} EU/t"
-        val consumeText = "耗能 ${formatEu(consumeRate)} EU/t"
+        val inputText = "输入 ${EnergyFormatUtils.formatEu(inputRate)} EU/t"
+        val consumeText = "耗能 ${EnergyFormatUtils.formatEu(consumeRate)} EU/t"
         val sideTextWidth = maxOf(textRenderer.getWidth(inputText), textRenderer.getWidth(consumeText))
         val sideTextX = left - sideTextWidth - 4
 
@@ -162,14 +163,6 @@ class MinerScreen(
     }
 
     private fun slotAnchorId(slotIndex: Int): String = "slot.$slotIndex"
-
-    private fun formatEu(value: Long): String {
-        return when {
-            value >= 1_000_000 -> String.format("%.1fM", value / 1_000_000.0)
-            value >= 1_000 -> String.format("%.1fK", value / 1_000.0)
-            else -> value.toString()
-        }
-    }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean =
         ui.mouseClicked(mouseX, mouseY, button) || super.mouseClicked(mouseX, mouseY, button)
