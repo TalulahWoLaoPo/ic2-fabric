@@ -1,6 +1,6 @@
 package ic2_120.content.block.machines
 
-import ic2_120.content.recipes.MaceratorRecipes
+import ic2_120.content.recipes.macerator.ModMachineRecipes
 import ic2_120.content.sync.MaceratorSync
 import ic2_120.content.energy.charge.BatteryDischargerComponent
 import ic2_120.content.upgrade.EnergyStorageUpgradeComponent
@@ -164,11 +164,14 @@ class MaceratorBlockEntity(
             return
         }
 
-        val result = MaceratorRecipes.getOutput(input) ?: run {
+        val recipeInventory = SimpleInventory(input.copyWithCount(1))
+        val match = world.recipeManager.getFirstMatch(ModMachineRecipes.MACERATOR_TYPE, recipeInventory, world)
+        if (match.isEmpty) {
             if (sync.progress != 0) sync.progress = 0
             sync.syncCurrentTickFlow()
             return
         }
+        val result = match.get().output.copy()
         val outputSlot = getStack(SLOT_OUTPUT)
         val maxStack = result.maxCount
         val canAccept = outputSlot.isEmpty() ||

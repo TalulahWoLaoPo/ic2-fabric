@@ -1,5 +1,7 @@
 package ic2_120.integration.jei
 
+import ic2_120.content.recipes.macerator.ModMachineRecipes
+import ic2_120.content.recipes.macerator.MaceratorRecipeDatagen
 import ic2_120.content.item.armor.JetpackItem
 import ic2_120.content.item.energy.IBatteryItem
 import ic2_120.content.item.energy.IElectricTool
@@ -7,9 +9,13 @@ import mezz.jei.api.IModPlugin
 import mezz.jei.api.JeiPlugin
 import mezz.jei.api.ingredients.subtypes.IIngredientSubtypeInterpreter
 import mezz.jei.api.registration.IExtraIngredientRegistration
+import mezz.jei.api.registration.IRecipeCatalystRegistration
+import mezz.jei.api.registration.IRecipeCategoryRegistration
+import mezz.jei.api.registration.IRecipeRegistration
 import mezz.jei.api.registration.ISubtypeRegistration
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
+import net.minecraft.recipe.Ingredient
 import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
 
@@ -86,6 +92,28 @@ class Ic2JeiPlugin : IModPlugin {
         if (extraStacks.isNotEmpty()) {
             registration.addExtraItemStacks(extraStacks)
         }
+    }
+
+    override fun registerCategories(registration: IRecipeCategoryRegistration) {
+        registration.addRecipeCategories(MaceratorRecipeCategory(registration.jeiHelpers.guiHelper))
+    }
+
+    override fun registerRecipes(registration: IRecipeRegistration) {
+        val recipes = MaceratorRecipeDatagen.allEntries()
+            .map { entry ->
+                MaceratorJeiRecipe(
+                    Ingredient.ofItems(entry.input),
+                    ItemStack(entry.output, entry.count)
+                )
+            }
+        registration.addRecipes(Ic2JeiRecipeTypes.MACERATOR, recipes)
+    }
+
+    override fun registerRecipeCatalysts(registration: IRecipeCatalystRegistration) {
+        registration.addRecipeCatalyst(
+            ItemStack(Registries.ITEM.get(Identifier("ic2_120", "macerator"))),
+            Ic2JeiRecipeTypes.MACERATOR
+        )
     }
 
     /**

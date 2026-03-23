@@ -1,10 +1,12 @@
 package ic2_120.content.block
 
 import ic2_120.content.block.machines.MaceratorBlockEntity
+import ic2_120.content.recipes.macerator.MaceratorRecipeDatagen
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.type
 import ic2_120.registry.annotation.ModBlock
 import ic2_120.registry.type
+import net.minecraft.data.server.recipe.RecipeJsonProvider
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityTicker
@@ -18,6 +20,7 @@ import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
+import java.util.function.Consumer
 
 /**
  * 打粉机方块。消耗电力将矿石等粉碎为粉末/粉碎矿。
@@ -68,5 +71,9 @@ class MaceratorBlock : MachineBlock() {
 
     companion object {
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")
+
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            MaceratorRecipeDatagen.generateRecipes(exporter)
+        }
     }
 }
