@@ -1,9 +1,8 @@
 package ic2_120.config
 
-import com.charleskorn.kaml.Yaml
-import com.charleskorn.kaml.YamlConfiguration
 import ic2_120.Ic2_120
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
@@ -36,14 +35,13 @@ data class RecyclerConfig(
 
 object Ic2Config {
     private val logger = LoggerFactory.getLogger("${Ic2_120.MOD_ID}/config")
-    private val yaml = Yaml(
-        configuration = YamlConfiguration(
-            encodeDefaults = true,
-            strictMode = false
-        )
-    )
+    private val json = Json {
+        prettyPrint = true
+        encodeDefaults = true
+        ignoreUnknownKeys = true
+    }
     private val configPath: Path by lazy {
-        FabricLoader.getInstance().configDir.resolve("${Ic2_120.MOD_ID}.yml")
+        FabricLoader.getInstance().configDir.resolve("${Ic2_120.MOD_ID}.json")
     }
 
     @Volatile
@@ -68,7 +66,7 @@ object Ic2Config {
 
         return try {
             val raw = Files.readString(configPath, StandardCharsets.UTF_8)
-            yaml.decodeFromString(Ic2MainConfig.serializer(), raw)
+            json.decodeFromString(Ic2MainConfig.serializer(), raw)
         } catch (e: Exception) {
             throw IllegalStateException("Failed to parse config: $configPath", e)
         }
@@ -80,14 +78,7 @@ object Ic2Config {
     }
 
     private fun defaultConfigText(): String {
-        val encoded = yaml.encodeToString(Ic2MainConfig.serializer(), Ic2MainConfig())
-        return """
-# ${Ic2_120.MOD_ID} 配置文件 / Configuration
-# 文件名 / File: ${Ic2_120.MOD_ID}.yml
-# 修改后可使用 /ic2config reload（仅 OP）立即重载 / Edit and run /ic2config reload (OP only) to apply changes immediately
-
-$encoded
-""".trimStart()
+        return json.encodeToString(Ic2MainConfig.serializer(), Ic2MainConfig())
     }
 
     private fun logLoaded(action: String) {

@@ -70,7 +70,7 @@ dependencies {
 
 	// YAML config via kotlinx.serialization
 	implementation "org.jetbrains.kotlinx:kotlinx-serialization-core:${project.kotlinx_serialization_version}"
-	implementation "com.charleskorn.kaml:kaml:${project.kaml_version}"
+	implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:${project.kotlinx_serialization_version}"
 }
 
 processResources {
