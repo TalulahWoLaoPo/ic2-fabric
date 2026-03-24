@@ -30,8 +30,11 @@ class BlockCutterRecipeCategory(guiHelper: IGuiHelper) : IRecipeCategory<BlockCu
         recipe: BlockCutterJeiRecipe,
         focuses: IFocusGroup
     ) {
+        // 输入槽 - ItemStack 带数量，JEI 会正确显示堆叠数量
         builder.addSlot(RecipeIngredientRole.INPUT, 20, 16)
-            .addIngredients(recipe.input)
+            .addItemStack(recipe.input)
+
+        // 输出槽
         builder.addSlot(RecipeIngredientRole.OUTPUT, 100, 16)
             .addItemStack(recipe.output)
     }

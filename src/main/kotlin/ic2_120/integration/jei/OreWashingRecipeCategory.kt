@@ -39,6 +39,11 @@ class OreWashingRecipeCategory(guiHelper: IGuiHelper) : IRecipeCategory<OreWashi
             val y = 10 + index * 20
             builder.addSlot(RecipeIngredientRole.OUTPUT, 102, y)
                 .addItemStack(output)
+                .addTooltipCallback { _, tooltip ->
+                    if (output.count > 1) {
+                        tooltip.add(Text.literal("Output: ${output.count}"))
+                    }
+                }
         }
     }
 }

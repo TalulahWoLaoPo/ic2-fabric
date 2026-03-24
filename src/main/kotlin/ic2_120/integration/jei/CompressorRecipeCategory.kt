@@ -33,9 +33,11 @@ class CompressorRecipeCategory(guiHelper: IGuiHelper) : IRecipeCategory<Compress
         recipe: CompressorJeiRecipe,
         focuses: IFocusGroup
     ) {
+        // 输入槽 - ItemStack 带数量，JEI 会正确显示堆叠数量
         builder.addSlot(RecipeIngredientRole.INPUT, 20, 18)
-            .addIngredients(recipe.input)
+            .addItemStack(recipe.input)
 
+        // 输出槽
         builder.addSlot(RecipeIngredientRole.OUTPUT, 102, 18)
             .addItemStack(recipe.output)
     }

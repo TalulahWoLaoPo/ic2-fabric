@@ -142,8 +142,7 @@ class Ic2JeiPlugin : IModPlugin {
         val compressorRecipes = CompressorRecipeDatagen.allEntries()
             .map { entry ->
                 CompressorJeiRecipe(
-                    Ingredient.ofItems(entry.input),
-                    entry.inputCount,
+                    ItemStack(entry.input, entry.inputCount),
                     ItemStack(entry.output, entry.count)
                 )
             }
@@ -196,8 +195,7 @@ class Ic2JeiPlugin : IModPlugin {
         val blockCutterRecipes = BlockCutterRecipeDatagen.allEntries()
             .map { entry ->
                 BlockCutterJeiRecipe(
-                    Ingredient.ofItems(entry.input),
-                    entry.inputCount,
+                    ItemStack(entry.input, entry.inputCount),
                     ItemStack(entry.output, entry.count)
                 )
             }
