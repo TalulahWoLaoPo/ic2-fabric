@@ -65,7 +65,7 @@ object CompressorRecipeDatagen {
         Entry("carbon_mesh_to_plate", CarbonMesh::class.instance(), 1, CarbonPlate::class.instance(), 1),
 
         // 煤球 -> 压缩煤球
-        Entry("coal_ball_to_chunk", CoalBall::class.instance(), 1, CoalChunk::class.instance(), 1),
+        Entry("coal_ball_to_chunk", CoalBall::class.instance(), 1, CompressedCoalBall::class.item(), 1),
 
         // 能量水晶粉 -> 能量水晶
         Entry("energium_dust_to_crystal", EnergiumDust::class.instance(), 9, EnergyCrystalItem::class.instance(), 1),
@@ -83,16 +83,28 @@ object CompressorRecipeDatagen {
         Entry("small_plutonium_to_plutonium", SmallPlutonium::class.instance(), 9, Plutonium::class.instance(), 1),
 
         // 9 小撮铀-235 -> 铀-235
-        Entry("small_uranium_235_to_uranium_235", SmallUranium235::class.instance(), 9, Uranium235::class.instance(), 1),
+        Entry(
+            "small_uranium_235_to_uranium_235",
+            SmallUranium235::class.instance(),
+            9,
+            Uranium235::class.instance(),
+            1
+        ),
 
         // 9 小撮铀-238 -> 铀-238
-        Entry("small_uranium_238_to_uranium_238", SmallUranium238::class.instance(), 9, Uranium238::class.instance(), 1),
+        Entry(
+            "small_uranium_238_to_uranium_238",
+            SmallUranium238::class.instance(),
+            9,
+            Uranium238::class.instance(),
+            1
+        ),
 
         // 混合金属锭 -> 高级合金
         Entry("mixed_metal_ingot_to_alloy", MixedMetalIngot::class.instance(), 1, Alloy::class.instance(), 1),
 
         // 煤块 -> 钻石
-        Entry("coal_block_to_diamond", Items.COAL_BLOCK, 1, Items.DIAMOND, 1)
+        Entry("coal_block_to_diamond", CoalChunk::class.instance(), 1, Items.DIAMOND, 1)
     )
 
     fun allEntries(): List<Entry> = entries

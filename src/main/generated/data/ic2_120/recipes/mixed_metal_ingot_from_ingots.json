@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "ic2_120:bronze_ingot"
+    },
+    "I": {
+      "item": "ic2_120:steel_ingot"
+    },
+    "T": {
+      "item": "ic2_120:tin_ingot"
+    }
+  },
+  "pattern": [
+    "IBT"
+  ],
+  "result": {
+    "item": "ic2_120:mixed_metal_ingot"
+  },
+  "show_notification": true
+}

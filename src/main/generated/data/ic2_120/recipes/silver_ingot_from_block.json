@@ -4,33 +4,10 @@
   "ingredients": [
     {
       "item": "ic2_120:silver_block"
-    },
-    {
-      "item": "ic2_120:silver_block"
-    },
-    {
-      "item": "ic2_120:silver_block"
-    },
-    {
-      "item": "ic2_120:silver_block"
-    },
-    {
-      "item": "ic2_120:silver_block"
-    },
-    {
-      "item": "ic2_120:silver_block"
-    },
-    {
-      "item": "ic2_120:silver_block"
-    },
-    {
-      "item": "ic2_120:silver_block"
-    },
-    {
-      "item": "ic2_120:silver_block"
     }
   ],
   "result": {
+    "count": 9,
     "item": "ic2_120:silver_ingot"
   }
 }

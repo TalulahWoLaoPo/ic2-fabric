@@ -17,6 +17,10 @@ import ic2_120.content.item.NetherrackDust
 import ic2_120.content.item.ObsidianDust
 import ic2_120.content.item.ObsidianPlate
 import ic2_120.content.item.SmallObsidianDust
+import ic2_120.content.item.PlantBall
+import ic2_120.content.item.BioChaff
+import ic2_120.content.item.Weed
+import ic2_120.content.item.CoalDust
 import ic2_120.registry.instance
 import ic2_120.registry.item
 import net.minecraft.data.server.recipe.RecipeJsonProvider
@@ -31,7 +35,8 @@ object MaceratorRecipeDatagen {
         val name: String,
         val input: Item,
         val output: Item,
-        val count: Int
+        val count: Int,
+        val inputCount: Int = 1
     )
 
     private val entries = listOf(
@@ -55,7 +60,24 @@ object MaceratorRecipeDatagen {
         Entry("andesite_to_cobblestone", Items.ANDESITE, Items.COBBLESTONE, 1),
         Entry("netherrack_to_netherrack_dust", Items.NETHERRACK, NetherrackDust::class.instance(), 1),
         Entry("obsidian_to_obsidian_dust", Items.OBSIDIAN, ObsidianDust::class.instance(), 1),
-        Entry("obsidian_plate_to_small_obsidian_dust", ObsidianPlate::class.instance(), SmallObsidianDust::class.instance(), 8)
+        Entry("obsidian_plate_to_small_obsidian_dust", ObsidianPlate::class.instance(), SmallObsidianDust::class.instance(), 8),
+        Entry("coal_block_to_coal_dust", Items.COAL_BLOCK, CoalDust::class.instance(), 9),
+        // 植物打粉配方
+        Entry("plant_ball_to_bio_chaff", PlantBall::class.instance(), BioChaff::class.instance(), 1),
+        Entry("pumpkin_to_bio_chaff", Items.PUMPKIN, BioChaff::class.instance(), 1, 8),
+        Entry("melon_slice_to_bio_chaff", Items.MELON_SLICE, BioChaff::class.instance(), 1, 8),
+        Entry("melon_seeds_to_bio_chaff", Items.MELON_SEEDS, BioChaff::class.instance(), 1, 16),
+        Entry("pumpkin_seeds_to_bio_chaff", Items.PUMPKIN_SEEDS, BioChaff::class.instance(), 1, 16),
+        Entry("wheat_seeds_to_bio_chaff", Items.WHEAT_SEEDS, BioChaff::class.instance(), 1, 16),
+        Entry("wheat_to_bio_chaff", Items.WHEAT, BioChaff::class.instance(), 1, 8),
+        Entry("carrot_to_bio_chaff", Items.CARROT, BioChaff::class.instance(), 1, 8),
+        Entry("potato_to_bio_chaff", Items.POTATO, BioChaff::class.instance(), 1, 8),
+        Entry("oak_sapling_to_bio_chaff", Items.OAK_SAPLING, BioChaff::class.instance(), 1, 4),
+        Entry("cactus_to_bio_chaff", Items.CACTUS, BioChaff::class.instance(), 1, 8),
+        Entry("sugar_cane_to_bio_chaff", Items.SUGAR_CANE, BioChaff::class.instance(), 1, 8),
+        Entry("oak_leaves_to_bio_chaff", Items.OAK_LEAVES, BioChaff::class.instance(), 1, 8),
+        Entry("dead_bush_to_bio_chaff", Items.DEAD_BUSH, BioChaff::class.instance(), 1, 8),
+        Entry("weed_to_bio_chaff", Weed::class.instance(), BioChaff::class.instance(), 1, 32)
     )
 
     fun allEntries(): List<Entry> = entries
@@ -66,7 +88,8 @@ object MaceratorRecipeDatagen {
                 recipeId = Identifier("ic2_120", "macerating/${entry.name}"),
                 inputItem = entry.input,
                 outputItem = entry.output,
-                outputCount = entry.count
+                outputCount = entry.count,
+                inputCount = entry.inputCount
             ).also(exporter::accept)
         }
     }
@@ -75,12 +98,16 @@ object MaceratorRecipeDatagen {
         private val recipeId: Identifier,
         private val inputItem: Item,
         private val outputItem: Item,
-        private val outputCount: Int
+        private val outputCount: Int,
+        private val inputCount: Int = 1
     ) : RecipeJsonProvider {
         override fun serialize(json: JsonObject) {
             json.addProperty("type", "${ModMachineRecipes.MACERATOR_TYPE}")
             val ingredient = JsonObject()
             ingredient.addProperty("item", Registries.ITEM.getId(inputItem).toString())
+            if (inputCount > 1) {
+                ingredient.addProperty("count", inputCount)
+            }
             json.add("ingredient", ingredient)
 
             val result = JsonObject()

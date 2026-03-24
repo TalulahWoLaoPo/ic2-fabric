@@ -2,16 +2,32 @@ package ic2_120.content.block
 
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.type
+import ic2_120.content.item.IronPlate
+import ic2_120.content.item.Treetap
 import ic2_120.registry.annotation.ModBlock
-import ic2_120.registry.type
 import net.minecraft.block.AbstractBlock
 import net.minecraft.block.Block
 import net.minecraft.block.Blocks
 import net.minecraft.block.PillarBlock
+import net.minecraft.data.server.recipe.RecipeJsonProvider
+import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
+import net.minecraft.recipe.book.RecipeCategory
+import java.util.function.Consumer
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
+import ic2_120.registry.id
+import ic2_120.registry.instance
+import ic2_120.registry.item
 
 // ========== 建筑：防爆玻璃、泡沫、墙、垫、管道、TNT ==========
 
-@ModBlock(name = "reinforced_glass", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "building", transparent = true)
+@ModBlock(
+    name = "reinforced_glass",
+    registerItem = true,
+    tab = CreativeTab.IC2_MATERIALS,
+    group = "building",
+    transparent = true
+)
 class ReinforcedGlassBlock : Block(AbstractBlock.Settings.copy(Blocks.GLASS).strength(10.0f, 1200.0f).nonOpaque())
 
 @ModBlock(name = "foam", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "building")
@@ -27,7 +43,22 @@ class RubberSheetBlock : Block(AbstractBlock.Settings.copy(Blocks.WHITE_CARPET).
 class WoolSheetBlock : Block(AbstractBlock.Settings.copy(Blocks.WHITE_CARPET).strength(0.5f))
 
 @ModBlock(name = "mining_pipe", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "building")
-class MiningPipeBlock : PillarBlock(AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(3.0f))
+class MiningPipeBlock : PillarBlock(AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(3.0f)) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val ironPlate = IronPlate::class.instance()
+            val treetap = Treetap::class.instance()
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, MiningPipeBlock::class.item(), 1)
+                .pattern("x x")
+                .pattern("x x")
+                .pattern("xyx")
+                .input('x', ironPlate)
+                .input('y', treetap)
+                .criterion(hasItem(ironPlate), conditionsFromItem(ironPlate))
+                .offerTo(exporter, MiningPipeBlock::class.id())
+        }
+    }
+}
 
 @ModBlock(name = "itnt", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "building")
 class ItntBlock : Block(AbstractBlock.Settings.copy(Blocks.TNT).strength(0.0f))
@@ -84,14 +115,46 @@ class BlackWallBlock : Block(AbstractBlock.Settings.copy(Blocks.BLACK_CONCRETE).
 
 // ========== 脚手架 ==========
 
-@ModBlock(name = "wooden_scaffold", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "scaffold", transparent = true)
-class WoodenScaffoldBlock(settings: AbstractBlock.Settings = AbstractBlock.Settings.copy(Blocks.OAK_PLANKS).strength(1.0f).nonOpaque()) : PillarBlock(settings)
+@ModBlock(
+    name = "wooden_scaffold",
+    registerItem = true,
+    tab = CreativeTab.IC2_MATERIALS,
+    group = "scaffold",
+    transparent = true
+)
+class WoodenScaffoldBlock(
+    settings: AbstractBlock.Settings = AbstractBlock.Settings.copy(Blocks.OAK_PLANKS).strength(1.0f).nonOpaque()
+) : PillarBlock(settings)
 
-@ModBlock(name = "reinforced_wooden_scaffold", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "scaffold", transparent = true)
-class ReinforcedWoodenScaffoldBlock(settings: AbstractBlock.Settings = AbstractBlock.Settings.copy(Blocks.OAK_PLANKS).strength(2.0f).nonOpaque()) : PillarBlock(settings)
+@ModBlock(
+    name = "reinforced_wooden_scaffold",
+    registerItem = true,
+    tab = CreativeTab.IC2_MATERIALS,
+    group = "scaffold",
+    transparent = true
+)
+class ReinforcedWoodenScaffoldBlock(
+    settings: AbstractBlock.Settings = AbstractBlock.Settings.copy(Blocks.OAK_PLANKS).strength(2.0f).nonOpaque()
+) : PillarBlock(settings)
 
-@ModBlock(name = "iron_scaffold", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "scaffold", transparent = true)
-class IronScaffoldBlock(settings: AbstractBlock.Settings = AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(3.0f).nonOpaque()) : PillarBlock(settings)
+@ModBlock(
+    name = "iron_scaffold",
+    registerItem = true,
+    tab = CreativeTab.IC2_MATERIALS,
+    group = "scaffold",
+    transparent = true
+)
+class IronScaffoldBlock(
+    settings: AbstractBlock.Settings = AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(3.0f).nonOpaque()
+) : PillarBlock(settings)
 
-@ModBlock(name = "reinforced_iron_scaffold", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "scaffold", transparent = true)
-class ReinforcedIronScaffoldBlock(settings: AbstractBlock.Settings = AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(5.0f).nonOpaque()) : PillarBlock(settings)
+@ModBlock(
+    name = "reinforced_iron_scaffold",
+    registerItem = true,
+    tab = CreativeTab.IC2_MATERIALS,
+    group = "scaffold",
+    transparent = true
+)
+class ReinforcedIronScaffoldBlock(
+    settings: AbstractBlock.Settings = AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(5.0f).nonOpaque()
+) : PillarBlock(settings)

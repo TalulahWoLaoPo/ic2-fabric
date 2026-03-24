@@ -1,21 +1,25 @@
 package ic2_120.content.item
 
 import ic2_120.Ic2_120
+import ic2_120.content.block.CompressedCoalBall
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.id
 import ic2_120.registry.instance
-import ic2_120.registry.type
 import ic2_120.registry.annotation.ModItem
-import ic2_120.registry.type
+import ic2_120.registry.recipeId
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
-import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
 import net.minecraft.data.server.recipe.RecipeJsonProvider
+import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
 import net.minecraft.item.Item
 import net.minecraft.item.Items
+import net.minecraft.recipe.Ingredient
 import net.minecraft.recipe.book.RecipeCategory
+import net.minecraft.registry.Registries
+import net.minecraft.registry.tag.ItemTags
+import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
-import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
-import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
 import java.util.function.Consumer
 
 // ========== 碳材料类 ==========
@@ -24,10 +28,31 @@ import java.util.function.Consumer
 class CarbonFibre : Item(FabricItemSettings())
 
 @ModItem(name = "carbon_mesh", tab = CreativeTab.IC2_MATERIALS, group = "carbon_materials")
-class CarbonMesh : Item(FabricItemSettings())
+class CarbonMesh : Item(FabricItemSettings()) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, CarbonMesh::class.instance(), 1)
+                .pattern("CC").pattern("CC")
+                .input('C', CoalDust::class.instance())
+                .criterion(hasItem(CoalDust::class.instance()), conditionsFromItem(CoalDust::class.instance()))
+                .offerTo(exporter, CarbonMesh::class.id())
+        }
+    }
+}
 
 @ModItem(name = "carbon_plate", tab = CreativeTab.IC2_MATERIALS, group = "carbon_materials")
-class CarbonPlate : Item(FabricItemSettings())
+class CarbonPlate : Item(FabricItemSettings()) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, CarbonPlate::class.instance(), 1)
+                .pattern("CM")
+                .input('C', CarbonMesh::class.instance())
+                .input('M', CarbonMesh::class.instance())
+                .criterion(hasItem(CarbonMesh::class.instance()), conditionsFromItem(CarbonMesh::class.instance()))
+                .offerTo(exporter, CarbonPlate::class.id())
+        }
+    }
+}
 
 @ModItem(name = "wooden_rotor_blade", tab = CreativeTab.IC2_MATERIALS, group = "rotor_blades")
 class WoodenRotorBlade : Item(FabricItemSettings())
@@ -59,10 +84,35 @@ class CarbonRotor : Item(FabricItemSettings())
 // ========== 电路与机械部件 ==========
 
 @ModItem(name = "circuit", tab = CreativeTab.IC2_MATERIALS, group = "circuits")
-class Circuit : Item(FabricItemSettings())
+class Circuit : Item(FabricItemSettings()) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, Circuit::class.instance(), 1)
+                .pattern("xxx").pattern("rfr").pattern("xxx")
+                .input('x', ic2_120.content.block.cables.InsulatedCopperCableBlock::class.instance())
+                .input('r', Items.REDSTONE)
+                .input('f', Items.IRON_INGOT)
+                .criterion(hasItem(Items.REDSTONE), conditionsFromItem(Items.REDSTONE))
+                .offerTo(exporter, Circuit::class.id())
+        }
+    }
+}
 
 @ModItem(name = "advanced_circuit", tab = CreativeTab.IC2_MATERIALS, group = "circuits")
-class AdvancedCircuit : Item(FabricItemSettings())
+class AdvancedCircuit : Item(FabricItemSettings()) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, AdvancedCircuit::class.instance(), 1)
+                .pattern("rlr").pattern("bxb").pattern("rlr")
+                .input('r', Items.REDSTONE)
+                .input('l', Items.GLOWSTONE_DUST)
+                .input('b', Items.LAPIS_LAZULI)
+                .input('x', Circuit::class.instance())
+                .criterion(hasItem(Circuit::class.instance()), conditionsFromItem(Circuit::class.instance()))
+                .offerTo(exporter, AdvancedCircuit::class.id())
+        }
+    }
+}
 
 @ModItem(name = "alloy", tab = CreativeTab.IC2_MATERIALS, group = "circuits")
 class Alloy : Item(FabricItemSettings())
@@ -74,7 +124,18 @@ class IridiumPlate : Item(FabricItemSettings())
 class Coil : Item(FabricItemSettings())
 
 @ModItem(name = "electric_motor", tab = CreativeTab.IC2_MATERIALS, group = "circuits")
-class ElectricMotor : Item(FabricItemSettings())
+class ElectricMotor : Item(FabricItemSettings()) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, ElectricMotor::class.instance(), 1)
+                .pattern(" Y ").pattern("YFY").pattern(" Y ")
+                .input('Y', Coil::class.instance())
+                .input('F', Items.IRON_INGOT)
+                .criterion(hasItem(Coil::class.instance()), conditionsFromItem(Coil::class.instance()))
+                .offerTo(exporter, ElectricMotor::class.id())
+        }
+    }
+}
 
 @ModItem(name = "heat_conductor", tab = CreativeTab.IC2_MATERIALS, group = "circuits")
 class HeatConductor : Item(FabricItemSettings())
@@ -103,12 +164,14 @@ class CoalBall : Item(FabricItemSettings()) {
 class CoalChunk : Item(FabricItemSettings()) {
     companion object {
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, Items.COAL_BLOCK, 1)
-                .pattern("C C").pattern("COC").pattern("C C")
-                .input('C', CoalChunk::class.instance())
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, CoalChunk::class.instance(), 1)
+                .pattern("CCC")
+                .pattern("COC")
+                .pattern("CCC")
+                .input('C', CompressedCoalBall::class.instance())
                 .input('O', Items.OBSIDIAN)
-                .criterion(hasItem(CoalChunk::class.instance()), conditionsFromItem(CoalChunk::class.instance()))
-                .offerTo(exporter, CoalChunk::class.id())
+                .criterion(hasItem(CompressedCoalBall::class.instance()), conditionsFromItem(Items.OBSIDIAN))
+                .offerTo(exporter, CoalChunk::class.recipeId())
         }
     }
 }
@@ -117,7 +180,70 @@ class CoalChunk : Item(FabricItemSettings()) {
 class IndustrialDiamond : Item(FabricItemSettings())
 
 @ModItem(name = "plant_ball", tab = CreativeTab.IC2_MATERIALS, group = "energy_balls")
-class PlantBall : Item(FabricItemSettings())
+class PlantBall : Item(FabricItemSettings()) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            // 甘蔗配方
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, PlantBall::class.instance(), 1)
+                .pattern("RRR").pattern("R R").pattern("RRR")
+                .input('R', Items.SUGAR_CANE)
+                .criterion(hasItem(Items.SUGAR_CANE), conditionsFromItem(Items.SUGAR_CANE))
+                .offerTo(exporter, Identifier.of(Ic2_120.MOD_ID, "plant_ball_from_sugar_cane"))
+
+            // 仙人掌配方
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, PlantBall::class.instance(), 1)
+                .pattern("CCC").pattern("C C").pattern("CCC")
+                .input('C', Items.CACTUS)
+                .criterion(hasItem(Items.CACTUS), conditionsFromItem(Items.CACTUS))
+                .offerTo(exporter, Identifier.of(Ic2_120.MOD_ID, "plant_ball_from_cactus"))
+
+            // 小麦种子配方
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, PlantBall::class.instance(), 1)
+                .pattern("SSS").pattern("S S").pattern("SSS")
+                .input('S', Items.WHEAT_SEEDS)
+                .criterion(hasItem(Items.WHEAT_SEEDS), conditionsFromItem(Items.WHEAT_SEEDS))
+                .offerTo(exporter, Identifier.of(Ic2_120.MOD_ID, "plant_ball_from_wheat_seeds"))
+
+            // 小麦配方
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, PlantBall::class.instance(), 1)
+                .pattern("WWW").pattern("W W").pattern("WWW")
+                .input('W', Items.WHEAT)
+                .criterion(hasItem(Items.WHEAT), conditionsFromItem(Items.WHEAT))
+                .offerTo(exporter, Identifier.of(Ic2_120.MOD_ID, "plant_ball_from_wheat"))
+
+            // 蕨配方
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, PlantBall::class.instance(), 1)
+                .pattern("FFF").pattern("F F").pattern("FFF")
+                .input('F', Items.FERN)
+                .criterion(hasItem(Items.FERN), conditionsFromItem(Items.FERN))
+                .offerTo(exporter, Identifier.of(Ic2_120.MOD_ID, "plant_ball_from_fern"))
+
+            // 草配方（使用 Tag，因为 1.20.1 中草可能有多个变体）
+            val grassIngredient = Ingredient.fromTag(TagKey.of(Registries.ITEM.key, Identifier.of("minecraft", "tall_grass")))
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, PlantBall::class.instance(), 1)
+                .pattern("GGG").pattern("G G").pattern("GGG")
+                .input('G', grassIngredient)
+                .criterion(hasItem(Items.WHEAT), conditionsFromItem(Items.WHEAT))
+                .offerTo(exporter, Identifier.of(Ic2_120.MOD_ID, "plant_ball_from_grass"))
+
+            // 树叶配方（使用 Tag）
+            val leavesIngredient = Ingredient.fromTag(ItemTags.LEAVES)
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, PlantBall::class.instance(), 1)
+                .pattern("LLL").pattern("L L").pattern("LLL")
+                .input('L', leavesIngredient)
+                .criterion(hasItem(Items.OAK_LEAVES), conditionsFromItem(Items.OAK_LEAVES))
+                .offerTo(exporter, Identifier.of(Ic2_120.MOD_ID, "plant_ball_from_leaves"))
+
+            // 树苗配方（使用 Tag）
+            val saplingIngredient = Ingredient.fromTag(ItemTags.SAPLINGS)
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, PlantBall::class.instance(), 1)
+                .pattern("SSS").pattern("S S").pattern("SSS")
+                .input('S', saplingIngredient)
+                .criterion(hasItem(Items.OAK_SAPLING), conditionsFromItem(Items.OAK_SAPLING))
+                .offerTo(exporter, Identifier.of(Ic2_120.MOD_ID, "plant_ball_from_saplings"))
+        }
+    }
+}
 
 @ModItem(name = "compressed_plants", tab = CreativeTab.IC2_MATERIALS, group = "energy_balls")
 class CompressedPlants : Item(FabricItemSettings())
@@ -125,14 +251,24 @@ class CompressedPlants : Item(FabricItemSettings())
 @ModItem(name = "bio_chaff", tab = CreativeTab.IC2_MATERIALS, group = "energy_balls")
 class BioChaff : Item(FabricItemSettings())
 
-@ModItem(name = "compressed_hydrated_coal", tab = CreativeTab.IC2_MATERIALS, group = "energy_balls")
-class CompressedHydratedCoal : Item(FabricItemSettings())
+//@ModItem(name = "compressed_hydrated_coal", tab = CreativeTab.IC2_MATERIALS, group = "energy_balls")
+//class CompressedHydratedCoal : Item(FabricItemSettings())
 
 @ModItem(name = "scrap", tab = CreativeTab.IC2_MATERIALS, group = "energy_balls")
 class Scrap : Item(FabricItemSettings())
 
 @ModItem(name = "scrap_box", tab = CreativeTab.IC2_MATERIALS, group = "energy_balls")
-class ScrapBox : Item(FabricItemSettings())
+class ScrapBox : ScrapBoxItem() {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, ScrapBox::class.instance(), 1)
+                .pattern("SSS").pattern("SSS").pattern("SSS")
+                .input('S', Scrap::class.instance())
+                .criterion(hasItem(Scrap::class.instance()), conditionsFromItem(Scrap::class.instance()))
+                .offerTo(exporter, ScrapBox::class.id())
+        }
+    }
+}
 
 // ========== 柄与涡轮类 ==========
 
@@ -155,3 +291,17 @@ class Slag : Item(FabricItemSettings())
 
 @ModItem(name = "iodine", tab = CreativeTab.IC2_MATERIALS, group = "misc")
 class Iodine : Item(FabricItemSettings())
+
+@ModItem(name = "iodine_tablet", tab = CreativeTab.IC2_MATERIALS, group = "misc")
+class IodineTablet : Item(FabricItemSettings()) {
+    companion object {
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, IodineTablet::class.instance(), 1)
+                .pattern("IT")
+                .input('I', Iodine::class.instance())
+                .input('T', TinPlate::class.instance())
+                .criterion(hasItem(Iodine::class.instance()), conditionsFromItem(Iodine::class.instance()))
+                .offerTo(exporter, IodineTablet::class.id())
+        }
+    }
+}

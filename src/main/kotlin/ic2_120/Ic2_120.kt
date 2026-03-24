@@ -25,6 +25,7 @@ import ic2_120.content.block.cables.CableBlockEntity
 import ic2_120.content.block.machines.GeoGeneratorBlockEntity
 import ic2_120.content.block.machines.FluidHeatGeneratorBlockEntity
 import ic2_120.content.block.machines.FluidHeatExchangerBlockEntity
+import ic2_120.content.block.machines.FermenterBlockEntity
 import ic2_120.content.block.machines.CannerBlockEntity
 import ic2_120.content.block.machines.FluidBottlerBlockEntity
 import ic2_120.content.block.machines.OreWashingPlantBlockEntity
@@ -131,6 +132,7 @@ object Ic2_120 : ModInitializer {
         GeoGeneratorBlockEntity.registerFluidStorageLookup()
         FluidHeatGeneratorBlockEntity.registerFluidStorageLookup()
         FluidHeatExchangerBlockEntity.registerFluidStorageLookup()
+        FermenterBlockEntity.registerFluidStorageLookup()
         SemifluidGeneratorBlockEntity.registerFluidStorageLookup()
         WaterGeneratorBlockEntity.registerFluidStorageLookup()
         OreWashingPlantBlockEntity.registerFluidStorageLookup()

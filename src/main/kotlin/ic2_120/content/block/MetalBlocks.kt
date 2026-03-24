@@ -1,15 +1,12 @@
 package ic2_120.content.block
 
 import ic2_120.registry.CreativeTab
-import ic2_120.registry.type
 import ic2_120.registry.annotation.ModBlock
-import ic2_120.registry.type
 import net.minecraft.block.AbstractBlock
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.block.FenceBlock
-import net.minecraft.block.PillarBlock
 import net.minecraft.util.math.Direction
 
 // 铜方块：使用原版 minecraft:copper_block，此处不再注册
@@ -56,7 +53,7 @@ class UraniumBlock : Block(AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).streng
 class SilverBlock : Block(AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(5.0f, 6.0f))
 
 @ModBlock(name = "coal_block", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "metal_blocks")
-class CoalBlock : Block(AbstractBlock.Settings.copy(Blocks.COAL_BLOCK).strength(5.0f, 6.0f))
+class CompressedCoalBall : Block(AbstractBlock.Settings.copy(Blocks.COAL_BLOCK).strength(5.0f, 6.0f))
 
 /** 防爆石。 */
 @ModBlock(name = "reinforced_stone", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "metal_blocks")

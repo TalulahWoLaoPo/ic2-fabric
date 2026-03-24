@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "ic2_120:carbon_mesh"
+    },
+    "M": {
+      "item": "ic2_120:carbon_mesh"
+    }
+  },
+  "pattern": [
+    "CM"
+  ],
+  "result": {
+    "item": "ic2_120:carbon_plate"
+  },
+  "show_notification": true
+}

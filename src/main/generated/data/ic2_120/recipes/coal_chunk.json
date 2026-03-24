@@ -3,19 +3,19 @@
   "category": "misc",
   "key": {
     "C": {
-      "item": "ic2_120:coal_chunk"
+      "item": "ic2_120:coal_block"
     },
     "O": {
       "item": "minecraft:obsidian"
     }
   },
   "pattern": [
-    "C C",
+    "CCC",
     "COC",
-    "C C"
+    "CCC"
   ],
   "result": {
-    "item": "minecraft:coal_block"
+    "item": "ic2_120:coal_chunk"
   },
   "show_notification": true
 }

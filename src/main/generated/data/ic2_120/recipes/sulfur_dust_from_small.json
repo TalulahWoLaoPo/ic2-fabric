@@ -1,36 +1,18 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "minecraft:crafting_shaped",
   "category": "misc",
-  "ingredients": [
-    {
-      "item": "ic2_120:small_sulfur_dust"
-    },
-    {
-      "item": "ic2_120:small_sulfur_dust"
-    },
-    {
-      "item": "ic2_120:small_sulfur_dust"
-    },
-    {
-      "item": "ic2_120:small_sulfur_dust"
-    },
-    {
-      "item": "ic2_120:small_sulfur_dust"
-    },
-    {
-      "item": "ic2_120:small_sulfur_dust"
-    },
-    {
-      "item": "ic2_120:small_sulfur_dust"
-    },
-    {
-      "item": "ic2_120:small_sulfur_dust"
-    },
-    {
+  "key": {
+    "S": {
       "item": "ic2_120:small_sulfur_dust"
     }
+  },
+  "pattern": [
+    "SSS",
+    "SSS",
+    "SSS"
   ],
   "result": {
     "item": "ic2_120:sulfur_dust"
-  }
+  },
+  "show_notification": true
 }

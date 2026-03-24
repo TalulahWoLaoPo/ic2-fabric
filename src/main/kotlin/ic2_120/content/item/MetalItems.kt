@@ -2,14 +2,20 @@ package ic2_120.content.item
 
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.instance
+import ic2_120.registry.item
 import ic2_120.registry.recipeId
 import ic2_120.registry.annotation.ModItem
 import ic2_120.content.block.BronzeBlock
+import ic2_120.content.block.DeepslateTinOreBlock
 import ic2_120.content.block.TinBlock
+import ic2_120.content.block.TinOreBlock
+import net.minecraft.data.server.recipe.CookingRecipeJsonBuilder
+import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
 import net.minecraft.data.server.recipe.ShapelessRecipeJsonBuilder
 import net.minecraft.data.server.recipe.RecipeJsonProvider
 import net.minecraft.item.Item
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
+import net.minecraft.recipe.Ingredient
 import net.minecraft.recipe.book.RecipeCategory
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
@@ -24,15 +30,61 @@ import java.util.function.Consumer
 class TinIngot : Item(FabricItemSettings()) {
     companion object {
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, TinIngot::class.instance(), 1)
-                .apply { repeat(9) { input(TinBlock::class.instance()) } }
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, TinIngot::class.instance(), 9)
+                .input(TinBlock::class.instance())
                 .criterion(hasItem(TinBlock::class.instance()), conditionsFromItem(TinBlock::class.instance()))
                 .offerTo(exporter, TinIngot::class.recipeId("from_block"))
 
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, TinBlock::class.instance(), 1)
-                .input(TinIngot::class.instance())
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, TinBlock::class.instance(), 1)
+                .pattern("III")
+                .pattern("III")
+                .pattern("III")
+                .input('I', TinIngot::class.instance())
                 .criterion(hasItem(TinIngot::class.instance()), conditionsFromItem(TinIngot::class.instance()))
                 .offerTo(exporter, TinBlock::class.recipeId("from_ingot"))
+
+            CookingRecipeJsonBuilder.createSmelting(
+                Ingredient.ofItems(TinOreBlock::class.item()),
+                RecipeCategory.MISC,
+                TinIngot::class.instance(),
+                0.1f,
+                200
+            )
+                .criterion(hasItem(TinOreBlock::class.item()), conditionsFromItem(TinOreBlock::class.item()))
+                .offerTo(exporter, TinIngot::class.recipeId("from_tin_ore_smelting"))
+
+            CookingRecipeJsonBuilder.createSmelting(
+                Ingredient.ofItems(DeepslateTinOreBlock::class.item()),
+                RecipeCategory.MISC,
+                TinIngot::class.instance(),
+                0.1f,
+                200
+            )
+                .criterion(
+                    hasItem(DeepslateTinOreBlock::class.item()),
+                    conditionsFromItem(DeepslateTinOreBlock::class.item())
+                )
+                .offerTo(exporter, TinIngot::class.recipeId("from_deepslate_tin_ore_smelting"))
+
+            CookingRecipeJsonBuilder.createSmelting(
+                Ingredient.ofItems(CrushedTin::class.instance()),
+                RecipeCategory.MISC,
+                TinIngot::class.instance(),
+                0.1f,
+                200
+            )
+                .criterion(hasItem(CrushedTin::class.instance()), conditionsFromItem(CrushedTin::class.instance()))
+                .offerTo(exporter, TinIngot::class.recipeId("from_crushed_tin_smelting"))
+
+            CookingRecipeJsonBuilder.createSmelting(
+                Ingredient.ofItems(PurifiedTin::class.instance()),
+                RecipeCategory.MISC,
+                TinIngot::class.instance(),
+                0.1f,
+                200
+            )
+                .criterion(hasItem(PurifiedTin::class.instance()), conditionsFromItem(PurifiedTin::class.instance()))
+                .offerTo(exporter, TinIngot::class.recipeId("from_purified_tin_smelting"))
         }
     }
 }
@@ -44,13 +96,16 @@ class TinIngot : Item(FabricItemSettings()) {
 class BronzeIngot : Item(FabricItemSettings()) {
     companion object {
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, BronzeIngot::class.instance(), 1)
-                .apply { repeat(9) { input(BronzeBlock::class.instance()) } }
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, BronzeIngot::class.instance(), 9)
+                .input(BronzeBlock::class.instance())
                 .criterion(hasItem(BronzeBlock::class.instance()), conditionsFromItem(BronzeBlock::class.instance()))
                 .offerTo(exporter, BronzeIngot::class.recipeId("from_block"))
 
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, BronzeBlock::class.instance(), 1)
-                .input(BronzeIngot::class.instance())
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, BronzeBlock::class.instance(), 1)
+                .pattern("III")
+                .pattern("III")
+                .pattern("III")
+                .input('I', BronzeIngot::class.instance())
                 .criterion(hasItem(BronzeIngot::class.instance()), conditionsFromItem(BronzeIngot::class.instance()))
                 .offerTo(exporter, BronzeBlock::class.recipeId("from_ingot"))
         }

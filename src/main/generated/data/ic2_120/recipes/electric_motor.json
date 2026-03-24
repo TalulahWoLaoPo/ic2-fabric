@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": {
+      "item": "minecraft:iron_ingot"
+    },
+    "Y": {
+      "item": "ic2_120:coil"
+    }
+  },
+  "pattern": [
+    " Y ",
+    "YFY",
+    " Y "
+  ],
+  "result": {
+    "item": "ic2_120:electric_motor"
+  },
+  "show_notification": true
+}
