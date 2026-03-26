@@ -31,6 +31,7 @@ import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
 import net.minecraft.util.Identifier
+import net.minecraft.text.Text
 import ic2_120.registry.annotation.ScreenFactory
 
 @ModScreenHandler(block = CannerBlock::class)
@@ -67,7 +68,10 @@ class CannerScreenHandler(
         }
     )
     private val outputSlotSpec = SlotSpec(
-        canInsert = { false },
+        canInsert = { stack ->
+            if (sync.getMode() == CannerSync.Mode.BOTTLE_SOLID) return@SlotSpec false
+            stack.item !is IBatteryItem && isEmptyFluidContainer(stack)
+        },
         canTake = { true }
     )
     private val dischargingSlotSpec = SlotSpec(
@@ -113,6 +117,36 @@ class CannerScreenHandler(
         for (col in 0 until 9) {
             addSlot(Slot(playerInventory, col, PLAYER_INV_X + col * 18, HOTBAR_Y))
         }
+    }
+
+    override fun onButtonClick(player: PlayerEntity, id: Int): Boolean {
+        context.get({ world, pos ->
+            val be = world.getBlockEntity(pos)
+            if (be is CannerBlockEntity) {
+                when (id) {
+                    BUTTON_ID_MODE_CYCLE -> be.cycleMode()
+                    BUTTON_ID_SWAP_TANKS -> {
+                        val leftBefore = be.sync.leftFluidAmountMb
+                        val rightBefore = be.sync.rightFluidAmountMb
+                        val changed = be.swapTanks()
+                        val leftAfter = be.sync.leftFluidAmountMb
+                        val rightAfter = be.sync.rightFluidAmountMb
+                        player.sendMessage(
+                            Text.literal(
+                                if (changed) {
+                                    "液槽已交换: 左 ${leftBefore}mB -> ${leftAfter}mB, 右 ${rightBefore}mB -> ${rightAfter}mB"
+                                } else {
+                                    "液槽交换无可见变化: 左 ${leftAfter}mB, 右 ${rightAfter}mB"
+                                }
+                            ),
+                            true
+                        )
+                    }
+                    else -> return@get
+                }
+            }
+        }, true)
+        return id == BUTTON_ID_MODE_CYCLE || id == BUTTON_ID_SWAP_TANKS
     }
 
     override fun quickMove(player: PlayerEntity, index: Int): ItemStack {
@@ -202,6 +236,8 @@ class CannerScreenHandler(
         const val SLOT_UPGRADE_INDEX_END = 7
         const val PLAYER_INV_START = 8
         const val HOTBAR_END = 44
+        const val BUTTON_ID_MODE_CYCLE = 0
+        const val BUTTON_ID_SWAP_TANKS = 1
 
         private fun isFilledFluidContainer(stack: ItemStack): Boolean {
             if (stack.isEmpty) return false

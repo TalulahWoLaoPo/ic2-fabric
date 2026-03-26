@@ -12,6 +12,7 @@ import ic2_120.registry.annotation.ModScreen
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.entity.player.PlayerInventory
+import net.minecraft.network.packet.c2s.play.ButtonClickC2SPacket
 import net.minecraft.text.Text
 
 @ModScreen(block = CannerBlock::class)
@@ -53,8 +54,14 @@ class CannerScreen(
         }
         val inputRate = handler.sync.getSyncedInsertedAmount()
         val consumeRate = handler.sync.getSyncedConsumedAmount()
+        val modeText = when (handler.sync.getMode()) {
+            CannerSync.Mode.BOTTLE_SOLID -> "固体装罐"
+            CannerSync.Mode.EMPTY_LIQUID -> "排出"
+            CannerSync.Mode.BOTTLE_LIQUID -> "灌入"
+            CannerSync.Mode.ENRICH_LIQUID -> "流体混合"
+        }
 
-        val energyText = "$energy / $cap EU"
+        val energyText = "${EnergyFormatUtils.formatEu(energy)} / ${EnergyFormatUtils.formatEu(cap)} EU"
         val inputText = "输入 ${EnergyFormatUtils.formatEu(inputRate)} EU/t"
         val consumeText = "耗能 ${EnergyFormatUtils.formatEu(consumeRate)} EU/t"
         val sideTextWidth = maxOf(
@@ -70,16 +77,19 @@ class CannerScreen(
                 Column(
                     spacing = 4, modifier = Modifier.EMPTY.width(GuiSize.STANDARD.contentWidth)
                 ) {
-                    // 能量标题栏
+                    // 标题、电量文本、能量条同一行
                     Flex(direction = FlexDirection.ROW, alignItems = AlignItems.CENTER, gap = 8) {
                         Text("流体/固体装罐机", color = 0xFFFFFF)
+                        // EnergyBar(
+                        //     energyFraction,
+                        //     modifier = Modifier.EMPTY.fractionWidth(1f)
+                        // )
                         Text(energyText, color = 0xFFFFFF, shadow = false)
                     }
-                    EnergyBar(energyFraction)
                     Flex(
-                        justifyContent = JustifyContent.SPACE_BETWEEN,
+                        justifyContent = JustifyContent.SPACE_AROUND,
                         alignItems = AlignItems.CENTER,
-                        gap = 8,
+                        gap = 2,
                     ) {
                         SlotHost(CannerScreenHandler.SLOT_DISCHARGING_INDEX)
                         Flex(
@@ -102,14 +112,41 @@ class CannerScreen(
                                 modifier = Modifier().fractionHeight(1f)
                             )
                         }
-                        SlotHost(CannerScreenHandler.SLOT_OUTPUT_INDEX)
+                        Flex(
+                            direction = FlexDirection.COLUMN,
+                            justifyContent = JustifyContent.SPACE_AROUND,
+                            alignItems = AlignItems.CENTER,
+                            gap = 2,
+                            modifier = Modifier.EMPTY.height(92)
+                        ) {
+                            SlotHost(CannerScreenHandler.SLOT_MATERIAL_INDEX)
+                            Button(modeText, onClick = {
+                                client?.player?.networkHandler?.sendPacket(
+                                    ButtonClickC2SPacket(handler.syncId, CannerScreenHandler.BUTTON_ID_MODE_CYCLE)
+                                )
+                            })
+                            Button("交换液槽", onClick = {
+                                client?.player?.networkHandler?.sendPacket(
+                                    ButtonClickC2SPacket(handler.syncId, CannerScreenHandler.BUTTON_ID_SWAP_TANKS)
+                                )
+                            })
+                            // 进度条
+                            EnergyBar(
+                                progressFrac,
+                                barHeight = 6,
+                                emptyColor = 0xFF555555.toInt(),
+                                fullColor = 0xFF7FD34E.toInt(),
+                                gradient = false,
+                                modifier = Modifier().fillMaxWidth(),
+                            )
+                        }
                         Flex(
                             direction = FlexDirection.COLUMN,
                             alignItems = AlignItems.CENTER,
                             gap = 4,
                             modifier = Modifier().height(70)
                         ) {
-                            SlotHost(CannerScreenHandler.SLOT_MATERIAL_INDEX)
+                            SlotHost(CannerScreenHandler.SLOT_OUTPUT_INDEX)
                             // 右侧流体条
                             EnergyBar(
                                 rightFluidFrac,
@@ -124,58 +161,9 @@ class CannerScreen(
                             )
                         }
                     }
-                    // 进度条
-                    EnergyBar(
-                        progressFrac,
-//                        barWidth = CannerScreenHandler.PROGRESS_BAR_W,
-//                        barHeight = CannerScreenHandler.PROGRESS_BAR_H,
-                        emptyColor = 0xFF555555.toInt(),
-                        fullColor = 0xFF7FD34E.toInt(),
-                        gradient = false
-                    )
 
-                    /*// 流体条 + 机器槽混合行
-                    Flex(
-                        direction = FlexDirection.ROW,
-                        alignItems = AlignItems.CENTER,
-                        gap = 4
-                    ) {
-                        // 左侧流体条
-                        EnergyBar(
-                            leftFluidFrac,
-                            barWidth = CannerScreenHandler.FLUID_BAR_W,
-                            barHeight = CannerScreenHandler.FLUID_BAR_H,
-                            orientation = EnergyBarOrientation.VERTICAL,
-                            emptyColor = 0xFF3A3A8A.toInt(),
-                            fullColor = 0xFF3AAAF5.toInt(),
-                            gradient = false
-                        )
-                        // 机器槽一行：放电、容器、原料、输出
-                        SlotHost(CannerScreenHandler.SLOT_DISCHARGING_INDEX)
-                        SlotHost(CannerScreenHandler.SLOT_CONTAINER_INDEX)
-                        SlotHost(CannerScreenHandler.SLOT_MATERIAL_INDEX)
-                        SlotHost(CannerScreenHandler.SLOT_OUTPUT_INDEX)
-                        // 右侧流体条
-                        EnergyBar(
-                            rightFluidFrac,
-                            barWidth = CannerScreenHandler.FLUID_BAR_W,
-                            barHeight = CannerScreenHandler.FLUID_BAR_H,
-                            orientation = EnergyBarOrientation.VERTICAL,
-                            emptyColor = 0xFF3A3A8A.toInt(),
-                            fullColor = 0xFF3AAAF5.toInt(),
-                            gradient = false
-                        )
-                    }
 
-                    // 进度条
-                    EnergyBar(
-                        progressFrac,
-                        barWidth = CannerScreenHandler.PROGRESS_BAR_W,
-                        barHeight = CannerScreenHandler.PROGRESS_BAR_H,
-                        emptyColor = 0xFF555555.toInt(),
-                        fullColor = 0xFF7FD34E.toInt(),
-                        gradient = false
-                    )*/
+                   
                 }
 
                 // 右侧：升级槽列

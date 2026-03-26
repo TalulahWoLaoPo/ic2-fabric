@@ -17,7 +17,12 @@ import net.minecraft.text.Text
 /**
  * 储电盒 GUI。四个等级（BatBox/CESU/MFE/MFSU）共用。
  */
-@ModScreen(handlers = ["batbox", "cesu", "mfe", "mfsu"])
+@ModScreen(
+    handlers = [
+        "batbox", "cesu", "mfe", "mfsu",
+        "batbox_chargepad", "cesu_chargepad", "mfe_chargepad", "mfsu_chargepad"
+    ]
+)
 class EnergyStorageScreen(
     handler: EnergyStorageScreenHandler,
     playerInventory: PlayerInventory,

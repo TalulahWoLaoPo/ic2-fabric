@@ -21,6 +21,16 @@ class CannerSync(
     currentTickProvider,
     maxInsertPerTickProvider
 ) {
+    enum class Mode(val id: Int, val label: String) {
+        BOTTLE_SOLID(0, "固体装罐"),
+        EMPTY_LIQUID(1, "排出"),
+        BOTTLE_LIQUID(2, "灌入"),
+        ENRICH_LIQUID(3, "流体混合");
+
+        companion object {
+            fun fromId(id: Int): Mode = entries.firstOrNull { it.id == id } ?: EMPTY_LIQUID
+        }
+    }
 
     companion object {
         const val CANNER_TIER = 1
@@ -38,6 +48,7 @@ class CannerSync(
     var energy by schema.int("Energy")
     var progress by schema.int("Progress")
     var energyCapacity by schema.int("EnergyCapacity", default = ENERGY_CAPACITY.toInt())
+    var mode by schema.int("Mode", default = Mode.EMPTY_LIQUID.id)
     var leftFluidAmountMb by schema.int("LeftFluidAmount", default = 0)
     var leftFluidCapacityMb by schema.int("LeftFluidCapacity", default = 10000)
     var rightFluidAmountMb by schema.int("RightFluidAmount", default = 0)
@@ -56,4 +67,16 @@ class CannerSync(
     fun getSyncedInsertedAmount(): Long = flow.getSyncedInsertedAmount()
     fun getSyncedExtractedAmount(): Long = flow.getSyncedExtractedAmount()
     fun getSyncedConsumedAmount(): Long = flow.getSyncedConsumedAmount()
+
+    fun getMode(): Mode = Mode.fromId(mode)
+
+    fun setMode(newMode: Mode) {
+        mode = newMode.id
+    }
+
+    fun cycleMode() {
+        val current = getMode()
+        val next = Mode.entries[(current.ordinal + 1) % Mode.entries.size]
+        setMode(next)
+    }
 }
