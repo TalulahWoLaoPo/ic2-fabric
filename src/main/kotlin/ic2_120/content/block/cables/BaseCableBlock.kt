@@ -8,10 +8,15 @@ import net.minecraft.block.BlockRenderType
 import net.minecraft.block.BlockState
 import net.minecraft.block.BlockWithEntity
 import net.minecraft.block.Blocks
+import net.minecraft.block.Waterloggable
 import net.minecraft.block.ShapeContext
+import net.minecraft.item.ItemStack
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityTicker
 import net.minecraft.block.entity.BlockEntityType
+import net.minecraft.fluid.Fluid
+import net.minecraft.fluid.FluidState
+import net.minecraft.fluid.Fluids
 import net.minecraft.item.ItemPlacementContext
 import net.minecraft.state.StateManager
 import net.minecraft.state.property.BooleanProperty
@@ -34,18 +39,23 @@ import team.reborn.energy.api.EnergyStorage
  * 子类通过覆写 [getTransferRate] 和 [getEnergyLoss] 设定导线参数，
  * 也可通过 [canConnectToBlock] 扩展或限制可连接的方块类型。
  */
-abstract class BaseCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : BlockWithEntity(settings) {
+abstract class BaseCableBlock(settings: AbstractBlock.Settings = defaultSettings()) :
+    BlockWithEntity(settings),
+    Waterloggable {
 
     // ── BlockState 属性 ─────────────────────────────────────────
 
     override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {
+        builder.add(Properties.WATERLOGGED)
         builder.add(NORTH, SOUTH, EAST, WEST, UP, DOWN)
     }
 
     override fun getPlacementState(ctx: ItemPlacementContext): BlockState {
         val world = ctx.world
         val pos = ctx.blockPos
+        val fluidState = world.getFluidState(pos)
         return defaultState
+            .with(Properties.WATERLOGGED, fluidState.fluid == Fluids.WATER)
             .with(NORTH, canConnect(world, pos, Direction.NORTH))
             .with(SOUTH, canConnect(world, pos, Direction.SOUTH))
             .with(EAST, canConnect(world, pos, Direction.EAST))
@@ -54,7 +64,6 @@ abstract class BaseCableBlock(settings: AbstractBlock.Settings = defaultSettings
             .with(DOWN, canConnect(world, pos, Direction.DOWN))
     }
 
-    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
     override fun getStateForNeighborUpdate(
         state: BlockState,
         direction: Direction,
@@ -63,6 +72,10 @@ abstract class BaseCableBlock(settings: AbstractBlock.Settings = defaultSettings
         pos: BlockPos,
         neighborPos: BlockPos
     ): BlockState {
+        // 与原版含水方块一致：含水时调度水 tick，不在这里反推 WATERLOGGED。
+        if (state.get(Properties.WATERLOGGED)) {
+            world.scheduleFluidTick(pos, Fluids.WATER, Fluids.WATER.getTickRate(world))
+        }
         val property = propertyFor(direction)
         val previousConnected = state.get(property)
         val connected = canConnect(world, pos, direction)
@@ -71,6 +84,30 @@ abstract class BaseCableBlock(settings: AbstractBlock.Settings = defaultSettings
         }
         return state.with(property, connected)
     }
+
+    override fun getFluidState(state: BlockState): FluidState =
+        if (state.get(Properties.WATERLOGGED)) Fluids.WATER.getStill(false) else Fluids.EMPTY.getDefaultState()
+
+    // 流动水通过 FluidFillable.tryFillWithFluid 含水；需显式实现（与栅栏等原版方块一致）。
+    override fun canFillWithFluid(world: BlockView, pos: BlockPos, state: BlockState, fluid: Fluid): Boolean =
+        !state.get(Properties.WATERLOGGED) && fluid == Fluids.WATER
+
+    override fun tryFillWithFluid(
+        world: WorldAccess,
+        pos: BlockPos,
+        state: BlockState,
+        fluidState: FluidState
+    ): Boolean {
+        if (!canFillWithFluid(world, pos, state, fluidState.fluid)) return false
+        if (!state.get(Properties.WATERLOGGED)) {
+            world.setBlockState(pos, state.with(Properties.WATERLOGGED, true), Block.NOTIFY_ALL)
+            world.scheduleFluidTick(pos, Fluids.WATER, Fluids.WATER.getTickRate(world))
+        }
+        return true
+    }
+
+    override fun tryDrainFluid(world: WorldAccess, pos: BlockPos, state: BlockState): ItemStack =
+        ItemStack.EMPTY
 
     private fun canConnect(world: WorldAccess, pos: BlockPos, direction: Direction): Boolean {
         val neighborPos = pos.offset(direction)
@@ -182,6 +219,7 @@ abstract class BaseCableBlock(settings: AbstractBlock.Settings = defaultSettings
         protected fun defaultSettings(): AbstractBlock.Settings =
             AbstractBlock.Settings.copy(Blocks.REDSTONE_WIRE)
                 .strength(0.5f)
+                .noCollision()
 
         fun propertyFor(direction: Direction): BooleanProperty = when (direction) {
             Direction.NORTH -> NORTH

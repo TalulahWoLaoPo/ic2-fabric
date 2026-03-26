@@ -6,6 +6,7 @@ import ic2_120.registry.type
 import ic2_120.registry.annotation.ModBlock
 import ic2_120.registry.type
 import net.minecraft.block.AbstractBlock
+import net.minecraft.block.Blocks
 import net.minecraft.item.Item
 import net.minecraft.item.Items
 import net.minecraft.data.server.recipe.ShapelessRecipeJsonBuilder
@@ -119,24 +120,15 @@ class IronCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : Bas
 /**
  * 玻璃纤维导线。超高压传输，8192 EU/t，损耗仅 0.025 EU/格。最高绝缘，绝不漏电。
  */
-@ModBlock(name = "glass_fibre_cable", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "cables", transparent = true)
-class GlassFibreCableBlock(settings: AbstractBlock.Settings = defaultSettings().nonOpaque()) : BaseCableBlock(settings), IInsulatedCable, ITiered {
+@ModBlock(name = "glass_fibre_cable", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "cables", renderLayer = "cutout_mipped")
+class GlassFibreCableBlock(
+    settings: AbstractBlock.Settings = AbstractBlock.Settings.copy(Blocks.GLASS).strength(0.5f).noCollision()
+) : BaseCableBlock(settings), IInsulatedCable, ITiered {
 
     override val tier: Int = 5
     override fun getTransferRate(): Long = 8192L
     override fun getEnergyLoss(): Long = 25L
     override val insulationLevel: Int = 5
-
-    companion object {
-        @RecipeProvider
-        fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, GlassFibreCableBlock::class.item(), 2)
-                .input(Cutter::class.instance())
-                .input(Items.GLASS)
-                .criterion(hasItem(Items.GLASS), conditionsFromItem(Items.GLASS))
-                .offerTo(exporter, GlassFibreCableBlock::class.id())
-        }
-    }
 }
 
 // ── 绝缘导线（损耗与裸线相同，传输率与对应裸线相同，仅防止触电） ────────────────────────

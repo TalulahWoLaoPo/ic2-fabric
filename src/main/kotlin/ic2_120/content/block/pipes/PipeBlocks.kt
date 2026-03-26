@@ -7,10 +7,15 @@ import net.minecraft.block.BlockRenderType
 import net.minecraft.block.BlockState
 import net.minecraft.block.BlockWithEntity
 import net.minecraft.block.Blocks
+import net.minecraft.block.Waterloggable
 import net.minecraft.block.ShapeContext
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityTicker
 import net.minecraft.block.entity.BlockEntityType
+import net.minecraft.fluid.Fluid
+import net.minecraft.fluid.FluidState
+import net.minecraft.fluid.Fluids
+import net.minecraft.item.ItemStack
 import net.minecraft.item.ItemPlacementContext
 import net.minecraft.state.StateManager
 import net.minecraft.state.property.BooleanProperty
@@ -59,15 +64,18 @@ abstract class BasePipeBlock(
     val size: PipeSize,
     val material: PipeMaterial,
     settings: AbstractBlock.Settings = AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(2.0f, 3.0f)
-) : BlockWithEntity(settings) {
+) : BlockWithEntity(settings), Waterloggable {
     override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {
+        builder.add(Properties.WATERLOGGED)
         builder.add(NORTH, SOUTH, EAST, WEST, UP, DOWN)
     }
 
     override fun getPlacementState(ctx: ItemPlacementContext): BlockState {
         val world = ctx.world
         val pos = ctx.blockPos
+        val fluidState = world.getFluidState(pos)
         return defaultState
+            .with(Properties.WATERLOGGED, fluidState.fluid == Fluids.WATER)
             .with(NORTH, canConnect(world, pos, Direction.NORTH, null))
             .with(SOUTH, canConnect(world, pos, Direction.SOUTH, null))
             .with(EAST, canConnect(world, pos, Direction.EAST, null))
@@ -85,6 +93,9 @@ abstract class BasePipeBlock(
         pos: BlockPos,
         neighborPos: BlockPos
     ): BlockState {
+        if (state.get(Properties.WATERLOGGED)) {
+            world.scheduleFluidTick(pos, Fluids.WATER, Fluids.WATER.getTickRate(world))
+        }
         val be = world.getBlockEntity(pos) as? PipeBlockEntity
         val property = propertyFor(direction)
         val connected = canConnect(world, pos, direction, be)
@@ -94,6 +105,28 @@ abstract class BasePipeBlock(
         }
         return next
     }
+
+    override fun getFluidState(state: BlockState): FluidState =
+        if (state.get(Properties.WATERLOGGED)) Fluids.WATER.getStill(false) else Fluids.EMPTY.defaultState
+
+    override fun canFillWithFluid(world: BlockView, pos: BlockPos, state: BlockState, fluid: Fluid): Boolean =
+        !state.get(Properties.WATERLOGGED) && fluid == Fluids.WATER
+
+    override fun tryFillWithFluid(
+        world: WorldAccess,
+        pos: BlockPos,
+        state: BlockState,
+        fluidState: FluidState
+    ): Boolean {
+        if (!canFillWithFluid(world, pos, state, fluidState.fluid)) return false
+        if (!state.get(Properties.WATERLOGGED)) {
+            world.setBlockState(pos, state.with(Properties.WATERLOGGED, true), Block.NOTIFY_ALL)
+            world.scheduleFluidTick(pos, Fluids.WATER, Fluids.WATER.getTickRate(world))
+        }
+        return true
+    }
+
+    override fun tryDrainFluid(world: WorldAccess, pos: BlockPos, state: BlockState): ItemStack = ItemStack.EMPTY
 
     internal fun recomputeState(world: World, pos: BlockPos, state: BlockState, be: PipeBlockEntity): BlockState {
         var next = state
@@ -182,6 +215,7 @@ abstract class PumpAttachmentBlock(material: PipeMaterial) : BasePipeBlock(PipeS
 
     init {
         defaultState = stateManager.defaultState
+            .with(Properties.WATERLOGGED, false)
             .with(NORTH, false)
             .with(SOUTH, false)
             .with(EAST, false)
