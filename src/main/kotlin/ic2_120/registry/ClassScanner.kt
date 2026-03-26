@@ -122,7 +122,7 @@ object ClassScanner {
         // 清空之前的映射
         tabItems.clear()
         blockClassToName.clear()
-        TransparentBlockRegistry.clear()
+        BlockRenderLayerRegistry.clear()
         blockInstances.clear()
         itemInstances.clear()
         blockToBlockEntityType.clear()
@@ -516,9 +516,7 @@ object ClassScanner {
                 Registry.register(Registries.BLOCK, id, instance)
                 blockClassToName[clazz] = name
                 blockInstances[clazz] = instance
-                if (annotation.transparent) {
-                    TransparentBlockRegistry.add(id)
-                }
+                BlockRenderLayerRegistry.put(id, annotation.renderLayer)
                 logger.debug("已注册方块: {}", id)
 
                 // 注册方块物品

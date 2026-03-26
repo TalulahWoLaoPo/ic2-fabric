@@ -17,7 +17,8 @@ import ic2_120.registry.type
  * @param registerItem 是否同时注册对应的方块物品（BlockItem）
  * @param tab 创造模式物品栏位置，使用枚举常量
  * @param group 分组名；相同 group 的方块/物品在创造模式物品栏中会排在一起（反射顺序不稳定时用此保证顺序）。空字符串表示不分组
- * @param transparent 是否作为透明方块注册到客户端 cutout 渲染层
+ * @param renderLayer 渲染层类型："cutout"、"cutout_mipped"、"translucent"；空字符串表示使用默认 solid 层。
+ *                    translucency 渲染层与光影模组水下效果不兼容，如有水下渲染问题请使用 cutout/cutout_mipped
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
@@ -26,5 +27,5 @@ annotation class ModBlock(
     val registerItem: Boolean = true,
     val tab: CreativeTab = CreativeTab.MINECRAFT_MISC,
     val group: String = "",
-    val transparent: Boolean = false
+    val renderLayer: String = ""
 )
