@@ -5,6 +5,8 @@ import ic2_120.content.block.MachineBlock
 import ic2_120.content.block.pipes.BasePipeBlock
 import ic2_120.content.block.pipes.PipeBlockEntity
 import ic2_120.content.block.pipes.PipeNetworkManager
+import ic2_120.content.block.storage.EnergyStorageBlock
+import ic2_120.content.block.storage.EnergyStorageBlockEntity
 import ic2_120.content.block.storage.TankBlock
 import ic2_120.content.block.storage.TankBlockEntity
 import ic2_120.content.item.energy.IElectricTool
@@ -20,6 +22,7 @@ import net.minecraft.item.Items
 import net.minecraft.registry.Registries
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.state.property.Properties
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import net.minecraft.util.Identifier
@@ -40,6 +43,7 @@ object WrenchHandler {
 
     private val WRENCH_ID = Identifier(Ic2_120.MOD_ID, "wrench")
     private val ELECTRIC_WRENCH_ID = Identifier(Ic2_120.MOD_ID, "electric_wrench")
+    private const val ENERGY_RETAIN_RATIO = 0.8
 
     fun isWrench(stack: ItemStack): Boolean {
         if (stack.isEmpty) return false
@@ -127,7 +131,34 @@ object WrenchHandler {
                     player.setStackInHand(Hand.MAIN_HAND, stack)
                     player.setStackInHand(Hand.OFF_HAND, main)
                 }
-                val broken = world.breakBlock(pos, true, player)
+                val broken = if (block is EnergyStorageBlock) {
+                    val energyBe = world.getBlockEntity(pos) as? EnergyStorageBlockEntity
+                    val retained = ((energyBe?.sync?.amount ?: 0L) * ENERGY_RETAIN_RATIO).toLong().coerceAtLeast(0L)
+                    val didBreak = world.breakBlock(pos, false, player)
+                    if (didBreak) {
+                        val dropped = ItemStack(block.asItem())
+                        if (retained > 0L) {
+                            val blockEntityTag = NbtCompound()
+                            blockEntityTag.putLong(
+                                ic2_120.content.sync.EnergyStorageSync.NBT_ENERGY_STORED,
+                                retained
+                            )
+                            dropped.orCreateNbt.put(EnergyStorageBlock.NBT_BLOCK_ENTITY_TAG, blockEntityTag)
+                        }
+                        val itemEntity = net.minecraft.entity.ItemEntity(
+                            world,
+                            pos.x.toDouble() + 0.5,
+                            pos.y.toDouble() + 0.5,
+                            pos.z.toDouble() + 0.5,
+                            dropped
+                        )
+                        itemEntity.setToDefaultPickupDelay()
+                        world.spawnEntity(itemEntity)
+                    }
+                    didBreak
+                } else {
+                    world.breakBlock(pos, true, player)
+                }
                 if (swapped) {
                     val main = player.mainHandStack
                     player.setStackInHand(Hand.MAIN_HAND, player.getStackInHand(Hand.OFF_HAND))
