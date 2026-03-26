@@ -23,6 +23,7 @@ import ic2_120.integration.jei.OreWashingJeiRecipe
 import ic2_120.integration.jei.OreWashingRecipeCategory
 import ic2_120.integration.jei.SolidCannerJeiRecipe
 import ic2_120.integration.jei.SolidCannerRecipeCategory
+import ic2_120.content.block.storage.EnergyStorageBlock
 import ic2_120.content.item.armor.JetpackItem
 import ic2_120.content.item.energy.IBatteryItem
 import ic2_120.content.item.energy.IElectricTool
@@ -36,7 +37,6 @@ import mezz.jei.api.registration.IRecipeRegistration
 import mezz.jei.api.registration.ISubtypeRegistration
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.recipe.Ingredient
 import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
 
@@ -68,6 +68,13 @@ class Ic2JeiPlugin : IModPlugin {
                 registration.registerSubtypeInterpreter(
                     item,
                     JetpackItemSubtypeInterpreter()
+                )
+            }
+            // 检查物品是否为储电盒/充电座 BlockItem
+            if (item is EnergyStorageBlock.EnergyStorageBlockItem) {
+                registration.registerSubtypeInterpreter(
+                    item,
+                    EnergyStorageBlockItemSubtypeInterpreter()
                 )
             }
         }
@@ -107,8 +114,25 @@ class Ic2JeiPlugin : IModPlugin {
                         JetpackItem.setFuel(stack, JetpackItem.MAX_FUEL)
                     }
                 }
+
+                is EnergyStorageBlock.EnergyStorageBlockItem -> {
+                    // 储电盒/充电座：补充空电 + 满电两个明确变体
+                    extraStacks += ItemStack(item as Item).also { stack ->
+                        stack.nbt = net.minecraft.nbt.NbtCompound().also { nbt ->
+                            nbt.putBoolean(EnergyStorageBlock.NBT_FULL, false)
+                        }
+                    }
+                    extraStacks += ItemStack(item as Item).also { stack ->
+                        stack.nbt = net.minecraft.nbt.NbtCompound().also { nbt ->
+                            nbt.putBoolean(EnergyStorageBlock.NBT_FULL, true)
+                        }
+                    }
+                }
             }
         }
+
+        // 注册储电盒/充电座的满电变体（通过物品 ID 直接获取）
+        registerEnergyStorageFullVariants(extraStacks)
 
         if (extraStacks.isNotEmpty()) {
             registration.addExtraItemStacks(extraStacks)
@@ -362,12 +386,58 @@ class Ic2JeiPlugin : IModPlugin {
 
         override fun apply(itemStack: ItemStack, uidContext: mezz.jei.api.ingredients.subtypes.UidContext): String {
             val fuel = JetpackItem.getFuel(itemStack)
-
-            // 根据燃料比例返回子类型标识符
             return when {
                 fuel <= 0 -> EMPTY_TAG
                 fuel >= JetpackItem.MAX_FUEL -> FULL_TAG
                 else -> "$PARTIAL_TAG:$fuel"
+            }
+        }
+    }
+
+    /**
+     * 储电盒/充电座 NBT 子类型解释器
+     *
+     * 使用 "Full" NBT 标签来区分空电和满电状态的物品。
+     * JEI 会根据此解释器识别不同的 ItemStack 为独立的物品。
+     */
+    class EnergyStorageBlockItemSubtypeInterpreter : IIngredientSubtypeInterpreter<ItemStack> {
+        companion object {
+            /** 子类型标识符：空电版本 */
+            private const val EMPTY_TAG = "empty"
+
+            /** 子类型标识符：满电版本 */
+            private const val FULL_TAG = "full"
+        }
+
+        override fun apply(itemStack: ItemStack, uidContext: mezz.jei.api.ingredients.subtypes.UidContext): String {
+            val nbt = itemStack.nbt ?: return EMPTY_TAG
+            return if (nbt.getBoolean(EnergyStorageBlock.NBT_FULL)) FULL_TAG else EMPTY_TAG
+        }
+    }
+
+    /**
+     * 注册储电盒/充电座物品的空电和满电变体。
+     * 直接通过物品 ID 获取，绕过类层级检查。
+     */
+    private fun registerEnergyStorageFullVariants(extraStacks: MutableList<ItemStack>) {
+        val storageIds = listOf(
+            "batbox", "cesu", "mfe", "mfsu",
+            "batbox_chargepad", "cesu_chargepad", "mfe_chargepad", "mfsu_chargepad"
+        )
+        for (id in storageIds) {
+            val item = Registries.ITEM.get(Identifier("ic2_120", id))
+            if (item === net.minecraft.item.Items.AIR) continue
+            // 空电
+            extraStacks += ItemStack(item).also { stack ->
+                stack.nbt = net.minecraft.nbt.NbtCompound().also { nbt ->
+                    nbt.putBoolean(EnergyStorageBlock.NBT_FULL, false)
+                }
+            }
+            // 满电
+            extraStacks += ItemStack(item).also { stack ->
+                stack.nbt = net.minecraft.nbt.NbtCompound().also { nbt ->
+                    nbt.putBoolean(EnergyStorageBlock.NBT_FULL, true)
+                }
             }
         }
     }
