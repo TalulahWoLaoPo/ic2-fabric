@@ -266,7 +266,7 @@
         {
           "type": "minecraft:item",
           "weight": 3,
-          "name": "minecraft:gold_chestplate"
+          "name": "minecraft:golden_chestplate"
         },
         {
           "type": "minecraft:item",

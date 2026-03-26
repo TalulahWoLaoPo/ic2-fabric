@@ -674,8 +674,27 @@ class ElectricJetpack : ElectricArmorItem(
         context: net.minecraft.client.item.TooltipContext
     ) {
         super.appendTooltip(stack, world, tooltip, context)
+
         val enabled = isFlightEnabled(stack)
-        tooltip.add(Text.literal("飞行: ${if (enabled) "§aON" else "§cOFF"}").formatted(Formatting.GRAY))
+        val flightStatusText = if (enabled) "开启" else "关闭"
+
+        // 计算剩余飞行时间（秒），基于平均能量消耗 8 + 1/3 EU/tick
+        val energy = getEnergy(stack)
+        val remainingSeconds = if (energy > 0) {
+            val avgCostPerTick = FLIGHT_COST_BASE + FLIGHT_COST_REM_NUM.toDouble() / FLIGHT_COST_REM_DEN
+            (energy / avgCostPerTick) / 20.0
+        } else 0.0
+
+        // 格式化时间
+        val timeText = if (remainingSeconds >= 60) {
+            val minutes = (remainingSeconds / 60).toInt()
+            val seconds = (remainingSeconds % 60).toInt()
+            "${minutes}分${seconds}秒"
+        } else {
+            "${remainingSeconds.toInt()}秒"
+        }
+
+        tooltip.add(Text.literal("飞行: $flightStatusText | 剩余飞行: $timeText").formatted(Formatting.GRAY))
         tooltip.add(Text.literal("Alt+M：切换飞行开关").formatted(Formatting.DARK_GRAY))
     }
 }
