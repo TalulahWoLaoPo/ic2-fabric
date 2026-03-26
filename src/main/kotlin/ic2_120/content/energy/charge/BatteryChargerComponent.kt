@@ -19,7 +19,7 @@ class BatteryChargerComponent(
     private val machineTierProvider: () -> Int,
     private val machineEnergyProvider: () -> Long,
     //从机器提取能量的函数，返回实际提取量（EU）
-    //机器通常需要传入自己的consumeEnergy函数的lambda
+    //机器应传入自己的 extractEnergy 方法的 lambda，以正确追踪输出速率
     private val extractEnergy: (Long) -> Long,
     private val canChargeNow: () -> Boolean = { true }
 ) {

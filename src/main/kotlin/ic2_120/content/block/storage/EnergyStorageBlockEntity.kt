@@ -65,7 +65,7 @@ abstract class EnergyStorageBlockEntity(
                     batterySlot = slot,
                     machineTierProvider = { tier },
                     machineEnergyProvider = { sync.amount },
-                    extractEnergy = { requested -> sync.consumeEnergy(requested) },
+                    extractEnergy = { requested -> sync.extractEnergy(requested) },
                     canChargeNow = { true }
                 )
             )
@@ -157,7 +157,7 @@ abstract class EnergyStorageBlockEntity(
                 player = player,
                 machineTier = tier,
                 machineEnergyProvider = { sync.amount },
-                extractEnergy = { requested -> sync.consumeEnergy(requested) }
+                extractEnergy = { requested -> sync.extractEnergy(requested) }
             )
         }
         return charged
