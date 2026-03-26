@@ -31,7 +31,7 @@ import ic2_120.registry.annotation.RecipeProvider
     registerItem = true,
     tab = CreativeTab.IC2_MATERIALS,
     group = "building",
-    transparent = true
+    renderLayer = "cutout_mipped"
 )
 class ReinforcedGlassBlock : Block(AbstractBlock.Settings.copy(Blocks.GLASS).strength(10.0f, 1200.0f).nonOpaque())
 
@@ -158,7 +158,7 @@ class BlackWallBlock : Block(AbstractBlock.Settings.copy(Blocks.BLACK_CONCRETE).
     registerItem = true,
     tab = CreativeTab.IC2_MATERIALS,
     group = "scaffold",
-    transparent = true
+    renderLayer = "cutout"
 )
 class WoodenScaffoldBlock(
     settings: AbstractBlock.Settings = AbstractBlock.Settings.copy(Blocks.OAK_PLANKS).strength(1.0f).nonOpaque()
@@ -169,7 +169,7 @@ class WoodenScaffoldBlock(
     registerItem = true,
     tab = CreativeTab.IC2_MATERIALS,
     group = "scaffold",
-    transparent = true
+    renderLayer = "cutout"
 )
 class ReinforcedWoodenScaffoldBlock(
     settings: AbstractBlock.Settings = AbstractBlock.Settings.copy(Blocks.OAK_PLANKS).strength(2.0f).nonOpaque()
@@ -180,7 +180,7 @@ class ReinforcedWoodenScaffoldBlock(
     registerItem = true,
     tab = CreativeTab.IC2_MATERIALS,
     group = "scaffold",
-    transparent = true
+    renderLayer = "cutout"
 )
 class IronScaffoldBlock(
     settings: AbstractBlock.Settings = AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(3.0f).nonOpaque()
@@ -191,7 +191,7 @@ class IronScaffoldBlock(
     registerItem = true,
     tab = CreativeTab.IC2_MATERIALS,
     group = "scaffold",
-    transparent = true
+    renderLayer = "cutout"
 )
 class ReinforcedIronScaffoldBlock(
     settings: AbstractBlock.Settings = AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(5.0f).nonOpaque()
