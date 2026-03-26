@@ -21,6 +21,7 @@ import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
 import net.minecraft.util.Identifier
+import ic2_120.registry.annotation.ScreenFactory
 
 /**
  * 反应堆流体接口的 ScreenHandler。
@@ -116,6 +117,7 @@ class ReactorFluidPortScreenHandler(
         const val PLAYER_INV_START = 1
         const val HOTBAR_END = 36
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): ReactorFluidPortScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

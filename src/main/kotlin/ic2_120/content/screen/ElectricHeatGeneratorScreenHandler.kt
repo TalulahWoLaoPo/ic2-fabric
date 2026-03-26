@@ -24,6 +24,7 @@ import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
 import net.minecraft.util.Identifier
+import ic2_120.registry.annotation.ScreenFactory
 
 @ModScreenHandler(block = ElectricHeatGeneratorBlock::class)
 class ElectricHeatGeneratorScreenHandler(
@@ -116,6 +117,7 @@ class ElectricHeatGeneratorScreenHandler(
             !stack.isEmpty && stack.item == Registries.ITEM.get(Identifier("ic2_120", "coil"))
         })
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): ElectricHeatGeneratorScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

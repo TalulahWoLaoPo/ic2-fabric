@@ -35,6 +35,7 @@ import ic2_120.registry.instance
 import ic2_120.registry.item
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
+import ic2_120.registry.annotation.RecipeProvider
 
 // ========== 工具材料 ==========
 
@@ -55,6 +56,7 @@ object BronzeToolMaterial : ToolMaterial {
 @ModItem(name = "forge_hammer", tab = CreativeTab.IC2_TOOLS)
 class ForgeHammer : Item(FabricItemSettings().maxDamage(80)) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val iron = Items.IRON_INGOT
             val stick = Items.STICK
@@ -80,6 +82,7 @@ class ForgeHammer : Item(FabricItemSettings().maxDamage(80)) {
 @ModItem(name = "cutter", tab = CreativeTab.IC2_TOOLS)
 class Cutter : Item(FabricItemSettings().maxDamage(60)) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val ironIngot = Items.IRON_INGOT
             val ironPlate = IronPlate::class.instance()
@@ -116,6 +119,7 @@ class Cutter : Item(FabricItemSettings().maxDamage(60)) {
 @ModItem(name = "bronze_axe", tab = CreativeTab.IC2_TOOLS, group = "bronze_tools")
 class BronzeAxe : AxeItem(BronzeToolMaterial, 5f, -3f, FabricItemSettings().maxCount(1)) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val bronze = BronzeIngot::class.instance()
             val stick = Items.STICK
@@ -131,6 +135,7 @@ class BronzeAxe : AxeItem(BronzeToolMaterial, 5f, -3f, FabricItemSettings().maxC
 @ModItem(name = "bronze_hoe", tab = CreativeTab.IC2_TOOLS, group = "bronze_tools")
 class BronzeHoe : HoeItem(BronzeToolMaterial, -1, 0f, FabricItemSettings().maxCount(1)) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val bronze = BronzeIngot::class.instance()
             val stick = Items.STICK
@@ -146,6 +151,7 @@ class BronzeHoe : HoeItem(BronzeToolMaterial, -1, 0f, FabricItemSettings().maxCo
 @ModItem(name = "bronze_sword", tab = CreativeTab.IC2_TOOLS, group = "bronze_tools")
 class BronzeSword : SwordItem(BronzeToolMaterial, 3, -2.4f, FabricItemSettings().maxCount(1)) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val bronze = BronzeIngot::class.instance()
             val stick = Items.STICK
@@ -161,6 +167,7 @@ class BronzeSword : SwordItem(BronzeToolMaterial, 3, -2.4f, FabricItemSettings()
 @ModItem(name = "bronze_shovel", tab = CreativeTab.IC2_TOOLS, group = "bronze_tools")
 class BronzeShovel : ShovelItem(BronzeToolMaterial, 1.5f, -3f, FabricItemSettings().maxCount(1)) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val bronze = BronzeIngot::class.instance()
             val stick = Items.STICK
@@ -176,6 +183,7 @@ class BronzeShovel : ShovelItem(BronzeToolMaterial, 1.5f, -3f, FabricItemSetting
 @ModItem(name = "bronze_pickaxe", tab = CreativeTab.IC2_TOOLS, group = "bronze_tools")
 class BronzePickaxe : PickaxeItem(BronzeToolMaterial, 1, -2.8f, FabricItemSettings().maxCount(1)) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val bronze = BronzeIngot::class.instance()
             val stick = Items.STICK
@@ -337,6 +345,7 @@ class Chainsaw : Item(FabricItemSettings().maxCount(1)), IElectricTool {
 @ModItem(name = "diamond_drill", tab = CreativeTab.IC2_TOOLS, group = "electric_tools")
 class DiamondDrill : Item(FabricItemSettings().maxCount(1)), IElectricTool {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val diamond = Items.DIAMOND
             val drill = Drill::class.instance()
@@ -364,6 +373,7 @@ class DiamondDrill : Item(FabricItemSettings().maxCount(1)), IElectricTool {
 @ModItem(name = "drill", tab = CreativeTab.IC2_TOOLS, group = "electric_tools")
 class Drill : Item(FabricItemSettings().maxCount(1)), IElectricTool {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val ironPlate = IronPlate::class.instance()
             val powerUnit = PowerUnitItem::class.instance()
@@ -426,6 +436,7 @@ class IridiumDrill : Item(FabricItemSettings().maxCount(1)), IElectricTool {
     override val maxCapacity = 100_000L
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val reinforcedIridium = IridiumPlate::class.instance()
             val diamondDrill = DiamondDrill::class.instance()

@@ -26,6 +26,7 @@ import net.minecraft.screen.slot.Slot
 import ic2_120.content.item.energy.IElectricTool
 import ic2_120.content.item.energy.IBatteryItem
 import net.fabricmc.fabric.api.registry.FuelRegistry
+import ic2_120.registry.annotation.ScreenFactory
 
 @ModScreenHandler(block = GeneratorBlock::class)
 class GeneratorScreenHandler(
@@ -119,6 +120,7 @@ class GeneratorScreenHandler(
             canInsert = { stack -> stack.canBeCharged() }
         )
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): GeneratorScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

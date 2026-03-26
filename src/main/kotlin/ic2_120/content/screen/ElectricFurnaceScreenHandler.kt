@@ -20,6 +20,7 @@ import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
 import net.minecraft.screen.ArrayPropertyDelegate
 import net.minecraft.screen.PropertyDelegate
+import ic2_120.registry.annotation.ScreenFactory
 
 /**
  * 电炉 GUI 的 ScreenHandler。
@@ -125,6 +126,7 @@ class ElectricFurnaceScreenHandler(
         const val HOTBAR_END = 39
 
         /** 客户端从 ExtendedScreenHandlerType 创建：从 buf 读取 pos，用临时 Inventory。 */
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): ElectricFurnaceScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

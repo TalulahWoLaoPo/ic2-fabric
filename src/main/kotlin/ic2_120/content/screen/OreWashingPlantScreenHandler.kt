@@ -26,6 +26,7 @@ import net.minecraft.screen.PropertyDelegate
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
+import ic2_120.registry.annotation.ScreenFactory
 
 @ModScreenHandler(block = OreWashingPlantBlock::class)
 class OreWashingPlantScreenHandler(
@@ -217,6 +218,7 @@ class OreWashingPlantScreenHandler(
         const val PLAYER_INV_START = 11
         const val HOTBAR_END = 47
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): OreWashingPlantScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

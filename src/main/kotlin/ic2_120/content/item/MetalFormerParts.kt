@@ -25,12 +25,14 @@ import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
 import net.minecraft.world.World
 import java.util.function.Consumer
+import ic2_120.registry.annotation.RecipeProvider
 
 // ========== 金属成型机制品 ==========
 
 @ModItem(name = "tin_can", tab = CreativeTab.IC2_MATERIALS, group = "parts")
 class EmptyTinCanItem : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val tinIngot = TinIngot::class.instance()
 
@@ -97,6 +99,7 @@ class FilledTinCanItem : Item(
 @ModItem(name = "small_power_unit", tab = CreativeTab.IC2_MATERIALS, group = "parts")
 class SmallPowerUnitItem : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             //   C F
             // B X M
@@ -118,6 +121,7 @@ class SmallPowerUnitItem : Item(FabricItemSettings()) {
 @ModItem(name = "power_unit", tab = CreativeTab.IC2_MATERIALS, group = "parts")
 class PowerUnitItem : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             // b c f
             // b x m

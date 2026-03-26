@@ -29,6 +29,7 @@ import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
 import net.minecraft.util.Identifier
+import ic2_120.registry.annotation.ScreenFactory
 
 @ModScreenHandler(block = SolarDistillerBlock::class)
 class SolarDistillerScreenHandler(
@@ -152,6 +153,7 @@ class SolarDistillerScreenHandler(
             canTake = { true }
         )
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): SolarDistillerScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

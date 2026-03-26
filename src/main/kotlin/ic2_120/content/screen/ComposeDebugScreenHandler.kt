@@ -9,6 +9,7 @@ import net.minecraft.network.PacketByteBuf
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.slot.Slot
 import net.minecraft.util.math.BlockPos
+import ic2_120.registry.annotation.ScreenFactory
 
 /**
  * ComposeDebugScreen 的服务端 ScreenHandler。
@@ -37,6 +38,7 @@ class ComposeDebugScreenHandler(
         const val SLOT_LEFT_INDEX = 0
         const val SLOT_RIGHT_INDEX = 1
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf?): ComposeDebugScreenHandler {
             return ComposeDebugScreenHandler(syncId, playerInventory)
         }

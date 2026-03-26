@@ -24,6 +24,7 @@ import ic2_120.content.sync.ScannerSync
 import ic2_120.content.syncs.SyncedData
 import ic2_120.registry.annotation.ModScreenHandler
 import ic2_120.registry.type
+import ic2_120.registry.annotation.ScreenFactory
 
 /**
  * 扫描仪 GUI 的服务端 ScreenHandler。
@@ -166,6 +167,7 @@ class ScannerScreenHandler(
             "ancient_debris", "netherite_block"
         )
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): ScannerScreenHandler {
             // 读取初始数据（服务端写入，服务端 also reads）
             val energy = buf.readInt()

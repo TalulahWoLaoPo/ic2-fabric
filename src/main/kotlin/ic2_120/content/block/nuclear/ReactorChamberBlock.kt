@@ -30,6 +30,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
 import ic2_120.registry.id
 import java.util.function.Consumer
+import ic2_120.registry.annotation.RecipeProvider
 
 /**
  * 核反应仓。单独放置无 UI、无容量。
@@ -78,6 +79,7 @@ class ReactorChamberBlock(settings: AbstractBlock.Settings = AbstractBlock.Setti
     }
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val machine = MachineCasingBlock::class.item()
             val leadPlate = ic2_120.content.item.LeadPlate::class.instance()

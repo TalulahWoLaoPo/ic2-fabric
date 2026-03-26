@@ -12,6 +12,7 @@ import ic2_120.content.screen.slot.UpgradeSlotLayout
 import ic2_120.content.sync.ExtractorSync
 import ic2_120.content.syncs.SyncedDataView
 import ic2_120.registry.annotation.ModScreenHandler
+import ic2_120.registry.annotation.ScreenFactory
 import ic2_120.registry.type
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -165,6 +166,7 @@ class ExtractorScreenHandler(
         const val PLAYER_INV_START = 7
         const val HOTBAR_END = 43
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): ExtractorScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

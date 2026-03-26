@@ -31,6 +31,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
 import ic2_120.registry.id
 import java.util.function.Consumer
+import ic2_120.registry.annotation.RecipeProvider
 
 /**
  * 放射性同位素温差发电机。
@@ -89,6 +90,7 @@ class RtGeneratorBlock : MachineBlock() {
     companion object {
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")
 
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val generator = GeneratorBlock::class.item()
             val ironCasing = IronCasing::class.instance()

@@ -22,6 +22,7 @@ import net.minecraft.util.Hand
 import net.minecraft.util.TypedActionResult
 import net.minecraft.world.World
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
+import ic2_120.registry.annotation.RecipeProvider
 
 /**
  * 扫描仪类型：OD（矿石密度）与 OV（矿石价值）。
@@ -153,6 +154,7 @@ class OdScannerItem : Item(FabricItemSettings().maxCount(1)), IElectricTool {
          * [电路板]   [充电电池]    [电路板]
          * [绝缘铜质导线] [绝缘铜质导线] [绝缘铜质导线]
          */
+        @RecipeProvider
         fun generateRecipes(exporter: java.util.function.Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
             val circuit = ic2_120.content.item.AdvancedCircuit::class.instance()
             val battery = ic2_120.content.item.energy.ReBatteryItem::class.instance()
@@ -226,6 +228,7 @@ class AdvancedScannerItem : Item(FabricItemSettings().maxCount(1)), IElectricToo
          * [荧光粉]   [高级电路] [荧光粉]
          * [2x绝缘金质导线] [OD扫描器] [2x绝缘金质导线]
          */
+        @RecipeProvider
         fun generateRecipes(exporter: java.util.function.Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
             val goldCasing = ic2_120.content.item.GoldCasing::class.instance()
             val energyCrystal = ic2_120.content.item.energy.EnergyCrystalItem::class.instance()

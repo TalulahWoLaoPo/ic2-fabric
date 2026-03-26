@@ -35,6 +35,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
 import ic2_120.registry.id
 import java.util.function.Consumer
+import ic2_120.registry.annotation.RecipeProvider
 
 /**
  * 核反应堆。中心方块，六面可各接触 0 或 1 个核反应仓扩展容量。
@@ -109,6 +110,7 @@ class NuclearReactorBlock(settings: AbstractBlock.Settings = AbstractBlock.Setti
     companion object {
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")
 
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val generator = GeneratorBlock::class.item()
             val denseLeadPlate = ic2_120.content.item.DenseLeadPlate::class.instance()

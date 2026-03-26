@@ -24,6 +24,7 @@ import net.minecraft.screen.PropertyDelegate
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
+import ic2_120.registry.annotation.ScreenFactory
 
 @ModScreenHandler(block = TeleporterBlock::class)
 class TeleporterScreenHandler(
@@ -141,6 +142,7 @@ class TeleporterScreenHandler(
         const val BUTTON_ID_RANGE_DEC = 0
         const val BUTTON_ID_RANGE_INC = 1
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): TeleporterScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

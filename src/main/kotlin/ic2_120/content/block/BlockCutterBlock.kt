@@ -20,6 +20,7 @@ import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import java.util.function.Consumer
+import ic2_120.registry.annotation.RecipeProvider
 
 /**
  * 方块切割机。将方块锯成 9 个对应板，或增产 50% 木板和木棍。
@@ -75,6 +76,7 @@ class BlockCutterBlock : MachineBlock() {
         /**
          * 为 ClassScanner 生成配方
          */
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             BlockCutterRecipeDatagen.generateRecipes(exporter)
         }

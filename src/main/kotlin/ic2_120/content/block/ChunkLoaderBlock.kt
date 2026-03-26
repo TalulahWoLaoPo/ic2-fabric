@@ -28,6 +28,7 @@ import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import java.util.function.Consumer
+import ic2_120.registry.annotation.RecipeProvider
 
 /**
  * 区块加载器。消耗 EU 强制加载周围 1～25 个区块，运行时显示绿色。
@@ -86,6 +87,7 @@ class ChunkLoaderBlock : MachineBlock() {
     companion object {
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")
 
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
             val tinPlate = ic2_120.content.item.TinPlate::class.instance()
             val machine = MachineCasingBlock::class.item()

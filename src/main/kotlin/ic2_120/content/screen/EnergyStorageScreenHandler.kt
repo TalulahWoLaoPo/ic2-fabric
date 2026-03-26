@@ -26,12 +26,18 @@ import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.Direction
+import ic2_120.registry.annotation.ScreenFactory
 
 /**
  * 储电盒 GUI 的 ScreenHandler。
  * 四个等级（BatBox/CESU/MFE/MFSU）共用，根据方块类型动态配置槽位数量和规则。
  */
-@ModScreenHandler(names = ["batbox", "cesu", "mfe", "mfsu"])
+@ModScreenHandler(
+    names = [
+        "batbox", "cesu", "mfe", "mfsu",
+        "batbox_chargepad", "cesu_chargepad", "mfe_chargepad", "mfsu_chargepad"
+    ]
+)
 class EnergyStorageScreenHandler(
     screenHandlerType: net.minecraft.screen.ScreenHandlerType<*>,
     syncId: Int,
@@ -183,6 +189,7 @@ class EnergyStorageScreenHandler(
         const val HOTBAR_Y = 142
         const val SLOT_SIZE = 18
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): EnergyStorageScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

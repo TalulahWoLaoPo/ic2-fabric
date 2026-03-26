@@ -21,6 +21,7 @@ import net.minecraft.screen.PropertyDelegate
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
+import ic2_120.registry.annotation.ScreenFactory
 
 @ModScreenHandler(block = SolidHeatGeneratorBlock::class)
 class SolidHeatGeneratorScreenHandler(
@@ -87,6 +88,7 @@ class SolidHeatGeneratorScreenHandler(
             !stack.isEmpty && (FuelRegistry.INSTANCE.get(stack.item) ?: 0) > 0
         })
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): SolidHeatGeneratorScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

@@ -30,6 +30,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
 import ic2_120.registry.id
 import java.util.function.Consumer
+import ic2_120.registry.annotation.RecipeProvider
 
 /**
  * 铁炉方块。使用燃料烧制物品，比原版熔炉快 20%。
@@ -86,6 +87,7 @@ class IronFurnaceBlock : MachineBlock() {
     companion object {
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")
 
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val ironPlate = ic2_120.content.item.IronPlate::class.instance()
             if (ironPlate != Items.AIR) {

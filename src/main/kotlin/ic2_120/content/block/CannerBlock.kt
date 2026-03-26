@@ -30,6 +30,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import ic2_120.registry.id
 import java.util.function.Consumer
+import ic2_120.registry.annotation.RecipeProvider
 
 /**
  * 流体/固体装罐机方块。
@@ -83,6 +84,7 @@ class CannerBlock : MachineBlock() {
     companion object {
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")
 
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val machine = MachineCasingBlock::class.item()
             val circuit = Circuit::class.instance()

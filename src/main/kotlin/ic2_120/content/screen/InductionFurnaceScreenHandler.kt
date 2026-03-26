@@ -20,6 +20,7 @@ import net.minecraft.screen.PropertyDelegate
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
+import ic2_120.registry.annotation.ScreenFactory
 
 /**
  * 感应炉 GUI 的 ScreenHandler。
@@ -146,6 +147,7 @@ class InductionFurnaceScreenHandler(
         const val PLAYER_INV_START = 5
         const val HOTBAR_END = 40
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): InductionFurnaceScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

@@ -20,6 +20,7 @@ import ic2_120.registry.item
 import ic2_120.registry.id
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
+import ic2_120.registry.annotation.RecipeProvider
 
 /**
  * 锡质导线。低压传输，32 EU/t，损耗 0.2 EU/格。
@@ -32,6 +33,7 @@ class TinCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : Base
     override fun getEnergyLoss(): Long = 200L
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, TinCableBlock::class.item(), 2)
                 .input(Cutter::class.instance())
@@ -53,6 +55,7 @@ class CopperCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : B
     override fun getEnergyLoss(): Long = 200L
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, CopperCableBlock::class.item(), 2)
                 .input(Cutter::class.instance())
@@ -77,6 +80,7 @@ class GoldCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : Bas
     override fun getCableMax(): Double = 9.5 / 16.0
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, GoldCableBlock::class.item(), 2)
                 .input(Cutter::class.instance())
@@ -101,6 +105,7 @@ class IronCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : Bas
     override fun getCableMax(): Double = 11.0 / 16.0
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, IronCableBlock::class.item(), 2)
                 .input(Cutter::class.instance())
@@ -123,6 +128,7 @@ class GlassFibreCableBlock(settings: AbstractBlock.Settings = defaultSettings().
     override val insulationLevel: Int = 5
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, GlassFibreCableBlock::class.item(), 2)
                 .input(Cutter::class.instance())
@@ -147,6 +153,7 @@ class InsulatedCopperCableBlock(settings: AbstractBlock.Settings = defaultSettin
     override val insulationLevel: Int = 2
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, InsulatedCopperCableBlock::class.item(), 1)
                 .input(CopperCableBlock::class.item())
@@ -169,6 +176,7 @@ class InsulatedTinCableBlock(settings: AbstractBlock.Settings = defaultSettings(
     override val insulationLevel: Int = 2
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, InsulatedTinCableBlock::class.item(), 1)
                 .input(TinCableBlock::class.item())
@@ -194,6 +202,7 @@ class InsulatedGoldCableBlock(settings: AbstractBlock.Settings = defaultSettings
     override fun getCableMax(): Double = 9.5 / 16.0
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, InsulatedGoldCableBlock::class.item(), 1)
                 .input(GoldCableBlock::class.item())
@@ -219,6 +228,7 @@ class DoubleInsulatedGoldCableBlock(settings: AbstractBlock.Settings = defaultSe
     override fun getCableMax(): Double = 9.5 / 16.0
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, DoubleInsulatedGoldCableBlock::class.item(), 1)
                 .input(GoldCableBlock::class.item())
@@ -245,6 +255,7 @@ class InsulatedIronCableBlock(settings: AbstractBlock.Settings = defaultSettings
     override fun getCableMax(): Double = 11.0 / 16.0
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, InsulatedIronCableBlock::class.item(), 1)
                 .input(IronCableBlock::class.item())
@@ -270,6 +281,7 @@ class DoubleInsulatedIronCableBlock(settings: AbstractBlock.Settings = defaultSe
     override fun getCableMax(): Double = 11.0 / 16.0
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, DoubleInsulatedIronCableBlock::class.item(), 1)
                 .input(IronCableBlock::class.item())
@@ -296,6 +308,7 @@ class TripleInsulatedIronCableBlock(settings: AbstractBlock.Settings = defaultSe
     override fun getCableMax(): Double = 11.0 / 16.0
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, TripleInsulatedIronCableBlock::class.item(), 1)
                 .input(IronCableBlock::class.item())

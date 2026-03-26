@@ -29,6 +29,7 @@ import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
 import net.minecraft.util.Identifier
+import ic2_120.registry.annotation.ScreenFactory
 
 @ModScreenHandler(block = FermenterBlock::class)
 class FermenterScreenHandler(
@@ -190,6 +191,7 @@ class FermenterScreenHandler(
             canTake = { true }
         )
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): FermenterScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

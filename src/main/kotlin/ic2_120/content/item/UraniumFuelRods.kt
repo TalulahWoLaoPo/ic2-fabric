@@ -20,6 +20,7 @@ import net.minecraft.recipe.book.RecipeCategory
 import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
 import java.util.function.Consumer
+import ic2_120.registry.annotation.RecipeProvider
 
 // 发热计算
 private fun triangularNumber(x: Int): Int = (x * x + x) * 2
@@ -146,6 +147,7 @@ class DualUraniumFuelRodItem : AbstractUraniumFuelRodItem(FabricItemSettings(), 
         ItemStack(Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "depleted_dual_uranium_fuel_rod")))
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             // 双联 <- 单联 × 2：XFX（X=单联燃料棒, F=铁板）
             ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, DualUraniumFuelRodItem::class.instance(), 1)
@@ -164,6 +166,7 @@ class QuadUraniumFuelRodItem : AbstractUraniumFuelRodItem(FabricItemSettings(), 
         ItemStack(Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "depleted_quad_uranium_fuel_rod")))
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             // 四联 <- 双联：OXO / CFC / OXO（X=双联, F=铁板, C=铜板, O=空气）
             ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, QuadUraniumFuelRodItem::class.instance(), 1)
@@ -293,6 +296,7 @@ class MoxFuelRodItem : AbstractMoxFuelRodItem(FabricItemSettings(), 10_000, 1) {
         ItemStack(Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "depleted_mox_fuel_rod")))
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             // 双联 <- 单联 × 2：XFX（X=单联MOX燃料棒, F=铁板）
             ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, DualMoxFuelRodItem::class.instance(), 1)
@@ -311,6 +315,7 @@ class DualMoxFuelRodItem : AbstractMoxFuelRodItem(FabricItemSettings(), 10_000, 
         ItemStack(Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "depleted_dual_mox_fuel_rod")))
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             // 四联 <- 双联：OXO / CFC / OXO（X=双联MOX燃料棒, F=铁板, C=铜板, O=空气）
             ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, QuadMoxFuelRodItem::class.instance(), 1)

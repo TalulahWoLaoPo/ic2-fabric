@@ -27,6 +27,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
 import ic2_120.registry.id
 import java.util.function.Consumer
+import ic2_120.registry.annotation.RecipeProvider
 
 /**
  * 感应炉方块。使用电力加热并快速烧制物品，支持双槽同时加工。
@@ -79,6 +80,7 @@ class InductionFurnaceBlock : MachineBlock() {
     companion object {
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")
 
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val circuit = ic2_120.content.item.AdvancedCircuit::class.instance()
             val machineCasing = MachineCasingBlock::class.item()

@@ -27,6 +27,7 @@ import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
 import net.minecraft.util.Identifier
+import ic2_120.registry.annotation.ScreenFactory
 
 @ModScreenHandler(block = SolidCannerBlock::class)
 class SolidCannerScreenHandler(
@@ -153,6 +154,7 @@ class SolidCannerScreenHandler(
         const val PLAYER_INV_START = 8
         const val HOTBAR_END = 44
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): SolidCannerScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

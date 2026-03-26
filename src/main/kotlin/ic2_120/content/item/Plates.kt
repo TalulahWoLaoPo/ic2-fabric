@@ -18,12 +18,14 @@ import net.minecraft.util.Identifier
 import java.util.function.Consumer
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
+import ic2_120.registry.annotation.RecipeProvider
 
 // ========== 板类（金属成型机切割：1 锭 -> 1 板；青金石/黑曜石见配方） ==========
 
 @ModItem(name = "bronze_plate", tab = CreativeTab.IC2_MATERIALS, group = "plates")
 class BronzePlate : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, BronzePlate::class.instance(), 1)
                 .input(ForgeHammer::class.instance())
@@ -37,6 +39,7 @@ class BronzePlate : Item(FabricItemSettings()) {
 @ModItem(name = "copper_plate", tab = CreativeTab.IC2_MATERIALS, group = "plates")
 class CopperPlate : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, CopperPlate::class.instance(), 1)
                 .input(Items.COPPER_INGOT)
@@ -50,6 +53,7 @@ class CopperPlate : Item(FabricItemSettings()) {
 @ModItem(name = "gold_plate", tab = CreativeTab.IC2_MATERIALS, group = "plates")
 class GoldPlate : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, GoldPlate::class.instance(), 1)
                 .input(Items.GOLD_INGOT)
@@ -63,6 +67,7 @@ class GoldPlate : Item(FabricItemSettings()) {
 @ModItem(name = "iron_plate", tab = CreativeTab.IC2_MATERIALS, group = "plates")
 class IronPlate : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, IronPlate::class.instance(), 1)
                 .input(ForgeHammer::class.instance())
@@ -76,6 +81,7 @@ class IronPlate : Item(FabricItemSettings()) {
 @ModItem(name = "lapis_plate", tab = CreativeTab.IC2_MATERIALS, group = "plates")
 class LapisPlate : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, LapisPlate::class.instance(), 1)
                 .input(ForgeHammer::class.instance())
@@ -89,6 +95,7 @@ class LapisPlate : Item(FabricItemSettings()) {
 @ModItem(name = "lead_plate", tab = CreativeTab.IC2_MATERIALS, group = "plates")
 class LeadPlate : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, LeadPlate::class.instance(), 1)
                 .input(ForgeHammer::class.instance())
@@ -105,6 +112,7 @@ class ObsidianPlate : Item(FabricItemSettings())
 @ModItem(name = "steel_plate", tab = CreativeTab.IC2_MATERIALS, group = "plates")
 class SteelPlate : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, SteelPlate::class.instance(), 1)
                 .input(ForgeHammer::class.instance())
@@ -118,6 +126,7 @@ class SteelPlate : Item(FabricItemSettings()) {
 @ModItem(name = "tin_plate", tab = CreativeTab.IC2_MATERIALS, group = "plates")
 class TinPlate : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, TinPlate::class.instance(), 1)
                 .input(ForgeHammer::class.instance())

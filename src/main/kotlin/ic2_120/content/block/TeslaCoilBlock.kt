@@ -32,6 +32,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditio
 import ic2_120.registry.id
 import ic2_120.registry.recipeId
 import java.util.function.Consumer
+import ic2_120.registry.annotation.RecipeProvider
 
 /**
  * 特斯拉线圈方块。消耗电力对范围内生物释放闪电。
@@ -102,6 +103,7 @@ class TeslaCoilBlock : MachineBlock() {
     companion object {
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")
 
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val redstone = Items.REDSTONE
             val ironCasing = ic2_120.content.item.IronCasing::class.instance()

@@ -22,6 +22,7 @@ import net.minecraft.screen.PropertyDelegate
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
+import ic2_120.registry.annotation.ScreenFactory
 
 @ModScreenHandler(block = MetalFormerBlock::class)
 class MetalFormerScreenHandler(
@@ -223,6 +224,7 @@ class MetalFormerScreenHandler(
         /** 客户端发送按钮点击时使用此 id，服务端在 [onButtonClick] 中处理 */
         const val BUTTON_ID_MODE_CYCLE = 0
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): MetalFormerScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

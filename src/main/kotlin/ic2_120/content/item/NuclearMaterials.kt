@@ -15,6 +15,7 @@ import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
 import net.minecraft.recipe.book.RecipeCategory
 import net.minecraft.util.Identifier
 import java.util.function.Consumer
+import ic2_120.registry.annotation.RecipeProvider
 
 // ========== 核能相关材料 ==========
 
@@ -22,6 +23,7 @@ import java.util.function.Consumer
 @ModItem(name = "uranium", tab = CreativeTab.IC2_MATERIALS, group = "nuclear")
 class Uranium : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, Uranium::class.instance(), 1)
                 .pattern("XXX")
@@ -59,6 +61,7 @@ class Plutonium : Item(FabricItemSettings())
 @ModItem(name = "mox", tab = CreativeTab.IC2_MATERIALS, group = "nuclear")
 class Mox : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, Mox::class.instance(), 1)
                 .pattern("XXX")
@@ -84,6 +87,7 @@ class Mox : Item(FabricItemSettings()) {
 @ModItem(name = "small_uranium_235", tab = CreativeTab.IC2_MATERIALS, group = "nuclear")
 class SmallUranium235 : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             // 9 小撮 -> 1 铀-235
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, Uranium235::class.instance(), 1)
@@ -107,6 +111,7 @@ class SmallUranium235 : Item(FabricItemSettings()) {
 @ModItem(name = "small_uranium_238", tab = CreativeTab.IC2_MATERIALS, group = "nuclear")
 class SmallUranium238 : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             // 9 小撮 -> 1 铀-238
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, Uranium238::class.instance(), 1)
@@ -130,6 +135,7 @@ class SmallUranium238 : Item(FabricItemSettings()) {
 @ModItem(name = "small_plutonium", tab = CreativeTab.IC2_MATERIALS, group = "nuclear")
 class SmallPlutonium : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             // 9 小撮 -> 1 钚
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, Plutonium::class.instance(), 1)
@@ -163,6 +169,7 @@ class SmallPlutonium : Item(FabricItemSettings()) {
 @ModItem(name = "rtg_pellet", tab = CreativeTab.IC2_MATERIALS, group = "nuclear")
 class RtgPellet : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, RtgPellet::class.instance(), 1)
                 .pattern("XXX")

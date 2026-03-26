@@ -40,6 +40,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
 import ic2_120.registry.id
 import java.util.function.Consumer
+import ic2_120.registry.annotation.RecipeProvider
 
 /**
  * 变压器方块基类。
@@ -138,6 +139,7 @@ class LvTransformerBlock : TransformerBlock() {
         LvTransformerBlockEntity(pos, state)
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val insulatedTinCable = InsulatedTinCableBlock::class.item()
             val coil = ic2_120.content.item.Coil::class.instance()
@@ -159,6 +161,7 @@ class MvTransformerBlock : TransformerBlock() {
         MvTransformerBlockEntity(pos, state)
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val insulatedCopperCable = InsulatedCopperCableBlock::class.item()
             val machine = MachineCasingBlock::class.item()
@@ -179,6 +182,7 @@ class HvTransformerBlock : TransformerBlock() {
         HvTransformerBlockEntity(pos, state)
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val insulatedGoldCable = InsulatedGoldCableBlock::class.item()
             val circuit = ic2_120.content.item.Circuit::class.instance()
@@ -200,6 +204,7 @@ class EvTransformerBlock : TransformerBlock() {
         EvTransformerBlockEntity(pos, state)
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val insulatedIronCable = TripleInsulatedIronCableBlock::class.item()
             val advancedCircuit = ic2_120.content.item.AdvancedCircuit::class.instance()

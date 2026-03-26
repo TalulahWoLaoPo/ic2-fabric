@@ -29,6 +29,7 @@ import net.minecraft.screen.PropertyDelegate
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
+import ic2_120.registry.annotation.ScreenFactory
 
 @ModScreenHandler(names = ["miner", "advanced_miner"])
 class MinerScreenHandler(
@@ -181,6 +182,7 @@ class MinerScreenHandler(
         const val BUTTON_TOGGLE_SILK = 1
         const val BUTTON_RESTART = 2
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): MinerScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

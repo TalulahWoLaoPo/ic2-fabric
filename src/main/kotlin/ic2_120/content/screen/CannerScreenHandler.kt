@@ -31,6 +31,7 @@ import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
 import net.minecraft.util.Identifier
+import ic2_120.registry.annotation.ScreenFactory
 
 @ModScreenHandler(block = CannerBlock::class)
 class CannerScreenHandler(
@@ -221,6 +222,7 @@ class CannerScreenHandler(
             return storage.supportsInsertion()
         }
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): CannerScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

@@ -9,7 +9,8 @@ data class EnergyStorageConfig(
     val tier: Int,
     val capacity: Long,
     val slotCount: Int,
-    val useEquipmentSlots: Boolean
+    val useEquipmentSlots: Boolean,
+    val chargePlayersAbove: Boolean = false
 ) {
     companion object {
         val BATBOX = EnergyStorageConfig(
@@ -36,12 +37,20 @@ data class EnergyStorageConfig(
             slotCount = 5,
             useEquipmentSlots = true
         )
+        val BATBOX_CHARGEPAD = BATBOX.copy(chargePlayersAbove = true)
+        val CESU_CHARGEPAD = CESU.copy(chargePlayersAbove = true)
+        val MFE_CHARGEPAD = MFE.copy(chargePlayersAbove = true)
+        val MFSU_CHARGEPAD = MFSU.copy(chargePlayersAbove = true)
 
         private val BY_PATH = mapOf(
             "batbox" to BATBOX,
             "cesu" to CESU,
             "mfe" to MFE,
-            "mfsu" to MFSU
+            "mfsu" to MFSU,
+            "batbox_chargepad" to BATBOX_CHARGEPAD,
+            "cesu_chargepad" to CESU_CHARGEPAD,
+            "mfe_chargepad" to MFE_CHARGEPAD,
+            "mfsu_chargepad" to MFSU_CHARGEPAD
         )
 
         fun fromBlockPath(path: String): EnergyStorageConfig? = BY_PATH[path]

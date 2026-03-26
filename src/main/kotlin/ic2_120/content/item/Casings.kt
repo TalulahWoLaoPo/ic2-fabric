@@ -17,6 +17,7 @@ import net.minecraft.util.Identifier
 import java.util.function.Consumer
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
+import ic2_120.registry.annotation.RecipeProvider
 
 // ========== 外壳类 ==========
 
@@ -24,6 +25,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditio
 @ModItem(name = "bronze_casing", tab = CreativeTab.IC2_MATERIALS, group = "casing")
 class BronzeCasing : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, BronzeCasing::class.instance(), 2)
                 .input(ForgeHammer::class.instance())
@@ -38,6 +40,7 @@ class BronzeCasing : Item(FabricItemSettings()) {
 @ModItem(name = "copper_casing", tab = CreativeTab.IC2_MATERIALS, group = "casing")
 class CopperCasing : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, CopperCasing::class.instance(), 2)
                 .input(ForgeHammer::class.instance())
@@ -52,6 +55,7 @@ class CopperCasing : Item(FabricItemSettings()) {
 @ModItem(name = "gold_casing", tab = CreativeTab.IC2_MATERIALS, group = "casing")
 class GoldCasing : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, GoldCasing::class.instance(), 2)
                 .input(ForgeHammer::class.instance())
@@ -66,6 +70,7 @@ class GoldCasing : Item(FabricItemSettings()) {
 @ModItem(name = "iron_casing", tab = CreativeTab.IC2_MATERIALS, group = "casing")
 class IronCasing : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, IronCasing::class.instance(), 2)
                 .input(ForgeHammer::class.instance())
@@ -80,6 +85,7 @@ class IronCasing : Item(FabricItemSettings()) {
 @ModItem(name = "lead_casing", tab = CreativeTab.IC2_MATERIALS, group = "casing")
 class LeadCasing : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, LeadCasing::class.instance(), 2)
                 .input(ForgeHammer::class.instance())
@@ -94,6 +100,7 @@ class LeadCasing : Item(FabricItemSettings()) {
 @ModItem(name = "steel_casing", tab = CreativeTab.IC2_MATERIALS, group = "casing")
 class SteelCasing : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, SteelCasing::class.instance(), 2)
                 .input(ForgeHammer::class.instance())
@@ -108,6 +115,7 @@ class SteelCasing : Item(FabricItemSettings()) {
 @ModItem(name = "tin_casing", tab = CreativeTab.IC2_MATERIALS, group = "casing")
 class TinCasing : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, TinCasing::class.instance(), 2)
                 .input(ForgeHammer::class.instance())

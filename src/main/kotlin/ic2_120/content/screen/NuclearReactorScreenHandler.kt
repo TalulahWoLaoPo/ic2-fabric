@@ -29,6 +29,7 @@ import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
 import net.minecraft.util.Identifier
+import ic2_120.registry.annotation.ScreenFactory
 
 /**
  * 核反应堆 ScreenHandler。
@@ -198,6 +199,7 @@ class NuclearReactorScreenHandler(
             canTake = { true }
         )
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): NuclearReactorScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

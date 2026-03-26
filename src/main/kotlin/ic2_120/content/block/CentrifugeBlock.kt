@@ -23,6 +23,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import ic2_120.Ic2_120
 import java.util.function.Consumer
+import ic2_120.registry.annotation.RecipeProvider
 
 /**
  * 热能离心机方块。
@@ -81,6 +82,7 @@ class CentrifugeBlock : MachineBlock() {
         /**
          * 为 ClassScanner 生成配方
          */
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             CentrifugeRecipeDatagen.generateRecipes(exporter)
         }

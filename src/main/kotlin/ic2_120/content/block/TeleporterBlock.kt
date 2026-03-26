@@ -28,6 +28,7 @@ import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import java.util.function.Consumer
+import ic2_120.registry.annotation.RecipeProvider
 
 @ModBlock(name = "teleporter", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "processing")
 class TeleporterBlock : MachineBlock() {
@@ -82,6 +83,7 @@ class TeleporterBlock : MachineBlock() {
     companion object {
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")
 
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val advancedMachine = AdvancedMachineCasingBlock::class.item()
             val freq = FrequencyTransmitter::class.instance()

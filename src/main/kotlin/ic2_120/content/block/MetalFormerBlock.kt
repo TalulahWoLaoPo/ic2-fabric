@@ -21,6 +21,7 @@ import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import java.util.function.Consumer
+import ic2_120.registry.annotation.RecipeProvider
 
 /**
  * 金属成型机方块。消耗电力将锭等压制成型（如锭 -> 粒/块）。
@@ -72,6 +73,7 @@ class MetalFormerBlock : MachineBlock() {
     companion object {
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")
 
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             MetalFormerRecipeDatagen.generateRecipes(exporter)
         }

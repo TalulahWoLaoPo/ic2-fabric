@@ -12,6 +12,7 @@ import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
 import net.minecraft.screen.slot.SlotActionType
+import ic2_120.registry.annotation.ScreenFactory
 
 @ModScreenHandler(names = ["bronze_pump_attachment", "carbon_pump_attachment"])
 class PumpAttachmentScreenHandler(
@@ -71,6 +72,7 @@ class PumpAttachmentScreenHandler(
         private const val PLAYER_INV_Y = 58
         private const val HOTBAR_Y = 116
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): PumpAttachmentScreenHandler {
             val pos = buf.readBlockPos()
             val world = playerInventory.player.world

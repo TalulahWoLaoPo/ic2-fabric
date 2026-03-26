@@ -28,6 +28,7 @@ import net.minecraft.util.Identifier
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
 import java.util.function.Consumer
+import ic2_120.registry.annotation.RecipeProvider
 
 private fun offerIngotSmelting(
     exporter: Consumer<RecipeJsonProvider>,
@@ -54,6 +55,7 @@ private fun offerIngotSmelting(
 @ModItem(name = "mixed_metal_ingot", tab = CreativeTab.IC2_MATERIALS, group = "ingots")
 class MixedMetalIngot : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             // 配方1：铁板 + 青铜板 + 锡板 = 合金锭
             ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, MixedMetalIngot::class.instance(), 1)
@@ -80,6 +82,7 @@ class MixedMetalIngot : Item(FabricItemSettings()) {
 @ModItem(name = "lead_ingot", tab = CreativeTab.IC2_MATERIALS, group = "ingots")
 class LeadIngot : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, LeadIngot::class.instance(), 9)
                 .input(LeadBlock::class.instance())
@@ -126,6 +129,7 @@ class LeadIngot : Item(FabricItemSettings()) {
 @ModItem(name = "silver_ingot", tab = CreativeTab.IC2_MATERIALS, group = "ingots")
 class SilverIngot : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, SilverIngot::class.instance(), 9)
                 .input(SilverBlock::class.instance())
@@ -160,6 +164,7 @@ class SilverIngot : Item(FabricItemSettings()) {
 @ModItem(name = "steel_ingot", tab = CreativeTab.IC2_MATERIALS, group = "ingots")
 class SteelIngot : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, SteelIngot::class.instance(), 9)
                 .input(SteelBlock::class.instance())
@@ -185,6 +190,7 @@ class RefinedIronIngot : Item(FabricItemSettings())
 @ModItem(name = "uranium_ingot", tab = CreativeTab.IC2_MATERIALS, group = "ingots")
 class UraniumIngot : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, UraniumIngot::class.instance(), 9)
                 .input(UraniumBlock::class.instance())
@@ -246,6 +252,7 @@ class RawUranium : Item(FabricItemSettings())
 @ModItem(name = "crushed_copper", tab = CreativeTab.IC2_MATERIALS, group = "crushed_ore")
 class CrushedCopper : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             offerIngotSmelting(
                 exporter,
@@ -278,6 +285,7 @@ class CrushedCopper : Item(FabricItemSettings()) {
 @ModItem(name = "crushed_gold", tab = CreativeTab.IC2_MATERIALS, group = "crushed_ore")
 class CrushedGold : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             offerIngotSmelting(
                 exporter,
@@ -310,6 +318,7 @@ class CrushedGold : Item(FabricItemSettings()) {
 @ModItem(name = "crushed_iron", tab = CreativeTab.IC2_MATERIALS, group = "crushed_ore")
 class CrushedIron : Item(FabricItemSettings()) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             offerIngotSmelting(
                 exporter,

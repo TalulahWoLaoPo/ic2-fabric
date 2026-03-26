@@ -27,6 +27,7 @@ import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
 import net.minecraft.util.Identifier
+import ic2_120.registry.annotation.ScreenFactory
 
 @ModScreenHandler(block = PumpBlock::class)
 class PumpScreenHandler(
@@ -140,6 +141,7 @@ class PumpScreenHandler(
         const val PLAYER_INV_START = 7
         const val HOTBAR_END = 43
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): PumpScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

@@ -12,6 +12,7 @@ import net.minecraft.screen.ArrayPropertyDelegate
 import net.minecraft.screen.PropertyDelegate
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
+import ic2_120.registry.annotation.ScreenFactory
 
 /**
  * 特斯拉线圈 GUI 的 ScreenHandler。无机器槽位，仅玩家背包 + 能量同步。
@@ -54,6 +55,7 @@ class TeslaCoilScreenHandler(
         }, true)
 
     companion object {
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): TeslaCoilScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

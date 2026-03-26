@@ -39,6 +39,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
 import ic2_120.registry.id
 import java.util.function.Consumer
+import ic2_120.registry.annotation.RecipeProvider
 
 /**
  * 日光灯方块。支持 6 方向 facing 与 active 状态。
@@ -123,6 +124,7 @@ class LuminatorFlatBlock : BlockWithEntity(
         private val SHAPE_UP = VoxelShapes.cuboid(0.0, 0.0, 0.0, 1.0, THICK, 1.0)
         private val SHAPE_DOWN = VoxelShapes.cuboid(0.0, 1.0 - THICK, 0.0, 1.0, 1.0, 1.0)
 
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val insulatedCopperCable = InsulatedCopperCableBlock::class.item()
             val tinCable = TinCableBlock::class.item()

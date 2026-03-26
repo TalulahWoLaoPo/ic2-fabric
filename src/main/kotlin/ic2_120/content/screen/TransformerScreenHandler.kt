@@ -13,6 +13,7 @@ import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.state.property.Properties
 import net.minecraft.util.math.Direction
+import ic2_120.registry.annotation.ScreenFactory
 
 /**
  * 变压器的 ScreenHandler。
@@ -76,6 +77,7 @@ class TransformerScreenHandler(
         /** 客户端发送按钮点击时使用此 id，服务端在 [onButtonClick] 中处理 */
         const val BUTTON_ID_TOGGLE_MODE = 0
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): TransformerScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

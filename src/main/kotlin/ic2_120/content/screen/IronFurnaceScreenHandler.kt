@@ -23,6 +23,7 @@ import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
 import net.fabricmc.fabric.api.registry.FuelRegistry
 import net.minecraft.recipe.RecipeType
+import ic2_120.registry.annotation.ScreenFactory
 
 @ModScreenHandler(block = IronFurnaceBlock::class)
 class IronFurnaceScreenHandler(
@@ -140,6 +141,7 @@ class IronFurnaceScreenHandler(
             canInsert = { stack -> false }  // 输出槽不能手动插入
         )
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): IronFurnaceScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

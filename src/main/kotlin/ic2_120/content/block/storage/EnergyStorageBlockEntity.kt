@@ -4,10 +4,12 @@ import ic2_120.content.block.*
 import ic2_120.content.sync.EnergyStorageSync
 import ic2_120.content.syncs.SyncedData
 import ic2_120.content.energy.charge.BatteryChargerComponent
+import ic2_120.content.item.energy.chargePlayerInventoryPerItemLimit
 import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
+import net.minecraft.block.Block
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
@@ -26,6 +28,7 @@ import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
+import net.minecraft.util.math.Box
 import net.minecraft.world.World
 
 /**
@@ -120,16 +123,51 @@ abstract class EnergyStorageBlockEntity(
         nbt.putLong(EnergyStorageSync.NBT_ENERGY_STORED, sync.amount)
     }
 
-    fun tick(world: World, pos: BlockPos, state: BlockState) {
+    open fun tick(world: World, pos: BlockPos, state: BlockState) {
         if (world.isClient) return
 
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
 
+        var chargedThisTick = 0L
         for (charger in chargerComponents) {
-            charger.tick()
+            chargedThisTick += charger.tick()
+        }
+
+        if (config.chargePlayersAbove) {
+            chargedThisTick += chargePlayersAbove(world, pos)
+            updateActiveState(world, pos, chargedThisTick > 0L)
         }
 
         sync.syncCurrentTickFlow()
+    }
+
+    private fun chargePlayersAbove(world: World, pos: BlockPos): Long {
+        val area = Box(
+            pos.x.toDouble(),
+            pos.y.toDouble() + 1.0,
+            pos.z.toDouble(),
+            pos.x.toDouble() + 1.0,
+            pos.y.toDouble() + 2.9,
+            pos.z.toDouble() + 1.0
+        )
+        val players = world.getNonSpectatingEntities(PlayerEntity::class.java, area)
+        var charged = 0L
+        for (player in players) {
+            charged += chargePlayerInventoryPerItemLimit(
+                player = player,
+                machineTier = tier,
+                machineEnergyProvider = { sync.amount },
+                extractEnergy = { requested -> sync.consumeEnergy(requested) }
+            )
+        }
+        return charged
+    }
+
+    private fun updateActiveState(world: World, pos: BlockPos, active: Boolean) {
+        val current = world.getBlockState(pos)
+        if (!current.contains(EnergyStorageBlock.ACTIVE)) return
+        if (current.get(EnergyStorageBlock.ACTIVE) == active) return
+        world.setBlockState(pos, current.with(EnergyStorageBlock.ACTIVE, active), Block.NOTIFY_LISTENERS)
     }
 
     // ============== Concrete BlockEntities ==============
@@ -172,5 +210,45 @@ abstract class EnergyStorageBlockEntity(
     ) : EnergyStorageBlockEntity(type, pos, state, EnergyStorageConfig.MFSU) {
         constructor(pos: BlockPos, state: BlockState) : this(MfsuBlockEntity::class.type(), pos, state)
         override val containerTranslationKey: String = "container.ic2_120.mfsu"
+    }
+
+    @ModBlockEntity(block = BatBoxChargepadBlock::class)
+    class BatBoxChargepadBlockEntity(
+        type: BlockEntityType<*>,
+        pos: BlockPos,
+        state: BlockState
+    ) : EnergyStorageBlockEntity(type, pos, state, EnergyStorageConfig.BATBOX_CHARGEPAD) {
+        constructor(pos: BlockPos, state: BlockState) : this(BatBoxChargepadBlockEntity::class.type(), pos, state)
+        override val containerTranslationKey: String = "container.ic2_120.batbox_chargepad"
+    }
+
+    @ModBlockEntity(block = CesuChargepadBlock::class)
+    class CesuChargepadBlockEntity(
+        type: BlockEntityType<*>,
+        pos: BlockPos,
+        state: BlockState
+    ) : EnergyStorageBlockEntity(type, pos, state, EnergyStorageConfig.CESU_CHARGEPAD) {
+        constructor(pos: BlockPos, state: BlockState) : this(CesuChargepadBlockEntity::class.type(), pos, state)
+        override val containerTranslationKey: String = "container.ic2_120.cesu_chargepad"
+    }
+
+    @ModBlockEntity(block = MfeChargepadBlock::class)
+    class MfeChargepadBlockEntity(
+        type: BlockEntityType<*>,
+        pos: BlockPos,
+        state: BlockState
+    ) : EnergyStorageBlockEntity(type, pos, state, EnergyStorageConfig.MFE_CHARGEPAD) {
+        constructor(pos: BlockPos, state: BlockState) : this(MfeChargepadBlockEntity::class.type(), pos, state)
+        override val containerTranslationKey: String = "container.ic2_120.mfe_chargepad"
+    }
+
+    @ModBlockEntity(block = MfsuChargepadBlock::class)
+    class MfsuChargepadBlockEntity(
+        type: BlockEntityType<*>,
+        pos: BlockPos,
+        state: BlockState
+    ) : EnergyStorageBlockEntity(type, pos, state, EnergyStorageConfig.MFSU_CHARGEPAD) {
+        constructor(pos: BlockPos, state: BlockState) : this(MfsuChargepadBlockEntity::class.type(), pos, state)
+        override val containerTranslationKey: String = "container.ic2_120.mfsu_chargepad"
     }
 }

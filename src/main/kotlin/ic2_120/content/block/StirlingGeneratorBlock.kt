@@ -32,6 +32,7 @@ import net.minecraft.world.World
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
 import ic2_120.registry.id
+import ic2_120.registry.annotation.RecipeProvider
 
 @ModBlock(name = "stirling_generator", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "generator")
 class StirlingGeneratorBlock : MachineBlock() {
@@ -81,6 +82,7 @@ class StirlingGeneratorBlock : MachineBlock() {
     companion object {
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")
 
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val generator = GeneratorBlock::class.item()
             val ironCasing = IronCasing::class.instance()

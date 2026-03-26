@@ -22,6 +22,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditio
 import ic2_120.registry.id
 import ic2_120.registry.instance
 import ic2_120.registry.item
+import ic2_120.registry.annotation.RecipeProvider
 
 // ========== 建筑：防爆玻璃、泡沫、墙、垫、管道、TNT ==========
 
@@ -50,6 +51,7 @@ class ResinSheetBlock : Block(
     }
 
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val resin = Resin::class.instance()
             ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, ResinSheetBlock::class.item(), 3)
@@ -80,6 +82,7 @@ class WoolSheetBlock : Block(AbstractBlock.Settings.copy(Blocks.WHITE_CARPET).st
 @ModBlock(name = "mining_pipe", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "building")
 class MiningPipeBlock : PillarBlock(AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(3.0f)) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val ironPlate = IronPlate::class.instance()
             val treetap = Treetap::class.instance()

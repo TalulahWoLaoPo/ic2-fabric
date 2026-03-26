@@ -6,6 +6,7 @@ import ic2_120.content.recipes.extractor.ExtractorRecipeDatagen
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.instance
 import ic2_120.registry.item
+import ic2_120.registry.annotation.RecipeProvider
 import ic2_120.registry.type
 import ic2_120.registry.annotation.ModBlock
 import ic2_120.registry.type
@@ -82,6 +83,7 @@ class ExtractorBlock : MachineBlock() {
     companion object {
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")
 
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             // 机器本身合成配方
             val machine = MachineCasingBlock::class.item()

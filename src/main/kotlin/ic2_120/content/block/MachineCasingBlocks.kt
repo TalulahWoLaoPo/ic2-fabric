@@ -18,6 +18,7 @@ import ic2_120.content.item.SteelPlate
 import ic2_120.content.item.CarbonPlate
 import ic2_120.content.item.Alloy
 import java.util.function.Consumer
+import ic2_120.registry.annotation.RecipeProvider
 
 /**
  * 基础机械外壳。用于建造机器的结构方块。
@@ -27,6 +28,7 @@ class MachineCasingBlock : Block(
     AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(5.0f, 6.0f)
 ) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, MachineCasingBlock::class.instance(), 1)
                 .pattern("III")
@@ -47,6 +49,7 @@ class AdvancedMachineCasingBlock : Block(
     AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(5.0f, 6.0f)
 ) {
     companion object {
+        @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, AdvancedMachineCasingBlock::class.instance(), 1)
                 .pattern("sgs")

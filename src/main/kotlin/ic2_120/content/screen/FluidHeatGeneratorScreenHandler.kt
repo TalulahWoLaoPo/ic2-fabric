@@ -21,6 +21,7 @@ import net.minecraft.screen.PropertyDelegate
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
+import ic2_120.registry.annotation.ScreenFactory
 
 @ModScreenHandler(block = FluidHeatGeneratorBlock::class)
 class FluidHeatGeneratorScreenHandler(
@@ -109,6 +110,7 @@ class FluidHeatGeneratorScreenHandler(
 
         private val EMPTY_CONTAINER_SLOT_SPEC = SlotSpec(canInsert = { false })
 
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): FluidHeatGeneratorScreenHandler {
             val pos = buf.readBlockPos()
             val propertyCount = buf.readVarInt()

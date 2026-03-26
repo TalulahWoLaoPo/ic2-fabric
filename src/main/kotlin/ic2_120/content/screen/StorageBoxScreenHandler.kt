@@ -10,6 +10,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.slot.Slot
+import ic2_120.registry.annotation.ScreenFactory
 
 /**
  * 储物箱 GUI 的 ScreenHandler
@@ -90,6 +91,7 @@ class StorageBoxScreenHandler(
         /**
          * 从 PacketByteBuf 创建 ScreenHandler（客户端）
          */
+        @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): StorageBoxScreenHandler {
             val pos = buf.readBlockPos()
             val world = playerInventory.player.world
