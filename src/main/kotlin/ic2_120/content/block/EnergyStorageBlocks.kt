@@ -92,6 +92,27 @@ abstract class ChargepadBlock(config: EnergyStorageConfig) : EnergyStorageBlock(
         super.appendProperties(builder)
         builder.add(EnergyStorageBlock.ACTIVE)
     }
+
+    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
+    override fun getOutlineShape(
+        state: BlockState,
+        world: net.minecraft.world.BlockView,
+        pos: net.minecraft.util.math.BlockPos,
+        context: net.minecraft.block.ShapeContext
+    ): net.minecraft.util.shape.VoxelShape = FULL_MINUS_TOP
+
+    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
+    override fun getCollisionShape(
+        state: BlockState,
+        world: net.minecraft.world.BlockView,
+        pos: net.minecraft.util.math.BlockPos,
+        context: net.minecraft.block.ShapeContext
+    ): net.minecraft.util.shape.VoxelShape = FULL_MINUS_TOP
+
+    companion object {
+        /** 去掉顶部的 1/16，与模型视觉对齐 */
+        private val FULL_MINUS_TOP = net.minecraft.util.shape.VoxelShapes.cuboid(0.0, 0.0, 0.0, 1.0, 15.0 / 16.0, 1.0)
+    }
 }
 
 @ModBlock(name = "batbox_chargepad", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "bat_box")
