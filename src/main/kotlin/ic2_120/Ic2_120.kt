@@ -57,6 +57,7 @@ import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents
+import ic2_120.content.item.FoamSprayerItem
 import ic2_120.content.item.armor.JetpackItem
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
@@ -68,6 +69,7 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
+import net.minecraft.item.Items
 import com.mojang.serialization.Lifecycle
 import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKey
@@ -214,6 +216,19 @@ object Ic2_120 : ModInitializer {
                     JetpackItem.setFuel(it, JetpackItem.MAX_FUEL)
                 }
                 entries.addAfter(jetpackItem, fullFuelJetpack)
+            }
+        }
+
+        // 建筑泡沫喷枪：满流体（8 桶）变体
+        if (Ic2Config.current.creative.addFullFoamSprayer) {
+            val ic2MaterialsKey = RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier(MOD_ID, CreativeTab.IC2_MATERIALS.id))
+            ItemGroupEvents.modifyEntriesEvent(ic2MaterialsKey).register { entries ->
+                val sprayer = Registries.ITEM.get(Identifier(MOD_ID, "foam_sprayer"))
+                if (sprayer == Items.AIR || sprayer !is FoamSprayerItem) return@register
+                val fullSprayer = ItemStack(sprayer).also {
+                    FoamSprayerItem.setFluidAmount(it, FoamSprayerItem.CAPACITY_DROPLETS)
+                }
+                entries.addAfter(sprayer, fullSprayer)
             }
         }
 

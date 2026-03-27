@@ -24,7 +24,9 @@ data class GeneralConfig(
 @Serializable
 data class CreativeConfig(
     val addFullChargeStorageItems: Boolean = true,
-    val addFullFuelJetpack: Boolean = true
+    val addFullFuelJetpack: Boolean = true,
+    /** 创造模式材料栏：在空喷枪后追加满建筑泡沫（8 桶）喷枪 */
+    val addFullFoamSprayer: Boolean = true
 )
 
 @Serializable
@@ -84,10 +86,11 @@ object Ic2Config {
     private fun logLoaded(action: String) {
         if (!current.general.logConfigOnLoad) return
         logger.info(
-            "Config {}: creative.addFullChargeStorageItems={}, creative.addFullFuelJetpack={}, recycler.blacklist.size={}",
+            "Config {}: creative.addFullChargeStorageItems={}, creative.addFullFuelJetpack={}, creative.addFullFoamSprayer={}, recycler.blacklist.size={}",
             action,
             current.creative.addFullChargeStorageItems,
             current.creative.addFullFuelJetpack,
+            current.creative.addFullFoamSprayer,
             current.recycler.blacklist.size
         )
     }

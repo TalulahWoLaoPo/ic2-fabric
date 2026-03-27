@@ -4,6 +4,7 @@ import ic2_120.client.ArmorKeybinds
 import ic2_120.client.ArmorTooltipHandler
 import ic2_120.client.BandwidthHudKeybinds
 import ic2_120.client.DrillTooltipHandler
+import ic2_120.client.FoamSprayerTooltipHandler
 import ic2_120.client.ModeKeybinds
 import ic2_120.client.BatteryModelPredicates
 import ic2_120.client.ModItemTooltip
@@ -39,6 +40,7 @@ object Ic2_120Client : ClientModInitializer {
 		ArmorKeybinds.register()
 		ArmorTooltipHandler.register()
 		DrillTooltipHandler.register()
+		FoamSprayerTooltipHandler.register()
 		JetpackSoundController.register()
 		MachineLoopSoundController.register()
 

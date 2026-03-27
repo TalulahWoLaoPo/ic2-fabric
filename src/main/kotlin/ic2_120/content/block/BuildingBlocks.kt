@@ -8,10 +8,22 @@ import ic2_120.content.item.Treetap
 import ic2_120.registry.annotation.ModBlock
 import net.minecraft.block.AbstractBlock
 import net.minecraft.block.Block
+import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.block.PillarBlock
 import net.minecraft.entity.Entity
+import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.item.Items
+import net.minecraft.server.world.ServerWorld
+import net.minecraft.sound.SoundCategory
+import net.minecraft.sound.SoundEvents
+import net.minecraft.state.StateManager
+import net.minecraft.state.property.BooleanProperty
+import net.minecraft.util.ActionResult
+import net.minecraft.util.Hand
+import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.random.Random
 import net.minecraft.world.World
 import net.minecraft.data.server.recipe.RecipeJsonProvider
 import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
@@ -35,8 +47,133 @@ import ic2_120.registry.annotation.RecipeProvider
 )
 class ReinforcedGlassBlock : Block(AbstractBlock.Settings.copy(Blocks.GLASS).strength(10.0f, 1200.0f).nonOpaque())
 
+/**
+ * 建筑泡沫：喷在 [IronScaffoldBlock] 上会得到 [ReinforcedFoamBlock]（见喷枪逻辑）。
+ * 手持沙子右键或约 1 个 MC 日（24000 tick）后固化为浅灰建筑泡沫墙 [LightGrayWallBlock]。
+ */
 @ModBlock(name = "foam", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "building")
-class FoamBlock : Block(AbstractBlock.Settings.copy(Blocks.WHITE_WOOL).strength(0.5f))
+class FoamBlock : Block(
+    AbstractBlock.Settings.copy(Blocks.WHITE_WOOL).strength(0.5f).ticksRandomly()
+) {
+
+    init {
+        defaultState = defaultState.with(CURING_SCHEDULED, false)
+    }
+
+    override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {
+        super.appendProperties(builder)
+        builder.add(CURING_SCHEDULED)
+    }
+
+    override fun onBlockAdded(state: BlockState, world: World, pos: BlockPos, oldState: BlockState, notify: Boolean) {
+        super.onBlockAdded(state, world, pos, oldState, notify)
+        if (world.isClient) return
+        if (state.get(CURING_SCHEDULED)) return
+        val sw = world as? ServerWorld ?: return
+        sw.scheduleBlockTick(pos, this, MC_FULL_DAY_TICKS)
+        sw.setBlockState(pos, state.with(CURING_SCHEDULED, true), Block.NOTIFY_LISTENERS)
+    }
+
+    override fun randomTick(state: BlockState, world: ServerWorld, pos: BlockPos, random: Random) {
+        if (state.get(CURING_SCHEDULED)) return
+        world.scheduleBlockTick(pos, this, MC_FULL_DAY_TICKS)
+        world.setBlockState(pos, state.with(CURING_SCHEDULED, true), Block.NOTIFY_LISTENERS)
+    }
+
+    override fun scheduledTick(state: BlockState, world: ServerWorld, pos: BlockPos, random: Random) {
+        if (world.getBlockState(pos).block !is FoamBlock) return
+        val wall = LightGrayWallBlock::class.instance().defaultState
+        world.setBlockState(pos, wall, Block.NOTIFY_ALL)
+    }
+
+    override fun onUse(
+        state: BlockState,
+        world: World,
+        pos: BlockPos,
+        player: PlayerEntity,
+        hand: Hand,
+        hit: BlockHitResult
+    ): ActionResult {
+        if (world.isClient) return ActionResult.SUCCESS
+        val stack = player.getStackInHand(hand)
+        if (!stack.isOf(Items.SAND)) return ActionResult.PASS
+        val wall = LightGrayWallBlock::class.instance().defaultState
+        world.setBlockState(pos, wall, Block.NOTIFY_ALL)
+        world.playSound(null, pos, SoundEvents.BLOCK_SAND_PLACE, SoundCategory.BLOCKS, 0.85f, 0.9f)
+        world.syncWorldEvent(2001, pos, Block.getRawIdFromState(state))
+        if (!player.abilities.creativeMode) stack.decrement(1)
+        return ActionResult.CONSUME
+    }
+
+    companion object {
+        val CURING_SCHEDULED: BooleanProperty = BooleanProperty.of("curing_scheduled")
+        private const val MC_FULL_DAY_TICKS = 24000
+    }
+}
+
+/**
+ * 强化建筑泡沫：由喷枪喷涂覆盖 [IronScaffoldBlock] 得到。
+ * 沙子右键或约 1 MC 日后变为 [ReinforcedStoneBlock]（防爆石）。
+ */
+@ModBlock(name = "reinforced_foam", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "building")
+class ReinforcedFoamBlock : Block(
+    AbstractBlock.Settings.copy(Blocks.WHITE_WOOL).strength(1.2f).ticksRandomly()
+) {
+
+    init {
+        defaultState = defaultState.with(CURING_SCHEDULED, false)
+    }
+
+    override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {
+        super.appendProperties(builder)
+        builder.add(CURING_SCHEDULED)
+    }
+
+    override fun onBlockAdded(state: BlockState, world: World, pos: BlockPos, oldState: BlockState, notify: Boolean) {
+        super.onBlockAdded(state, world, pos, oldState, notify)
+        if (world.isClient) return
+        if (state.get(CURING_SCHEDULED)) return
+        val sw = world as? ServerWorld ?: return
+        sw.scheduleBlockTick(pos, this, MC_FULL_DAY_TICKS)
+        sw.setBlockState(pos, state.with(CURING_SCHEDULED, true), Block.NOTIFY_LISTENERS)
+    }
+
+    override fun randomTick(state: BlockState, world: ServerWorld, pos: BlockPos, random: Random) {
+        if (state.get(CURING_SCHEDULED)) return
+        world.scheduleBlockTick(pos, this, MC_FULL_DAY_TICKS)
+        world.setBlockState(pos, state.with(CURING_SCHEDULED, true), Block.NOTIFY_LISTENERS)
+    }
+
+    override fun scheduledTick(state: BlockState, world: ServerWorld, pos: BlockPos, random: Random) {
+        if (world.getBlockState(pos).block !is ReinforcedFoamBlock) return
+        val stone = ReinforcedStoneBlock::class.instance().defaultState
+        world.setBlockState(pos, stone, Block.NOTIFY_ALL)
+    }
+
+    override fun onUse(
+        state: BlockState,
+        world: World,
+        pos: BlockPos,
+        player: PlayerEntity,
+        hand: Hand,
+        hit: BlockHitResult
+    ): ActionResult {
+        if (world.isClient) return ActionResult.SUCCESS
+        val stack = player.getStackInHand(hand)
+        if (!stack.isOf(Items.SAND)) return ActionResult.PASS
+        val stone = ReinforcedStoneBlock::class.instance().defaultState
+        world.setBlockState(pos, stone, Block.NOTIFY_ALL)
+        world.playSound(null, pos, SoundEvents.BLOCK_STONE_PLACE, SoundCategory.BLOCKS, 0.85f, 0.85f)
+        world.syncWorldEvent(2001, pos, Block.getRawIdFromState(state))
+        if (!player.abilities.creativeMode) stack.decrement(1)
+        return ActionResult.CONSUME
+    }
+
+    companion object {
+        val CURING_SCHEDULED: BooleanProperty = BooleanProperty.of("curing_scheduled")
+        private const val MC_FULL_DAY_TICKS = 24000
+    }
+}
 
 @ModBlock(name = "resin_sheet", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "building")
 class ResinSheetBlock : Block(

@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "curing_scheduled=false": { "model": "ic2_120:block/reinforced_foam" },
+    "curing_scheduled=true": { "model": "ic2_120:block/reinforced_foam" }
+  }
+}
