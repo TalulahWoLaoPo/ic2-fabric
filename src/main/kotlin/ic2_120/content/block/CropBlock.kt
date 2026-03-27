@@ -47,6 +47,7 @@ import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Box
 import net.minecraft.world.World
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.server.world.ServerWorld
 
 @ModBlock(
     name = "crop",
@@ -155,6 +156,23 @@ class CropBlock : BlockWithEntity(
             world.setBlockState(pos, CropStickBlock.defaultStickState(), net.minecraft.block.Block.NOTIFY_ALL)
         }
         return ActionResult.SUCCESS
+    }
+
+    override fun onBreak(world: World, pos: BlockPos, state: BlockState, player: PlayerEntity) {
+        if (world is ServerWorld && !player.isCreative) {
+            val be = world.getBlockEntity(pos) as? CropBlockEntity
+            if (be != null) {
+                val cropType = state.get(CROP_TYPE)
+                if (cropType == CropType.WEED) {
+                    ItemScatterer.spawn(world, pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble(), Weed::class.instance().defaultStack)
+                } else {
+                    val seedBag = CropSeedBagItem.createStack(cropType, be.stats, scanLevel = be.scanLevel)
+                    ItemScatterer.spawn(world, pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble(), seedBag)
+                }
+                ItemScatterer.spawn(world, pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble(), CropStickBlock::class.instance().asItem().defaultStack)
+            }
+        }
+        super.onBreak(world, pos, state, player)
     }
 
     companion object {
