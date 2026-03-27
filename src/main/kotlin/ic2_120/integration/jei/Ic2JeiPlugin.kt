@@ -24,6 +24,7 @@ import ic2_120.integration.jei.OreWashingRecipeCategory
 import ic2_120.integration.jei.SolidCannerJeiRecipe
 import ic2_120.integration.jei.SolidCannerRecipeCategory
 import ic2_120.content.block.storage.EnergyStorageBlock
+import ic2_120.content.item.FoamSprayerItem
 import ic2_120.content.item.armor.JetpackItem
 import ic2_120.content.item.CropSeedBagItem
 import ic2_120.content.item.energy.IBatteryItem
@@ -42,10 +43,10 @@ import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
 
 /**
- * JEI 插件 - 注册电力物品的空电和满电变体
+ * JEI 插件 - 注册电力物品、喷气背包、建筑泡沫喷枪等的空/满变体与子类型
  *
- * 此插件会在 JEI 中显示电力物品的空电和满电版本，
- * 与创造模式物品栏中的显示保持一致。
+ * 在 JEI 中补充空电与满电、空燃料与满燃料、喷枪空罐与满罐等条目，
+ * 与创造模式物品栏（受配置开关控制的部分）展示思路一致。
  */
 @JeiPlugin
 class Ic2JeiPlugin : IModPlugin {
@@ -69,6 +70,12 @@ class Ic2JeiPlugin : IModPlugin {
                 registration.registerSubtypeInterpreter(
                     item,
                     JetpackItemSubtypeInterpreter()
+                )
+            }
+            if (item is FoamSprayerItem) {
+                registration.registerSubtypeInterpreter(
+                    item,
+                    FoamSprayerSubtypeInterpreter()
                 )
             }
             // 检查物品是否为储电盒/充电座 BlockItem
@@ -113,6 +120,16 @@ class Ic2JeiPlugin : IModPlugin {
                     }
                     extraStacks += ItemStack(item as Item).also { stack ->
                         JetpackItem.setFuel(stack, JetpackItem.MAX_FUEL)
+                    }
+                }
+
+                is FoamSprayerItem -> {
+                    // 建筑泡沫喷枪：空罐 + 满罐（8 桶）
+                    extraStacks += ItemStack(item as Item).also { stack ->
+                        FoamSprayerItem.setFluidAmount(stack, 0L)
+                    }
+                    extraStacks += ItemStack(item as Item).also { stack ->
+                        FoamSprayerItem.setFluidAmount(stack, FoamSprayerItem.CAPACITY_DROPLETS)
                     }
                 }
 
@@ -393,6 +410,27 @@ class Ic2JeiPlugin : IModPlugin {
                 fuel <= 0 -> EMPTY_TAG
                 fuel >= JetpackItem.MAX_FUEL -> FULL_TAG
                 else -> "$PARTIAL_TAG:$fuel"
+            }
+        }
+    }
+
+    /**
+     * 建筑泡沫喷枪：按 NBT 内流体滴数区分子类型（空 / 满 / 部分）。
+     */
+    class FoamSprayerSubtypeInterpreter : IIngredientSubtypeInterpreter<ItemStack> {
+        companion object {
+            private const val EMPTY_TAG = "empty"
+            private const val FULL_TAG = "full"
+            private const val PARTIAL_TAG = "partial"
+        }
+
+        override fun apply(itemStack: ItemStack, uidContext: mezz.jei.api.ingredients.subtypes.UidContext): String {
+            val amt = FoamSprayerItem.getFluidAmount(itemStack)
+            val cap = FoamSprayerItem.CAPACITY_DROPLETS
+            return when {
+                amt <= 0L -> EMPTY_TAG
+                amt >= cap -> FULL_TAG
+                else -> "$PARTIAL_TAG:$amt"
             }
         }
     }

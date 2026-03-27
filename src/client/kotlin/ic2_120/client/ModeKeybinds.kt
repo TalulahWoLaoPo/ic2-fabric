@@ -1,5 +1,6 @@
 package ic2_120.client
 
+import ic2_120.content.item.FoamSprayerItem
 import ic2_120.content.item.IridiumDrill
 import ic2_120.content.item.ElectricJetpack
 import ic2_120.content.item.armor.JetpackItem
@@ -22,6 +23,7 @@ import org.lwjgl.glfw.GLFW
  * 用于手持类设备的模式切换：
  * - 夜视仪：夜视开关
  * - 铱钻头：精准采集开关
+ * - 建筑泡沫喷枪：单格 / 多格喷涂切换
  * - 采矿镭射等：模式切换（预留）
  *
  * 注：量子套夜视(Alt+N)、飞行(Alt+F) 使用 ArmorKeybinds，不共用 M。
@@ -59,6 +61,15 @@ object ModeKeybinds {
                 if (mainHand.item is IridiumDrill) {
                     ClientPlayNetworking.send(
                         NetworkManager.TOGGLE_IRIDIUM_SILK_TOUCH_PACKET,
+                        PacketByteBuf(Unpooled.buffer())
+                    )
+                    return@register
+                }
+
+                val offHand = player.offHandStack
+                if (mainHand.item is FoamSprayerItem || offHand.item is FoamSprayerItem) {
+                    ClientPlayNetworking.send(
+                        NetworkManager.TOGGLE_FOAM_SPRAYER_MODE_PACKET,
                         PacketByteBuf(Unpooled.buffer())
                     )
                     return@register

@@ -22,7 +22,7 @@ object ConfigCommand {
                                     source.sendFeedback(
                                         {
                                             Text.literal(
-                                                "ic2_120 config reloaded: fullChargeStorage=${creative.addFullChargeStorageItems}, fullFuelJetpack=${creative.addFullFuelJetpack}, recyclerBlacklist=${Ic2Config.current.recycler.blacklist.size}"
+                                                "ic2_120 config reloaded: fullChargeStorage=${creative.addFullChargeStorageItems}, fullFuelJetpack=${creative.addFullFuelJetpack}, fullFoamSprayer=${creative.addFullFoamSprayer}, recyclerBlacklist=${Ic2Config.current.recycler.blacklist.size}"
                                             )
                                         },
                                         true

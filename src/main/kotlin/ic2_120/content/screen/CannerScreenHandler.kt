@@ -2,6 +2,7 @@ package ic2_120.content.screen
 
 import ic2_120.content.block.CannerBlock
 import ic2_120.content.block.machines.CannerBlockEntity
+import ic2_120.content.item.FoamSprayerItem
 import ic2_120.content.item.energy.IBatteryItem
 import ic2_120.content.recipes.CannerMixingRecipes
 import ic2_120.content.recipes.SolidCannerRecipes
@@ -53,7 +54,7 @@ class CannerScreenHandler(
 
     private val containerSlotSpec = SlotSpec(
         canInsert = { stack ->
-            stack.item !is IBatteryItem && (
+            stack.item !is IBatteryItem && stack.item !is FoamSprayerItem && (
                 isFilledFluidContainer(stack) || isEmptyFluidContainer(stack) ||
                 stack.item == tinCanItem
             )
@@ -63,14 +64,16 @@ class CannerScreenHandler(
         canInsert = { stack ->
             stack.item !is IBatteryItem && (
                 SolidCannerRecipes.isCanningFood(stack.item) ||
-                CannerMixingRecipes.isMixingMaterial(stack.item)
+                CannerMixingRecipes.isMixingMaterial(stack.item) ||
+                (sync.getMode() == CannerSync.Mode.BOTTLE_LIQUID && stack.item is FoamSprayerItem &&
+                    FoamSprayerItem.getFluidAmount(stack) < FoamSprayerItem.CAPACITY_DROPLETS)
             )
         }
     )
     private val outputSlotSpec = SlotSpec(
         canInsert = { stack ->
             if (sync.getMode() == CannerSync.Mode.BOTTLE_SOLID) return@SlotSpec false
-            stack.item !is IBatteryItem && isEmptyFluidContainer(stack)
+            stack.item !is IBatteryItem && stack.item !is FoamSprayerItem && isEmptyFluidContainer(stack)
         },
         canTake = { true }
     )

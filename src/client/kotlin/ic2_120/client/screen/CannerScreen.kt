@@ -133,11 +133,12 @@ class CannerScreen(
                             // 进度条
                             EnergyBar(
                                 progressFrac,
+                                barWidth = 54,
                                 barHeight = 6,
                                 emptyColor = 0xFF555555.toInt(),
                                 fullColor = 0xFF7FD34E.toInt(),
                                 gradient = false,
-                                modifier = Modifier().fillMaxWidth(),
+                                // modifier = Modifier().fillMaxWidth(),
                             )
                         }
                         Flex(

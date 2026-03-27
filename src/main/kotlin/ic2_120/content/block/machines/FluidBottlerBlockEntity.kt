@@ -51,6 +51,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 import ic2_120.Ic2_120
+import ic2_120.content.item.FoamSprayerItem
 import ic2_120.content.item.ModFluidCell
 import ic2_120.content.item.fluidToFilledCellStack
 
@@ -316,6 +317,17 @@ class FluidBottlerBlockEntity(
             return true
         }
 
+        if (empty.item is FoamSprayerItem) {
+            val fluid = tankInternal.variant.fluid
+            val okFoam = fluid == ModFluids.CONSTRUCTION_FOAM_STILL || fluid == ModFluids.CONSTRUCTION_FOAM_FLOWING
+            if (!okFoam) return false
+            if (FoamSprayerItem.getFluidAmount(empty) >= FoamSprayerItem.CAPACITY_DROPLETS) return false
+            if (!canAcceptOutput(outputSlot, empty)) return false
+            lastOperationPourOut = false
+            lastOperationWasPrimarySlot = isPrimarySlot
+            return true
+        }
+
         val ctx = ContainerItemContext.withConstant(empty)
         val itemStorage = ctx.find(FluidStorage.ITEM) ?: return false
         if (!itemStorage.supportsInsertion()) return false
@@ -421,6 +433,25 @@ class FluidBottlerBlockEntity(
                         val fuelToAdd = minOf(space, FluidConstants.BUCKET)
                         JetpackItem.setFuel(inputSlot, currentFuel + fuelToAdd)
                         tankInternal.amount -= fuelToAdd
+                        sync.fluidAmountMb = (tankInternal.amount * 1000L / FluidConstants.BUCKET).toInt().coerceAtLeast(0)
+                        markDirty()
+                        return
+                    }
+
+                    if (inputSlot.item is FoamSprayerItem) {
+                        // withInitial/withConstant 不修改真实槽位上的 ItemStack，需与喷气背包分支一样直接改 NBT
+                        val before = FoamSprayerItem.getFluidAmount(inputSlot)
+                        val space = (FoamSprayerItem.CAPACITY_DROPLETS - before).coerceAtLeast(0L)
+                        val move = minOf(FluidConstants.BUCKET, space)
+                        if (move <= 0L) return
+                        Transaction.openOuter().use { tx ->
+                            val extracted = tankInternal.extract(variant, move, tx)
+                            if (extracted <= 0) return@use
+                            tx.commit()
+                            FoamSprayerItem.setFluidAmount(inputSlot, before + extracted)
+                        }
+                        if (wasPrimarySlot) setStack(SLOT_INPUT_FILLED, inputSlot)
+                        else setStack(SLOT_INPUT_EMPTY, inputSlot)
                         sync.fluidAmountMb = (tankInternal.amount * 1000L / FluidConstants.BUCKET).toInt().coerceAtLeast(0)
                         markDirty()
                         return
