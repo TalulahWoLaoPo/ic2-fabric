@@ -1,5 +1,7 @@
 package ic2_120.integration.jade
 
+import ic2_120.content.block.cables.BaseCableBlock
+import ic2_120.content.block.cables.CableBlockEntity
 import ic2_120.content.block.CropBlock
 import ic2_120.content.block.CropBlockEntity
 import ic2_120.content.block.CropStickBlock
@@ -22,6 +24,21 @@ import snownee.jade.api.config.IPluginConfig
 import java.util.LinkedList
 
 /**
+ * Sliding-window average filter for Long values.
+ */
+private class FilteredLong(private val windowSize: Int) {
+    private val window = LinkedList<Long>()
+
+    fun update(value: Long): Long {
+        window.addLast(value)
+        if (window.size > windowSize) {
+            window.removeFirst()
+        }
+        return window.sum() / window.size
+    }
+}
+
+/**
  * Jade plugin for IC2 pipe system.
  * Registered via "jade" entrypoint in fabric.mod.json.
  */
@@ -30,12 +47,14 @@ class Ic2JadePlugin : snownee.jade.api.IWailaPlugin {
 
     override fun register(registration: snownee.jade.api.IWailaCommonRegistration) {
         registration.registerBlockDataProvider(PipeJadeProvider, PipeBlockEntity::class.java)
+        registration.registerBlockDataProvider(CableJadeProvider, CableBlockEntity::class.java)
         registration.registerBlockDataProvider(CropJadeProvider, CropBlockEntity::class.java)
         registration.registerBlockDataProvider(CropJadeProvider, CropStickBlockEntity::class.java)
     }
 
     override fun registerClient(registration: snownee.jade.api.IWailaClientRegistration) {
         registration.registerBlockComponent(PipeJadeProvider, BasePipeBlock::class.java)
+        registration.registerBlockComponent(CableJadeProvider, BaseCableBlock::class.java)
         registration.registerBlockComponent(CropJadeProvider, CropBlock::class.java)
         registration.registerBlockComponent(CropJadeProvider, CropStickBlock::class.java)
     }
@@ -55,22 +74,6 @@ object PipeJadeProvider : IBlockComponentProvider, IServerDataProvider<BlockAcce
     private val filterCache = object : LinkedHashMap<Long, FilteredLong>(32, 0.75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Long, FilteredLong>?): Boolean =
             size > 256
-    }
-
-    /**
-     * Sliding-window average filter for Long values.
-     * Window size 100 ticks = 5 seconds at 20 tps.
-     */
-    private class FilteredLong(private val windowSize: Int) {
-        private val window = LinkedList<Long>()
-
-        fun update(value: Long): Long {
-            window.addLast(value)
-            if (window.size > windowSize) {
-                window.removeFirst()
-            }
-            return window.sum() / window.size
-        }
     }
 
     private fun filteredLoad(posLong: Long, raw: Long): Long {
@@ -148,6 +151,72 @@ object PipeJadeProvider : IBlockComponentProvider, IServerDataProvider<BlockAcce
             block.size.baseBucketsPerSecond * block.material.multiplier * FluidConstants.BUCKET.toDouble() / 20.0
         ).toLong().coerceAtLeast(1L)
     }
+}
+
+/**
+ * Jade provider for IC2 cable system.
+ */
+object CableJadeProvider : IBlockComponentProvider, IServerDataProvider<BlockAccessor> {
+
+    private val CABLE_LOAD = Identifier("ic2_120", "cable_load")
+
+    private val filterCache = object : LinkedHashMap<Long, FilteredLong>(32, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Long, FilteredLong>?): Boolean =
+            size > 256
+    }
+
+    private fun filteredLoad(posLong: Long, raw: Long): Long {
+        return filterCache.getOrPut(posLong) { FilteredLong(100) }.update(raw)
+    }
+
+    // IServerDataProvider — server side
+    override fun appendServerData(data: NbtCompound, accessor: BlockAccessor) {
+        val be = accessor.blockEntity as? CableBlockEntity ?: return
+        data.putLong("cableLoad", be.cableLoad)
+
+        val block = accessor.blockState.block as? BaseCableBlock
+        if (block != null) {
+            data.putLong("cableCapacity", block.getTransferRate())
+        }
+    }
+
+    // IBlockComponentProvider — client side
+    override fun appendTooltip(tooltip: ITooltip, accessor: BlockAccessor, config: IPluginConfig) {
+        if (!accessor.serverData.contains("cableLoad", 4)) return
+
+        val rawLoad = accessor.serverData.getLong("cableLoad")
+        val capacity = accessor.serverData.getLong("cableCapacity")
+        val posLong = accessor.position.asLong()
+        val load = filteredLoad(posLong, rawLoad)
+        val percent = if (capacity > 0) (load * 100 / capacity).toInt() else 0
+
+        val loadText = Text.literal("")
+            .append(Text.translatable("ic2_120.jade.cable_load_label"))
+            .append(Text.literal("${formatEu(load)} / ").setStyle(Style.EMPTY.withColor(Formatting.YELLOW)))
+            .append(Text.literal("${formatEu(capacity)}/t = ").setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
+            .append(Text.literal("${percent}%").setStyle(Style.EMPTY.withColor(flowColor(percent))))
+        tooltip.add(loadText)
+    }
+
+    private fun formatEu(value: Long): String {
+        return when {
+            value >= 1_000_000_000 -> "${String.format("%.1f", value / 1_000_000_000.0)} GEU"
+            value >= 1_000_000 -> "${String.format("%.1f", value / 1_000_000.0)} MEU"
+            value >= 1_000 -> "${String.format("%.1f", value / 1_000.0)} kEU"
+            else -> "${value} EU"
+        }
+    }
+
+    private fun flowColor(percent: Int): Formatting {
+        return when {
+            percent >= 90 -> Formatting.RED
+            percent >= 70 -> Formatting.GOLD
+            percent >= 50 -> Formatting.YELLOW
+            else -> Formatting.GREEN
+        }
+    }
+
+    override fun getUid(): Identifier = CABLE_LOAD
 }
 
 object CropJadeProvider : IBlockComponentProvider, IServerDataProvider<BlockAccessor> {

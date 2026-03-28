@@ -43,10 +43,9 @@ class CableBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(TYPE, pos
         override fun supportsInsertion(): Boolean = true
         override fun supportsExtraction(): Boolean = true
 
-        // 返回导线当前负载（供 Jade 显示），而不是网络总能量
-        override fun getAmount(): Long = /* if (network != null) cableLoad else localEnergy */ cableLoad
+        override fun getAmount(): Long = 0
 
-        override fun getCapacity(): Long = /* network?.capacity ?:  */defaultTransferRate()
+        override fun getCapacity(): Long = 0
 
         override fun insert(maxAmount: Long, transaction: TransactionContext): Long {
             return network?.insert(maxAmount, transaction) ?: 0
@@ -57,9 +56,6 @@ class CableBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(TYPE, pos
             return network?.extract(maxAmount, transaction) ?: 0
         }
     }
-
-    private fun defaultTransferRate(): Long =
-        (cachedState.block as? BaseCableBlock)?.getTransferRate() ?: 128L
 
     override fun readNbt(nbt: NbtCompound) {
         super.readNbt(nbt)
