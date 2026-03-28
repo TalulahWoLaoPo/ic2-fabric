@@ -1,12 +1,14 @@
 package ic2_120.client
 
 import ic2_120.client.renderers.ComposeDebugBlockEntityRenderer
+import ic2_120.client.renderers.PipeBlockEntityRenderer
 import ic2_120.client.renderers.TeleporterBlockEntityRenderer
 import ic2_120.client.renderers.TransmissionBlockEntityRenderer
 import ic2_120.client.renderers.WindGeneratorBlockEntityRenderer
 import ic2_120.client.renderers.WindKineticGeneratorBlockEntityRenderer
 import ic2_120.content.block.ComposeDebugBlockEntity
 import ic2_120.content.block.machines.TeleporterBlockEntity
+import ic2_120.content.block.pipes.PipeBlockEntity
 import ic2_120.content.block.transmission.TransmissionBlockEntity
 import ic2_120.content.block.machines.WindGeneratorBlockEntity
 import ic2_120.content.block.machines.WindKineticGeneratorBlockEntity
@@ -34,6 +36,10 @@ object ClientBlockEntityRenderers {
         BlockEntityRendererFactories.register(
             TeleporterBlockEntity::class.type(),
             ::TeleporterBlockEntityRenderer
+        )
+        BlockEntityRendererFactories.register(
+            PipeBlockEntity::class.type(),
+            ::PipeBlockEntityRenderer
         )
     }
 }

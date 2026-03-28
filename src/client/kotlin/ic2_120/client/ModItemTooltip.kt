@@ -54,6 +54,10 @@ object ModItemTooltip {
                 }
             }
 
+            if (isWrenchItem(item)) {
+                addWrenchTooltip(item, lines)
+            }
+
             // 反应堆组件 tooltip：显示产热和散热信息
             if (item is ic2_120.content.reactor.IReactorComponent) {
                 // 这里可以添加默认的产热和散热信息
@@ -83,6 +87,26 @@ object ModItemTooltip {
     private fun addVoltageTierTooltip(lines: MutableList<Text>, tier: Int) {
         val tierName = "${tier}"
         lines.add(Text.translatable("tooltip.ic2_120.voltage_tier", tierName).formatted(Formatting.GRAY))
+    }
+
+    private fun isWrenchItem(item: net.minecraft.item.Item): Boolean {
+        val id = Registries.ITEM.getId(item)
+        return id.namespace == Ic2_120.MOD_ID && (id.path == "wrench" || id.path == "electric_wrench")
+    }
+
+    private fun addWrenchTooltip(item: net.minecraft.item.Item, lines: MutableList<Text>) {
+        lines.add(Text.translatable("tooltip.ic2_120.wrench.rotate_machine").formatted(Formatting.GRAY))
+        lines.add(Text.translatable("tooltip.ic2_120.wrench.pipe_toggle").formatted(Formatting.GRAY))
+        lines.add(Text.translatable("tooltip.ic2_120.wrench.break_machine").formatted(Formatting.GRAY))
+        lines.add(Text.translatable("tooltip.ic2_120.wrench.tank_retain").formatted(Formatting.DARK_GRAY))
+
+        val id = Registries.ITEM.getId(item)
+        if (id.path == "electric_wrench") {
+            lines.add(Text.translatable("tooltip.ic2_120.wrench.cost_energy").formatted(Formatting.DARK_GRAY))
+            lines.add(Text.translatable("tooltip.ic2_120.wrench.energy_required").formatted(Formatting.DARK_GRAY))
+        } else {
+            lines.add(Text.translatable("tooltip.ic2_120.wrench.cost_durability").formatted(Formatting.DARK_GRAY))
+        }
     }
 
     /**

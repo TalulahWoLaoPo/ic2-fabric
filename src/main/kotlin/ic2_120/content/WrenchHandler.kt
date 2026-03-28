@@ -71,12 +71,18 @@ object WrenchHandler {
 
             if (block is BasePipeBlock) {
                 if (!world.isClient) {
-                    val be = world.getBlockEntity(pos) as? PipeBlockEntity ?: return@register ActionResult.PASS
-                    be.toggleDisabled(hitResult.side)
-                    val recomputed = block.recomputeState(world, pos, state, be)
-                    world.setBlockState(pos, recomputed, Block.NOTIFY_ALL)
-                    PipeNetworkManager.invalidateConnectionCachesAt(world, pos)
-                    PipeNetworkManager.invalidateConnectionCachesAt(world, pos.offset(hitResult.side))
+                    if (player.isSneaking) {
+                        val transparent = !state.get(BasePipeBlock.TRANSPARENT)
+                        world.setBlockState(pos, state.with(BasePipeBlock.TRANSPARENT, transparent), Block.NOTIFY_ALL)
+                        world.playSound(null, pos, WRENCH_USE_SOUND, SoundCategory.BLOCKS, 1.0f, 1.0f)
+                    } else {
+                        val be = world.getBlockEntity(pos) as? PipeBlockEntity ?: return@register ActionResult.PASS
+                        be.toggleDisabled(hitResult.side)
+                        val recomputed = block.recomputeState(world, pos, state, be)
+                        world.setBlockState(pos, recomputed, Block.NOTIFY_ALL)
+                        PipeNetworkManager.invalidateConnectionCachesAt(world, pos)
+                        PipeNetworkManager.invalidateConnectionCachesAt(world, pos.offset(hitResult.side))
+                    }
                 }
                 return@register ActionResult.SUCCESS
             }

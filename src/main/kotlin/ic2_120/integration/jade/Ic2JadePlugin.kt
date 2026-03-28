@@ -77,7 +77,7 @@ object PipeJadeProvider : IBlockComponentProvider, IServerDataProvider<BlockAcce
     }
 
     private fun filteredLoad(posLong: Long, raw: Long): Long {
-        return filterCache.getOrPut(posLong) { FilteredLong(100) }.update(raw)
+        return filterCache.getOrPut(posLong) { FilteredLong(20) }.update(raw)
     }
 
     // IServerDataProvider — server side

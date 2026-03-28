@@ -248,8 +248,14 @@ class PipeNetwork {
         for (pipePos in pipes) {
             val rate = rates[pipePos] ?: continue
             val used = rate - (remaining[pipePos] ?: rate)
-            val be = world.getBlockEntity(BlockPos.fromLong(pipePos)) as? PipeBlockEntity ?: continue
+            val pos = BlockPos.fromLong(pipePos)
+            val be = world.getBlockEntity(pos) as? PipeBlockEntity ?: continue
+            val fluidChanged = be.currentFluidId != primaryFluidId
             be.pipeLoad = used
+            be.currentFluidId = primaryFluidId
+            if (fluidChanged) {
+                world.updateListeners(pos, be.cachedState, be.cachedState, net.minecraft.block.Block.NOTIFY_LISTENERS)
+            }
         }
     }
 

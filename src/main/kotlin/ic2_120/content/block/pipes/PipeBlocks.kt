@@ -65,10 +65,27 @@ abstract class BasePipeBlock(
     val material: PipeMaterial,
     settings: AbstractBlock.Settings = AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(2.0f, 3.0f)
 ) : BlockWithEntity(settings), Waterloggable {
+    init {
+        setDefaultState(stateManager.defaultState
+            .with(Properties.WATERLOGGED, false)
+            .with(NORTH, false)
+            .with(SOUTH, false)
+            .with(EAST, false)
+            .with(WEST, false)
+            .with(UP, false)
+            .with(DOWN, false)
+            .with(TRANSPARENT, false)
+        )
+    }
+
     override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {
         builder.add(Properties.WATERLOGGED)
         builder.add(NORTH, SOUTH, EAST, WEST, UP, DOWN)
+        builder.add(TRANSPARENT)
     }
+
+    override fun getRenderType(state: BlockState): BlockRenderType =
+        if (state.get(TRANSPARENT)) BlockRenderType.ENTITYBLOCK_ANIMATED else BlockRenderType.MODEL
 
     override fun getPlacementState(ctx: ItemPlacementContext): BlockState {
         val world = ctx.world
@@ -160,8 +177,6 @@ abstract class BasePipeBlock(
         super.onStateReplaced(state, world, pos, newState, moved)
     }
 
-    override fun getRenderType(state: BlockState): BlockRenderType = BlockRenderType.MODEL
-
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity = PipeBlockEntity(pos, state)
 
     override fun <T : BlockEntity> getTicker(world: World, state: BlockState, type: BlockEntityType<T>): BlockEntityTicker<T>? =
@@ -195,6 +210,7 @@ abstract class BasePipeBlock(
         val WEST: BooleanProperty = Properties.WEST
         val UP: BooleanProperty = Properties.UP
         val DOWN: BooleanProperty = Properties.DOWN
+        val TRANSPARENT: BooleanProperty = BooleanProperty.of("transparent")
 
         fun propertyFor(direction: Direction): BooleanProperty = when (direction) {
             Direction.NORTH -> NORTH
@@ -222,6 +238,7 @@ abstract class PumpAttachmentBlock(material: PipeMaterial) : BasePipeBlock(PipeS
             .with(WEST, false)
             .with(UP, false)
             .with(DOWN, false)
+            .with(TRANSPARENT, false)
             .with(Properties.FACING, Direction.NORTH)
     }
 

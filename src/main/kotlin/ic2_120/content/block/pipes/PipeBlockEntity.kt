@@ -11,6 +11,9 @@ import net.minecraft.fluid.Fluid
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
+import net.minecraft.network.listener.ClientPlayPacketListener
+import net.minecraft.network.packet.Packet
+import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket
 import net.minecraft.registry.Registries
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.util.Identifier
@@ -37,6 +40,7 @@ import net.minecraft.world.World
 class PipeBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(PipeBlockEntity::class.type(), pos, state), ExtendedScreenHandlerFactory {
     var network: PipeNetwork? = null
     var pipeLoad: Long = 0L
+    var currentFluidId: String? = null
     private var disabledMask: Int = 0
     private var pumpFilterGhostStack: ItemStack = ItemStack.EMPTY
     private var pumpFilterFluidId: String? = null
@@ -86,6 +90,7 @@ class PipeBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(PipeBlockE
         super.readNbt(nbt)
         disabledMask = nbt.getInt("DisabledMask")
         pipeLoad = nbt.getLong("PipeLoad")
+        currentFluidId = nbt.getString("CurrentFluid").takeIf { it.isNotBlank() }
         if (nbt.contains("PumpFilterSlot")) {
             pumpFilterGhostStack = ItemStack.fromNbt(nbt.getCompound("PumpFilterSlot"))
         } else {
@@ -98,6 +103,7 @@ class PipeBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(PipeBlockE
         super.writeNbt(nbt)
         nbt.putInt("DisabledMask", disabledMask)
         nbt.putLong("PipeLoad", pipeLoad)
+        currentFluidId?.let { nbt.putString("CurrentFluid", it) }
         if (!pumpFilterGhostStack.isEmpty) {
             nbt.put("PumpFilterSlot", pumpFilterGhostStack.writeNbt(NbtCompound()))
         }
@@ -105,6 +111,10 @@ class PipeBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(PipeBlockE
             nbt.putString("PumpFilterFluid", pumpFilterFluidId)
         }
     }
+
+    override fun toInitialChunkDataNbt(): NbtCompound = createNbt()
+
+    override fun toUpdatePacket(): Packet<ClientPlayPacketListener> = BlockEntityUpdateS2CPacket.create(this)
 
     override fun writeScreenOpeningData(player: net.minecraft.server.network.ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)
