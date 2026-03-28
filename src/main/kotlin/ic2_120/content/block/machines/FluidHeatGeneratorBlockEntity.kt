@@ -8,6 +8,7 @@ import ic2_120.content.sync.FluidHeatGeneratorSync
 import ic2_120.content.sync.HeatFlowSync
 import ic2_120.content.syncs.SyncedData
 import ic2_120.registry.annotation.ModBlockEntity
+import ic2_120.registry.annotation.RegisterFluidStorage
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants
@@ -85,6 +86,7 @@ class FluidHeatGeneratorBlockEntity(
         @Volatile
         private var fluidLookupRegistered = false
 
+        @RegisterFluidStorage
         fun registerFluidStorageLookup() {
             if (fluidLookupRegistered) return
             val type = FluidHeatGeneratorBlockEntity::class.type()

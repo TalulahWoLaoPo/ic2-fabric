@@ -16,6 +16,7 @@ import ic2_120.registry.type
 import ic2_120.registry.annotation.RecipeProvider
 import ic2_120.registry.annotation.ScreenFactory
 import ic2_120.registry.annotation.RegisterEnergy
+import ic2_120.registry.annotation.RegisterFluidStorage
 import ic2_120.registry.type
 import net.minecraft.util.math.Direction
 import team.reborn.energy.api.EnergyStorage
@@ -39,8 +40,13 @@ import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.entity.player.PlayerInventory
+import net.minecraft.inventory.Inventory
+import net.minecraft.inventory.SimpleInventory
 import net.minecraft.screen.ScreenHandler
+import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.ScreenHandlerType
+import net.minecraft.screen.PropertyDelegate
+import net.minecraft.screen.ArrayPropertyDelegate
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType
 import org.slf4j.LoggerFactory
 import kotlin.reflect.full.createInstance
@@ -55,6 +61,8 @@ import kotlin.reflect.full.superclasses
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import java.util.function.Consumer
+import java.nio.file.Files
+import java.nio.file.Paths
 import net.minecraft.data.server.recipe.RecipeJsonProvider
 
 /**
@@ -70,6 +78,7 @@ import net.minecraft.data.server.recipe.RecipeJsonProvider
 object ClassScanner {
 
     private val logger = LoggerFactory.getLogger("ic2_120/ClassScanner")
+    private var currentModId: String = "ic2_120"
 
     // 跟踪每个物品栏应该包含的物品ID及分组（group 用于排序，相同 group 排在一起；空字符串表示不分组）
     // 同时存储类类型，用于在创建物品栏时检查是否需要添加多个电量变体
@@ -96,6 +105,9 @@ object ClassScanner {
     /** 配方生成器列表 */
     private val recipeGenerators = mutableListOf<(Consumer<RecipeJsonProvider>) -> Unit>()
 
+    /** 已处理类名集合，避免同一类在多资源入口下被重复处理 */
+    private val processedClassNames = mutableSetOf<String>()
+
     /**
      * 扫描并注册所有带注解的类。
      *
@@ -104,6 +116,7 @@ object ClassScanner {
      */
     fun scanAndRegister(modId: String, packageNames: List<String>) {
         logger.info("开始扫描包进行自动注册: {}", packageNames)
+        currentModId = modId
 
         val tabClasses = mutableListOf<TabClassInfo>()
         val blockClasses = mutableListOf<BlockClassInfo>()
@@ -127,6 +140,7 @@ object ClassScanner {
         itemInstances.clear()
         blockToBlockEntityType.clear()
         recipeGenerators.clear()
+        processedClassNames.clear()
 
         // 按顺序注册：方块 → 方块实体类型 → ScreenHandler → 物品 → 物品栏
         registerBlocks(modId, blockClasses)
@@ -156,19 +170,71 @@ object ClassScanner {
             val classLoader = Thread.currentThread().contextClassLoader
             val packagePath = packageName.replace('.', '/')
             val resources = classLoader.getResources(packagePath)
+            var foundSupportedResource = false
 
             while (resources.hasMoreElements()) {
                 val url = resources.nextElement()
-                val protocol = url.protocol
 
-                when (protocol) {
-                    "file" -> scanDirectory(url.path, packageName, tabClasses, blockClasses, blockEntityClasses, screenHandlerClasses, itemClasses)
-                    "jar" -> scanJarFile(url, packageName, tabClasses, blockClasses, blockEntityClasses, screenHandlerClasses, itemClasses)
-                    else -> logger.warn("未支持的协议: {}", protocol)
+                when (url.protocol) {
+                    "file" -> {
+                        foundSupportedResource = true
+                        scanDirectory(url.path, packageName, tabClasses, blockClasses, blockEntityClasses, screenHandlerClasses, itemClasses)
+                    }
+                    "jar" -> {
+                        foundSupportedResource = true
+                        scanJarFile(url, packageName, tabClasses, blockClasses, blockEntityClasses, screenHandlerClasses, itemClasses)
+                    }
+                    "union" -> {
+                        foundSupportedResource = true
+                        // 信雅互联（Sinytra Connector）兼容代码：
+                        // 直接扫描 union 虚拟文件系统，不走 codeSource fallback。
+                        scanUnionResource(url, packageName, tabClasses, blockClasses, blockEntityClasses, screenHandlerClasses, itemClasses)
+                    }
+                    else -> {
+                        logger.warn("未支持的协议: {}", url.protocol)
+                    }
                 }
+            }
+
+            if (!foundSupportedResource) {
+                logger.warn("包 {} 未找到可扫描资源（支持协议: file/jar/union）", packageName)
             }
         } catch (e: Exception) {
             logger.error("扫描包 {} 失败: {}", packageName, e.message, e)
+        }
+    }
+
+    /**
+     * 信雅互联（Sinytra Connector）兼容代码：
+     * 直接扫描 union 协议对应的虚拟文件系统资源。
+     */
+    private fun scanUnionResource(
+        url: java.net.URL,
+        packageName: String,
+        tabClasses: MutableList<TabClassInfo>,
+        blockClasses: MutableList<BlockClassInfo>,
+        blockEntityClasses: MutableList<BlockEntityClassInfo>,
+        screenHandlerClasses: MutableList<ScreenHandlerClassInfo>,
+        itemClasses: MutableList<ItemClassInfo>
+    ) {
+        try {
+            val rootPath = Paths.get(url.toURI())
+            if (!Files.exists(rootPath)) {
+                logger.warn("union 资源不存在: {}", url)
+                return
+            }
+            Files.walk(rootPath).use { stream ->
+                stream
+                    .filter { Files.isRegularFile(it) && it.fileName.toString().endsWith(".class") }
+                    .forEach { classFile ->
+                        val relative = rootPath.relativize(classFile).toString().replace('\\', '/')
+                        val relativeClassName = relative.removeSuffix(".class").replace('/', '.')
+                        val className = "$packageName.$relativeClassName"
+                        processClass(className, tabClasses, blockClasses, blockEntityClasses, screenHandlerClasses, itemClasses)
+                    }
+            }
+        } catch (e: Exception) {
+            logger.warn("扫描 union 资源失败 {}: {}", url, e.message)
         }
     }
 
@@ -217,8 +283,19 @@ object ClassScanner {
         }
         // URL 解码路径中的特殊字符
         val decodedPath = java.net.URLDecoder.decode(cleanPath, "UTF-8")
-        val jarFile = java.util.jar.JarFile(decodedPath)
+        scanJarPath(decodedPath, packageName, tabClasses, blockClasses, blockEntityClasses, screenHandlerClasses, itemClasses)
+    }
 
+    private fun scanJarPath(
+        jarPath: String,
+        packageName: String,
+        tabClasses: MutableList<TabClassInfo>,
+        blockClasses: MutableList<BlockClassInfo>,
+        blockEntityClasses: MutableList<BlockEntityClassInfo>,
+        screenHandlerClasses: MutableList<ScreenHandlerClassInfo>,
+        itemClasses: MutableList<ItemClassInfo>
+    ) {
+        val jarFile = java.util.jar.JarFile(jarPath)
         val entries = jarFile.entries()
         val packagePath = packageName.replace('.', '/') + "/"
 
@@ -246,6 +323,9 @@ object ClassScanner {
         itemClasses: MutableList<ItemClassInfo>
     ) {
         try {
+            if (!processedClassNames.add(className)) {
+                return
+            }
             val clazz = Class.forName(className).kotlin
             val modCreativeTab = clazz.findAnnotation<ModCreativeTab>()
             val modBlock = clazz.findAnnotation<ModBlock>()
@@ -294,7 +374,7 @@ object ClassScanner {
         } catch (e: ClassNotFoundException) {
             logger.warn("无法加载类: {}", className)
         } catch (e: NoClassDefFoundError) {
-            // 忽略依赖缺失的类
+            logger.warn("类依赖缺失，跳过 {}: {}", className, e.message)
         } catch (e: Exception) {
             logger.debug("处理类 {} 时出错: {}", className, e.message)
         }
@@ -390,23 +470,24 @@ object ClassScanner {
         for ((clazz, annotation) in screenHandlerClasses) {
             try {
                 val companion = clazz.companionObjectInstance
-                    ?: error("@ModScreenHandler 类 ${clazz.simpleName} 需有 companion 对象并提供 fromBuffer")
                 val fromBufferFn = clazz.companionObject?.memberFunctions?.find {
                     it.findAnnotation<ScreenFactory>() != null
                 } ?: clazz.companionObject?.memberFunctions?.find { it.name == "fromBuffer" }
-                    ?: error("@ModScreenHandler 类 ${clazz.simpleName} 的 companion 需提供 @ScreenFactory 或 fromBuffer(syncId, playerInventory, buf)")
 
-                val parameters = fromBufferFn.parameters
-                if (parameters.size != 4 ||
-                    parameters[1].type.classifier != Int::class ||
-                    parameters[2].type.classifier != PlayerInventory::class ||
-                    parameters[3].type.classifier != PacketByteBuf::class
-                ) {
-                    error(
-                        "@ModScreenHandler 类 ${clazz.simpleName} 的 ${fromBufferFn.name} 签名不正确，" +
-                            "应为 (syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf)"
-                    )
-                }
+                val createFromBuffer: (Int, PlayerInventory, PacketByteBuf) -> ScreenHandler =
+                    if (fromBufferFn != null) {
+                        val instance = companion
+                            ?: error("@ModScreenHandler 类 ${clazz.simpleName} 的 companion 不存在，无法调用 ${fromBufferFn.name}")
+                        validateFromBufferSignature(clazz, fromBufferFn)
+                        val factory: (Int, PlayerInventory, PacketByteBuf) -> ScreenHandler =
+                            { syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf ->
+                            @Suppress("UNCHECKED_CAST")
+                            fromBufferFn.call(instance, syncId, playerInventory, buf) as ScreenHandler
+                        }
+                        factory
+                    } else {
+                        createAutoScreenHandlerFactory(clazz, annotation)
+                    }
 
                 // 收集所有需要注册的名称
                 val namesToRegister = when {
@@ -429,8 +510,7 @@ object ClassScanner {
                     val id = Identifier(modId, finalName)
 
                     val type = ExtendedScreenHandlerType { syncId, playerInventory, buf ->
-                        @Suppress("UNCHECKED_CAST")
-                        fromBufferFn.call(companion, syncId, playerInventory, buf) as ScreenHandler
+                        createFromBuffer(syncId, playerInventory, buf)
                     }
 
                     Registry.register(Registries.SCREEN_HANDLER, id, type)
@@ -440,6 +520,59 @@ object ClassScanner {
             } catch (e: Exception) {
                 logger.error("注册 ScreenHandler {} 失败: {}", clazz.simpleName, e.message, e)
             }
+        }
+    }
+
+    private fun validateFromBufferSignature(
+        clazz: KClass<*>,
+        fromBufferFn: kotlin.reflect.KFunction<*>
+    ) {
+        val parameters = fromBufferFn.parameters
+        if (parameters.size != 4 ||
+            parameters[1].type.classifier != Int::class ||
+            parameters[2].type.classifier != PlayerInventory::class ||
+            parameters[3].type.classifier != PacketByteBuf::class
+        ) {
+            error(
+                "@ModScreenHandler 类 ${clazz.simpleName} 的 ${fromBufferFn.name} 签名不正确，" +
+                    "应为 (syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf)"
+            )
+        }
+    }
+
+    private fun createAutoScreenHandlerFactory(
+        clazz: KClass<*>,
+        annotation: ModScreenHandler
+    ): (Int, PlayerInventory, PacketByteBuf) -> ScreenHandler {
+        val inventorySize = annotation.clientInventorySize
+        if (inventorySize <= 0) {
+            error(
+                "@ModScreenHandler 类 ${clazz.simpleName} 未提供 fromBuffer，" +
+                    "请在 companion 增加 @ScreenFactory/fromBuffer，或在注解中配置 clientInventorySize 并使用标准构造签名"
+            )
+        }
+
+        val ctor = clazz.constructors.find { constructor ->
+            val parameters = constructor.parameters
+            parameters.size == 5 &&
+                parameters[0].type.classifier == Int::class &&
+                parameters[1].type.classifier == PlayerInventory::class &&
+                parameters[2].type.classifier == Inventory::class &&
+                parameters[3].type.classifier == ScreenHandlerContext::class &&
+                parameters[4].type.classifier == PropertyDelegate::class
+        } ?: error(
+            "@ModScreenHandler 类 ${clazz.simpleName} 未提供 fromBuffer 且构造函数不匹配，" +
+                "需要构造签名 (syncId, playerInventory, blockInventory, context, propertyDelegate)"
+        )
+
+        return { syncId, playerInventory, buf ->
+            val pos = buf.readBlockPos()
+            val propertyCount = buf.readVarInt()
+            val context = ScreenHandlerContext.create(playerInventory.player.world, pos)
+            val blockInventory = SimpleInventory(inventorySize)
+            val propertyDelegate = ArrayPropertyDelegate(propertyCount)
+            @Suppress("UNCHECKED_CAST")
+            ctor.call(syncId, playerInventory, blockInventory, context, propertyDelegate) as ScreenHandler
         }
     }
 
@@ -459,9 +592,10 @@ object ClassScanner {
             try {
                 val name = resolveNameFromBlockOrAnnotation(annotation.name, annotation.block, clazz.simpleName ?: "unknown")
                 val id = Identifier(modId, name)
-                val block = Registries.BLOCK.get(id)
-                if (block == net.minecraft.block.Blocks.AIR && id.path != "air") {
-                    logger.warn("方块实体 {} 对应的方块未找到: {}，请确保方块先于方块实体注册", clazz.simpleName, id)
+                val targetBlocks = resolveBlockEntityTargets(modId, clazz, annotation, id)
+                if (targetBlocks.isEmpty()) {
+                    logger.error("注册方块实体类型 {} 失败: 未解析到任何目标方块", clazz.simpleName)
+                    continue
                 }
                 val ctor = clazz.constructors.find { it.parameters.size == 2 }
                     ?: error("@ModBlockEntity 类 ${clazz.simpleName} 需提供 (BlockPos, BlockState) 构造函数")
@@ -470,11 +604,15 @@ object ClassScanner {
                     ctor.call(pos, state) as BlockEntity
                 }
                 @Suppress("UNCHECKED_CAST")
-                val type = FabricBlockEntityTypeBuilder.create(factory, block).build() as BlockEntityType<BlockEntity>
+                val type = FabricBlockEntityTypeBuilder
+                    .create(factory, *targetBlocks.toTypedArray())
+                    .build() as BlockEntityType<BlockEntity>
                 Registry.register(Registries.BLOCK_ENTITY_TYPE, id, type)
                 blockEntityTypes[clazz] = type
-                if (block != net.minecraft.block.Blocks.AIR) {
-                    blockToBlockEntityType[block] = type
+                for (block in targetBlocks) {
+                    if (block != net.minecraft.block.Blocks.AIR) {
+                        blockToBlockEntityType[block] = type
+                    }
                 }
                 logger.debug("已注册方块实体类型: {}", id)
 
@@ -494,10 +632,77 @@ object ClassScanner {
                     }, type)
                     logger.debug("已为方块实体 {} 注册 EnergyStorage（属性 {}）", clazz.simpleName, prop.name)
                 }
+
+                registerFluidStorageLookup(clazz)
             } catch (e: Exception) {
                 logger.error("注册方块实体类型 {} 失败: {}", clazz.simpleName, e.message, e)
             }
         }
+    }
+
+    private fun registerFluidStorageLookup(clazz: KClass<*>) {
+        try {
+            val companion = clazz.companionObjectInstance ?: return
+            val registerFns = clazz.companionObject?.memberFunctions
+                ?.filter { it.findAnnotation<RegisterFluidStorage>() != null }
+                .orEmpty()
+            for (registerFn in registerFns) {
+                if (registerFn.parameters.size != 1) {
+                    logger.error(
+                        "@RegisterFluidStorage 方法 {}.{} 签名不正确，应为无参 companion 方法",
+                        clazz.simpleName,
+                        registerFn.name
+                    )
+                    continue
+                }
+                registerFn.call(companion)
+                logger.debug("已为方块实体 {} 自动注册 FluidStorage lookup: {}", clazz.simpleName, registerFn.name)
+            }
+        } catch (e: Exception) {
+            logger.error("自动注册 FluidStorage lookup 失败 {}: {}", clazz.simpleName, e.message, e)
+        }
+    }
+
+    private fun resolveBlockEntityTargets(
+        modId: String,
+        clazz: kotlin.reflect.KClass<*>,
+        annotation: ModBlockEntity,
+        id: Identifier
+    ): List<Block> {
+        if (annotation.blocks.isNotEmpty()) {
+            val resolved = annotation.blocks.mapNotNull { blockClass ->
+                if (!blockClass.isSubclassOf(Block::class)) {
+                    logger.warn("@ModBlockEntity 类 {} 的 blocks 包含非 Block 子类: {}", clazz.simpleName, blockClass.simpleName)
+                    return@mapNotNull null
+                }
+                val blockName = blockClassToName[blockClass]
+                if (blockName == null) {
+                    logger.warn(
+                        "@ModBlockEntity 类 {} 的目标方块 {} 未注册，可能未标注 @ModBlock 或扫描包缺失",
+                        clazz.simpleName,
+                        blockClass.simpleName
+                    )
+                    return@mapNotNull null
+                }
+                val blockId = Identifier(modId, blockName)
+                val block = Registries.BLOCK.get(blockId)
+                if (block == net.minecraft.block.Blocks.AIR && blockId.path != "air") {
+                    logger.warn("方块实体 {} 对应的方块未找到: {}，请确保方块先于方块实体注册", clazz.simpleName, blockId)
+                    return@mapNotNull null
+                }
+                block
+            }
+            if (resolved.isEmpty()) {
+                logger.error("@ModBlockEntity 类 {} 未解析到有效 blocks，注解 id: {}", clazz.simpleName, id)
+            }
+            return resolved
+        }
+
+        val block = Registries.BLOCK.get(id)
+        if (block == net.minecraft.block.Blocks.AIR && id.path != "air") {
+            logger.warn("方块实体 {} 对应的方块未找到: {}，请确保方块先于方块实体注册", clazz.simpleName, id)
+        }
+        return listOf(block)
     }
 
     private fun registerBlocks(modId: String, blockClasses: List<BlockClassInfo>) {
@@ -521,7 +726,7 @@ object ClassScanner {
 
                 // 注册方块物品
                 if (annotation.registerItem) {
-                    val blockItem = BlockItem(instance, FabricItemSettings())
+                    val blockItem = createBlockItemForClass(clazz, instance, id)
                     Registry.register(Registries.ITEM, id, blockItem)
                     logger.debug("已注册方块物品: {}", id)
 
@@ -533,6 +738,38 @@ object ClassScanner {
             } catch (e: Exception) {
                 logger.error("注册方块 {} 失败: {}", clazz.simpleName, e.message, e)
             }
+        }
+    }
+
+    /**
+     * 优先使用方块类内部定义的自定义 BlockItem（如 XxxBlockItem），
+     * 若未找到则回退为默认 BlockItem。
+     */
+    private fun createBlockItemForClass(
+        blockClass: KClass<*>,
+        block: Block,
+        id: Identifier
+    ): BlockItem {
+        val customItemClass = blockClass.nestedClasses.firstOrNull { nested ->
+            nested.simpleName?.endsWith("BlockItem") == true && nested.isSubclassOf(BlockItem::class)
+        } ?: return BlockItem(block, FabricItemSettings())
+
+        val ctor = customItemClass.constructors.firstOrNull { constructor ->
+            val params = constructor.parameters
+            params.size == 2 &&
+                params[0].type.classifier == Block::class &&
+                params[1].type.classifier == Item.Settings::class
+        } ?: run {
+            logger.warn("方块 {} 存在自定义 BlockItem 类 {}，但未找到 (Block, Item.Settings) 构造函数，回退默认 BlockItem", id, customItemClass.simpleName)
+            return BlockItem(block, FabricItemSettings())
+        }
+
+        return try {
+            @Suppress("UNCHECKED_CAST")
+            ctor.call(block, FabricItemSettings()) as BlockItem
+        } catch (e: Exception) {
+            logger.warn("创建方块 {} 的自定义 BlockItem 失败: {}，回退默认 BlockItem", id, e.message)
+            BlockItem(block, FabricItemSettings())
         }
     }
 
@@ -708,8 +945,19 @@ object ClassScanner {
      */
     @Suppress("UNCHECKED_CAST")
     internal fun <T : BlockEntity> getBlockEntityType(clazz: kotlin.reflect.KClass<T>): BlockEntityType<T> =
-        blockEntityTypes[clazz] as? BlockEntityType<T>
+        (blockEntityTypes[clazz] as? BlockEntityType<T>)
+            ?: resolveBlockEntityTypeFromRegistry(clazz)
             ?: error("BlockEntityType not found: ${clazz.simpleName}")
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : BlockEntity> resolveBlockEntityTypeFromRegistry(clazz: kotlin.reflect.KClass<T>): BlockEntityType<T>? {
+        val annotation = clazz.findAnnotation<ModBlockEntity>() ?: return null
+        val name = resolveNameFromBlockOrAnnotation(annotation.name, annotation.block, clazz.simpleName ?: "unknown")
+        val id = Identifier(currentModId, name)
+        val type = Registries.BLOCK_ENTITY_TYPE.getOrEmpty(id).orElse(null) ?: return null
+        blockEntityTypes[clazz] = type
+        return type as? BlockEntityType<T>
+    }
 
     /**
      * 根据 @ModBlockEntity(block = XBlock::class) 建立的映射，获取方块对应的 BlockEntityType。

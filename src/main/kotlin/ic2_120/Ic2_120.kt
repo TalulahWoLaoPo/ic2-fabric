@@ -18,14 +18,6 @@ import ic2_120.content.item.CellAndBucketFluidRegistration
 import ic2_120.content.item.CropSeedBagItem
 import ic2_120.content.recipes.ModCraftingRecipes
 import ic2_120.content.recipes.ModMachineRecipes
-import ic2_120.content.block.BatBoxBlock
-import ic2_120.content.block.BatBoxChargepadBlock
-import ic2_120.content.block.CesuBlock
-import ic2_120.content.block.CesuChargepadBlock
-import ic2_120.content.block.MfeBlock
-import ic2_120.content.block.MfeChargepadBlock
-import ic2_120.content.block.MfsuBlock
-import ic2_120.content.block.MfsuChargepadBlock
 import ic2_120.content.block.storage.EnergyStorageBlock
 import ic2_120.content.block.cables.CableBlockEntity
 import ic2_120.content.block.machines.GeoGeneratorBlockEntity
@@ -41,10 +33,8 @@ import ic2_120.content.block.machines.AdvancedMinerBlockEntity
 import ic2_120.content.block.machines.SemifluidGeneratorBlockEntity
 import ic2_120.content.block.machines.SolarDistillerBlockEntity
 import ic2_120.content.block.machines.WaterGeneratorBlockEntity
-import ic2_120.content.block.storage.StorageBoxBlockEntity
 import ic2_120.content.block.storage.TankBlockEntity
 import ic2_120.content.block.transmission.TransmissionBlockEntity
-import ic2_120.content.block.pipes.PipeBlockEntity
 import ic2_120.content.block.pipes.PipeNetworkManager
 import ic2_120.content.player.FlightManager
 import ic2_120.content.entity.ModEntities
@@ -68,14 +58,11 @@ import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant
 import net.minecraft.block.entity.BlockEntity
-import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
-import com.mojang.serialization.Lifecycle
 import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.RegistryKeys
-import net.minecraft.registry.SimpleRegistry
 import net.minecraft.util.math.Direction
 import net.minecraft.util.Identifier
 import org.slf4j.LoggerFactory
@@ -125,36 +112,8 @@ object Ic2_120 : ModInitializer {
         // 木龙头/电动树脂提取器与橡胶树原木交互（提取粘性树脂）
         RubberTreetapHandler.register()
 
-        // 特殊处理：储物箱 BlockEntity 需在所有方块注册后统一注册（一个 BE 类型关联多种储物箱方块）
-        StorageBoxBlockEntity.register(MOD_ID)
-
-        // 特殊处理：储罐 BlockEntity 需在所有方块注册后统一注册（一个 BE 类型关联多种储罐方块）
-        TankBlockEntity.register(MOD_ID)
-        TankBlockEntity.registerFluidStorageLookup()
-
         // 传动轴/伞齿轮 BlockEntity（仅用于 BER 动画渲染）
         TransmissionBlockEntity.register(MOD_ID)
-        // 流体管道 BlockEntity（统一网络）
-        PipeBlockEntity.register(MOD_ID)
-
-        // 地热/水力/洗矿发电机流体能力注册（Fabric Transfer API）
-        GeoGeneratorBlockEntity.registerFluidStorageLookup()
-        FluidHeatGeneratorBlockEntity.registerFluidStorageLookup()
-        FluidHeatExchangerBlockEntity.registerFluidStorageLookup()
-        FermenterBlockEntity.registerFluidStorageLookup()
-        SemifluidGeneratorBlockEntity.registerFluidStorageLookup()
-        WaterGeneratorBlockEntity.registerFluidStorageLookup()
-        OreWashingPlantBlockEntity.registerFluidStorageLookup()
-        SolarDistillerBlockEntity.registerFluidStorageLookup()
-        PumpBlockEntity.registerFluidStorageLookup()
-        MinerBlockEntity.registerFluidStorageLookup()
-        AdvancedMinerBlockEntity.registerFluidStorageLookup()
-        FluidBottlerBlockEntity.registerFluidStorageLookup()
-        CannerBlockEntity.registerFluidStorageLookup()
-
-        // 核反应堆的流体存储注册
-        NuclearReactorBlockEntity.registerFluidStorageLookup()
-        ReactorFluidPortBlockEntity.registerFluidStorageLookup()
 
         // 核反应仓能量能力注册（Fabric Transfer API）
         val reactorChamberType = ReactorChamberBlockEntity::class.type()
@@ -179,28 +138,20 @@ object Ic2_120 : ModInitializer {
         }
 
         // 储电盒自定义 BlockItem（支持满电变体）及创造模式满电物品
-        val storageConfigs = listOf(
-            "batbox" to { b: net.minecraft.block.Block -> BatBoxBlock.BatBoxBlockItem(b, net.fabricmc.fabric.api.item.v1.FabricItemSettings()) },
-            "cesu" to { b: net.minecraft.block.Block -> CesuBlock.CesuBlockItem(b, net.fabricmc.fabric.api.item.v1.FabricItemSettings()) },
-            "mfe" to { b: net.minecraft.block.Block -> MfeBlock.MfeBlockItem(b, net.fabricmc.fabric.api.item.v1.FabricItemSettings()) },
-            "mfsu" to { b: net.minecraft.block.Block -> MfsuBlock.MfsuBlockItem(b, net.fabricmc.fabric.api.item.v1.FabricItemSettings()) },
-            "batbox_chargepad" to { b: net.minecraft.block.Block -> BatBoxChargepadBlock.BatBoxChargepadBlockItem(b, net.fabricmc.fabric.api.item.v1.FabricItemSettings()) },
-            "cesu_chargepad" to { b: net.minecraft.block.Block -> CesuChargepadBlock.CesuChargepadBlockItem(b, net.fabricmc.fabric.api.item.v1.FabricItemSettings()) },
-            "mfe_chargepad" to { b: net.minecraft.block.Block -> MfeChargepadBlock.MfeChargepadBlockItem(b, net.fabricmc.fabric.api.item.v1.FabricItemSettings()) },
-            "mfsu_chargepad" to { b: net.minecraft.block.Block -> MfsuChargepadBlock.MfsuChargepadBlockItem(b, net.fabricmc.fabric.api.item.v1.FabricItemSettings()) }
+        val storageIds = listOf(
+            "batbox",
+            "cesu",
+            "mfe",
+            "mfsu",
+            "batbox_chargepad",
+            "cesu_chargepad",
+            "mfe_chargepad",
+            "mfsu_chargepad"
         )
-        for ((id, factory) in storageConfigs) {
-            val blockId = Identifier(MOD_ID, id)
-            val block = Registries.BLOCK.get(blockId)
-            val itemKey = RegistryKey.of(RegistryKeys.ITEM, blockId)
-            val existingItem = Registries.ITEM.get(blockId)
-            val rawId = Registries.ITEM.getRawId(existingItem)
-            (Registries.ITEM as SimpleRegistry<Item>).set(rawId, itemKey, factory(block), Lifecycle.stable())
-        }
         val ic2MachinesKey = RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier(MOD_ID, CreativeTab.IC2_MACHINES.id))
         if (Ic2Config.current.creative.addFullChargeStorageItems) {
             ItemGroupEvents.modifyEntriesEvent(ic2MachinesKey).register { entries ->
-                for ((id, _) in storageConfigs) {
+                for (id in storageIds) {
                     val fullStack = ItemStack(Registries.ITEM.get(Identifier(MOD_ID, id)))
                     fullStack.orCreateNbt.putBoolean(EnergyStorageBlock.NBT_FULL, true)
                     entries.add(fullStack)
@@ -211,7 +162,8 @@ object Ic2_120 : ModInitializer {
         // 注册满燃料喷气背包到创造模式
         val jetpackItem = Registries.ITEM.get(Identifier(MOD_ID, "jetpack"))
         if (jetpackItem != null && Ic2Config.current.creative.addFullFuelJetpack) {
-            val ic2MaterialsKey = RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier(MOD_ID, CreativeTab.IC2_MATERIALS.id))
+            val ic2MaterialsKey =
+                RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier(MOD_ID, CreativeTab.IC2_MATERIALS.id))
             ItemGroupEvents.modifyEntriesEvent(ic2MaterialsKey).register { entries ->
                 // 添加满燃料的喷气背包
                 val fullFuelJetpack = ItemStack(jetpackItem).also {
@@ -223,7 +175,8 @@ object Ic2_120 : ModInitializer {
 
         // 建筑泡沫喷枪：满流体（8 桶）变体
         if (Ic2Config.current.creative.addFullFoamSprayer) {
-            val ic2MaterialsKey = RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier(MOD_ID, CreativeTab.IC2_MATERIALS.id))
+            val ic2MaterialsKey =
+                RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier(MOD_ID, CreativeTab.IC2_MATERIALS.id))
             ItemGroupEvents.modifyEntriesEvent(ic2MaterialsKey).register { entries ->
                 val sprayer = Registries.ITEM.get(Identifier(MOD_ID, "foam_sprayer"))
                 if (sprayer == Items.AIR || sprayer !is FoamSprayerItem) return@register

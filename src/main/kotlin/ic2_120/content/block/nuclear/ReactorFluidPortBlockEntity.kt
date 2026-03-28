@@ -3,6 +3,7 @@ package ic2_120.content.block.nuclear
 import ic2_120.content.upgrade.FluidPipeUpgradeComponent
 import ic2_120.content.upgrade.IFluidPipeUpgradeSupport
 import ic2_120.registry.annotation.ModBlockEntity
+import ic2_120.registry.annotation.RegisterFluidStorage
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
@@ -73,6 +74,7 @@ class ReactorFluidPortBlockEntity(
         @Volatile
         private var fluidLookupRegistered = false
 
+        @RegisterFluidStorage
         fun registerFluidStorageLookup() {
             if (fluidLookupRegistered) return
             val type = ReactorFluidPortBlockEntity::class.type()

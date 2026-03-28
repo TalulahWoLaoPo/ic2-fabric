@@ -22,6 +22,7 @@ import ic2_120.content.upgrade.ITransformerUpgradeSupport
 import ic2_120.content.upgrade.OverclockerUpgradeComponent
 import ic2_120.content.upgrade.TransformerUpgradeComponent
 import ic2_120.registry.annotation.ModBlockEntity
+import ic2_120.registry.annotation.RegisterFluidStorage
 import ic2_120.registry.type
 import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.type
@@ -107,6 +108,7 @@ class PumpBlockEntity(
         @Volatile
         private var fluidLookupRegistered = false
 
+        @RegisterFluidStorage
         fun registerFluidStorageLookup() {
             if (fluidLookupRegistered) return
             val type = PumpBlockEntity::class.type()

@@ -1,21 +1,16 @@
 package ic2_120.content.block.storage
 
 import ic2_120.content.screen.StorageBoxScreenHandler
+import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
-import net.minecraft.block.Block
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
-import net.minecraft.block.entity.BlockEntityType
-import net.fabricmc.fabric.api.`object`.builder.v1.block.entity.FabricBlockEntityTypeBuilder
 import net.minecraft.inventory.Inventories
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.registry.Registries
-import net.minecraft.registry.Registry
 import net.minecraft.text.Text
-import net.minecraft.util.Identifier
 import net.minecraft.util.collection.DefaultedList
 import net.minecraft.util.math.BlockPos
 import net.minecraft.entity.player.PlayerInventory
@@ -33,13 +28,21 @@ import net.minecraft.screen.ScreenHandler
  * - 青铜储物箱: 45 格
  * - 钢制储物箱: 63 格
  * - 铱储物箱: 126 格
- *
- * 注意：此 BlockEntity 不使用 @ModBlockEntity 注解，需要通过 [register] 方法手动注册。
  */
+@ModBlockEntity(
+    name = "storage_box",
+    blocks = [
+        WoodenStorageBoxBlock::class,
+        IronStorageBoxBlock::class,
+        BronzeStorageBoxBlock::class,
+        SteelStorageBoxBlock::class,
+        IridiumStorageBoxBlock::class
+    ]
+)
 class StorageBoxBlockEntity(
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(STORAGE_BOX_TYPE, pos, state), Inventory, ExtendedScreenHandlerFactory {
+) : BlockEntity(StorageBoxBlockEntity::class.type(), pos, state), Inventory, ExtendedScreenHandlerFactory {
 
     companion object {
         /** 木质储物箱容量 */
@@ -60,45 +63,6 @@ class StorageBoxBlockEntity(
         /** NBT 键 */
         private const val INVENTORY_KEY = "Inventory"
         private const val ITEMS_KEY = "Items"
-
-        /** BlockEntityType 实例，由 register 方法初始化 */
-        private lateinit var STORAGE_BOX_TYPE: BlockEntityType<StorageBoxBlockEntity>
-
-        /**
-         * 手动注册储物箱 BlockEntityType
-         *
-         * 必须在所有储物箱方块注册完成后调用（一个 BE 类型关联多个方块）。
-         */
-        fun register(modId: String) {
-            val blockIds = listOf(
-                Identifier(modId, "wooden_storage_box"),
-                Identifier(modId, "iron_storage_box"),
-                Identifier(modId, "bronze_storage_box"),
-                Identifier(modId, "steel_storage_box"),
-                Identifier(modId, "iridium_storage_box")
-            )
-
-            val blocks = blockIds.mapNotNull { id ->
-                Registries.BLOCK.getOrEmpty(id).orElse(null)
-            }
-
-            require(blocks.size == blockIds.size) {
-                "注册储物箱 BlockEntity 失败：找不到部分储物箱方块。需要: ${blockIds.joinToString()}"
-            }
-
-            val factory = FabricBlockEntityTypeBuilder.Factory { pos: BlockPos, state: BlockState ->
-                StorageBoxBlockEntity(pos, state)
-            }
-
-            @Suppress("UNCHECKED_CAST")
-            val type = FabricBlockEntityTypeBuilder.create(factory, *blocks.toTypedArray())
-                .build() as BlockEntityType<StorageBoxBlockEntity>
-
-            STORAGE_BOX_TYPE = type
-
-            val id = Identifier(modId, "storage_box")
-            Registry.register(Registries.BLOCK_ENTITY_TYPE, id, type)
-        }
     }
 
     /** 物品栏内容 */

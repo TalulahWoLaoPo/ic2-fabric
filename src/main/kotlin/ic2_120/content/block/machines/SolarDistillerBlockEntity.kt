@@ -14,6 +14,7 @@ import ic2_120.content.syncs.SyncedData
 import ic2_120.content.upgrade.IFluidPipeUpgradeSupport
 import ic2_120.content.upgrade.FluidPipeUpgradeComponent
 import ic2_120.registry.annotation.ModBlockEntity
+import ic2_120.registry.annotation.RegisterFluidStorage
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
@@ -107,6 +108,7 @@ class SolarDistillerBlockEntity(
          * 注册流体存储查找器
          * 通过 Fabric Transfer 的 API Lookup 系统，使外部可以访问本机器的流体能力
          */
+        @RegisterFluidStorage
         fun registerFluidStorageLookup() {
             if (fluidLookupRegistered) return
             val type = SolarDistillerBlockEntity::class.type()

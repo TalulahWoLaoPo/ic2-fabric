@@ -24,6 +24,7 @@ import ic2_120.content.syncs.SyncedData
 import ic2_120.content.upgrade.IRedstoneControlSupport
 import ic2_120.content.upgrade.RedstoneControlComponent
 import ic2_120.registry.annotation.ModBlockEntity
+import ic2_120.registry.annotation.RegisterFluidStorage
 import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.type
 import org.slf4j.LoggerFactory
@@ -1273,6 +1274,7 @@ class NuclearReactorBlockEntity(
         @Volatile
         private var fluidLookupRegistered = false
 
+        @RegisterFluidStorage
         fun registerFluidStorageLookup() {
             if (fluidLookupRegistered) return
             val type = NuclearReactorBlockEntity::class.type()

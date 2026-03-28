@@ -166,7 +166,7 @@ abstract class BasePipeBlock(
 
     override fun <T : BlockEntity> getTicker(world: World, state: BlockState, type: BlockEntityType<T>): BlockEntityTicker<T>? =
         if (world.isClient) null
-        else checkType(type, PipeBlockEntity.TYPE) { w, p, s, be -> be.tick(w, p, s) }
+        else checkType(type, PipeBlockEntity::class.type()) { w, p, s, be -> be.tick(w, p, s) }
 
     @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
     override fun getCollisionShape(state: BlockState, world: BlockView, pos: BlockPos, context: ShapeContext): VoxelShape = pipeShape(state)

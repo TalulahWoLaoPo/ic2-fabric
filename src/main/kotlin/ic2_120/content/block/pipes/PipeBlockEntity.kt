@@ -1,11 +1,10 @@
 package ic2_120.content.block.pipes
 
+import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
-import net.fabricmc.fabric.api.`object`.builder.v1.block.entity.FabricBlockEntityTypeBuilder
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
-import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.fluid.Fluid
@@ -13,7 +12,6 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.registry.Registries
-import net.minecraft.registry.Registry
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
@@ -21,7 +19,22 @@ import net.minecraft.util.math.Direction
 import net.minecraft.text.Text
 import net.minecraft.world.World
 
-class PipeBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(TYPE, pos, state), ExtendedScreenHandlerFactory {
+@ModBlockEntity(
+    name = "pipe",
+    blocks = [
+        BronzePipeTinyBlock::class,
+        BronzePipeSmallBlock::class,
+        BronzePipeMediumBlock::class,
+        BronzePipeLargeBlock::class,
+        CarbonPipeTinyBlock::class,
+        CarbonPipeSmallBlock::class,
+        CarbonPipeMediumBlock::class,
+        CarbonPipeLargeBlock::class,
+        BronzePumpAttachmentBlock::class,
+        CarbonPumpAttachmentBlock::class
+    ]
+)
+class PipeBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(PipeBlockEntity::class.type(), pos, state), ExtendedScreenHandlerFactory {
     var network: PipeNetwork? = null
     var pipeLoad: Long = 0L
     private var disabledMask: Int = 0
@@ -101,24 +114,4 @@ class PipeBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(TYPE, pos,
 
     override fun createMenu(syncId: Int, playerInventory: PlayerInventory, player: PlayerEntity?): ScreenHandler =
         ic2_120.content.screen.PumpAttachmentScreenHandler(syncId, playerInventory, this)
-
-    companion object {
-        lateinit var TYPE: BlockEntityType<PipeBlockEntity>
-            private set
-
-        fun register(modId: String) {
-            val ids = listOf(
-                "bronze_pipe_tiny", "bronze_pipe_small", "bronze_pipe_medium", "bronze_pipe_large",
-                "carbon_pipe_tiny", "carbon_pipe_small", "carbon_pipe_medium", "carbon_pipe_large",
-                "bronze_pump_attachment", "carbon_pump_attachment"
-            ).map { Identifier(modId, it) }
-            val blocks = ids.mapNotNull { id -> Registries.BLOCK.getOrEmpty(id).orElse(null) }
-            require(blocks.size == ids.size) { "注册 PipeBlockEntity 失败：找不到部分管道方块" }
-
-            val factory = FabricBlockEntityTypeBuilder.Factory<PipeBlockEntity> { p, s -> PipeBlockEntity(p, s) }
-            @Suppress("UNCHECKED_CAST")
-            TYPE = FabricBlockEntityTypeBuilder.create(factory, *blocks.toTypedArray()).build() as BlockEntityType<PipeBlockEntity>
-            Registry.register(Registries.BLOCK_ENTITY_TYPE, Identifier(modId, "pipe"), TYPE)
-        }
-    }
 }

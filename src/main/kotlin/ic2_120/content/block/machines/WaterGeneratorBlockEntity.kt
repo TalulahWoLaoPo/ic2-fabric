@@ -13,6 +13,7 @@ import ic2_120.content.syncs.SyncedData
 import ic2_120.content.upgrade.FluidPipeUpgradeComponent
 import ic2_120.content.upgrade.IFluidPipeUpgradeSupport
 import ic2_120.registry.annotation.ModBlockEntity
+import ic2_120.registry.annotation.RegisterFluidStorage
 import ic2_120.registry.type
 import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.type
@@ -96,6 +97,7 @@ class WaterGeneratorBlockEntity(
         @Volatile
         private var fluidLookupRegistered = false
 
+        @RegisterFluidStorage
         fun registerFluidStorageLookup() {
             if (fluidLookupRegistered) return
             val type = WaterGeneratorBlockEntity::class.type()

@@ -12,6 +12,8 @@ import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.slf4j.LoggerFactory
+import java.nio.file.Files
+import java.nio.file.Paths
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.primaryConstructor
@@ -23,6 +25,7 @@ import kotlin.reflect.full.primaryConstructor
 object ClientScreenRegistrar {
 
     private val logger = LoggerFactory.getLogger("ic2_120/ClientScreenRegistrar")
+    private val processedClassNames = mutableSetOf<String>()
 
     /**
      * 扫描并注册所有带 @ModScreen 的 Screen 类。
@@ -32,6 +35,7 @@ object ClientScreenRegistrar {
      */
     fun registerScreens(modId: String, packageNames: List<String>) {
         logger.info("开始扫描客户端包以注册 Screen: {}", packageNames)
+        processedClassNames.clear()
         for (packageName in packageNames) {
             scanAndRegisterPackage(modId, packageName)
         }
@@ -48,6 +52,7 @@ object ClientScreenRegistrar {
                 when (url.protocol) {
                     "file" -> scanDirectory(url.path, packageName, modId)
                     "jar" -> scanJarFile(url, packageName, modId)
+                    "union" -> scanUnionResource(url, packageName, modId)
                     else -> logger.warn("未支持的协议: {}", url.protocol)
                 }
             }
@@ -102,8 +107,35 @@ object ClientScreenRegistrar {
         jarFile.close()
     }
 
+    /**
+     * 信雅互联（Sinytra Connector）兼容代码：
+     * 直接扫描 union 协议对应的虚拟文件系统资源。
+     */
+    private fun scanUnionResource(url: java.net.URL, packageName: String, modId: String) {
+        try {
+            val rootPath = Paths.get(url.toURI())
+            if (!Files.exists(rootPath)) {
+                logger.warn("union 资源不存在: {}", url)
+                return
+            }
+            Files.walk(rootPath).use { stream ->
+                stream
+                    .filter { Files.isRegularFile(it) && it.fileName.toString().endsWith(".class") }
+                    .forEach { classFile ->
+                        val relative = rootPath.relativize(classFile).toString().replace('\\', '/')
+                        val relativeClassName = relative.removeSuffix(".class").replace('/', '.')
+                        val className = "$packageName.$relativeClassName"
+                        processClass(className, modId)
+                    }
+            }
+        } catch (e: Exception) {
+            logger.warn("扫描 union 资源失败 {}: {}", url, e.message)
+        }
+    }
+
     private fun processClass(className: String, modId: String) {
         try {
+            if (!processedClassNames.add(className)) return
             val clazz = Class.forName(className).kotlin
             val modScreen = clazz.findAnnotation<ModScreen>() ?: return
             if (!clazz.isSubclassOf(HandledScreen::class)) {

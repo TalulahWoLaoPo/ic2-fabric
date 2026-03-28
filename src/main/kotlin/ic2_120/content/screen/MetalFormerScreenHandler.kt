@@ -14,17 +14,13 @@ import ic2_120.registry.type
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventory
-import net.minecraft.inventory.SimpleInventory
 import net.minecraft.item.ItemStack
-import net.minecraft.network.PacketByteBuf
-import net.minecraft.screen.ArrayPropertyDelegate
 import net.minecraft.screen.PropertyDelegate
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.slot.Slot
-import ic2_120.registry.annotation.ScreenFactory
 
-@ModScreenHandler(block = MetalFormerBlock::class)
+@ModScreenHandler(block = MetalFormerBlock::class, clientInventorySize = MetalFormerBlockEntity.INVENTORY_SIZE)
 class MetalFormerScreenHandler(
     syncId: Int,
     playerInventory: PlayerInventory,
@@ -223,14 +219,5 @@ class MetalFormerScreenHandler(
 
         /** 客户端发送按钮点击时使用此 id，服务端在 [onButtonClick] 中处理 */
         const val BUTTON_ID_MODE_CYCLE = 0
-
-        @ScreenFactory
-        fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): MetalFormerScreenHandler {
-            val pos = buf.readBlockPos()
-            val propertyCount = buf.readVarInt()
-            val context = ScreenHandlerContext.create(playerInventory.player.world, pos)
-            val blockInv = SimpleInventory(MetalFormerBlockEntity.INVENTORY_SIZE)
-            return MetalFormerScreenHandler(syncId, playerInventory, blockInv, context, ArrayPropertyDelegate(propertyCount))
-        }
     }
 }
