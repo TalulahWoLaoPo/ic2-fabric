@@ -6,10 +6,12 @@ import net.minecraft.entity.effect.StatusEffectCategory
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
 
+import net.minecraft.util.Identifier
+
 object ModStatusEffects {
     val SOLAR_GENERATING: StatusEffect = Registry.register(
         Registries.STATUS_EFFECT,
-        Ic2_120.id("solar_generating"),
+        Identifier("ic2", "solar_generating"),
         object : StatusEffect(StatusEffectCategory.BENEFICIAL, 0xF6D743) {}
     )
 
