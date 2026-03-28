@@ -4,12 +4,12 @@
 	"accessWidener": "ic2_120.accesswidener",
 	"version": "${version}",
 	"name": "ic2_1.20",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "IndustrialCraft 2 Experimental 的 Minecraft 1.20.1 Fabric 移植版本，使用 Kotlin 编写，基于逆向工程实现，支持信雅互联，可以被forge加载",
 	"authors": [
-		"Me!"
+		"JoyTech"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
+		"homepage": "https://readme.joytech.fun",
 		"sources": "https://github.com/FabricMC/fabric-example-mod"
 	},
 	"license": "CC0-1.0",
