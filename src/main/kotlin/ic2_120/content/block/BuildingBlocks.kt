@@ -8,8 +8,10 @@ import ic2_120.content.item.Treetap
 import ic2_120.registry.annotation.ModBlock
 import net.minecraft.block.AbstractBlock
 import net.minecraft.block.Block
+import net.minecraft.block.BlockSetType
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
+import net.minecraft.block.DoorBlock
 import net.minecraft.block.PillarBlock
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
@@ -46,6 +48,35 @@ import ic2_120.registry.annotation.RecipeProvider
     renderLayer = "cutout_mipped"
 )
 class ReinforcedGlassBlock : Block(AbstractBlock.Settings.copy(Blocks.GLASS).strength(10.0f, 1200.0f).nonOpaque())
+
+/** 防爆门：与铁门相同需红石开关，爆炸抗性同防爆石/玻璃。 */
+@ModBlock(
+    name = "reinforced_door",
+    registerItem = true,
+    tab = CreativeTab.IC2_MATERIALS,
+    group = "building",
+    renderLayer = "cutout",
+)
+class ReinforcedDoorBlock(
+    settings: AbstractBlock.Settings = AbstractBlock.Settings.copy(Blocks.IRON_DOOR).strength(25.0f, 1200.0f),
+) : DoorBlock(settings, BlockSetType.IRON) {
+    companion object {
+        @RecipeProvider
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val stone = ReinforcedStoneBlock::class.item()
+            val ironDoor = Items.IRON_DOOR
+            ShapedRecipeJsonBuilder.create(RecipeCategory.REDSTONE, ReinforcedDoorBlock::class.item(), 1)
+                .pattern("SSS")
+                .pattern("SDS")
+                .pattern("SSS")
+                .input('S', stone)
+                .input('D', ironDoor)
+                .criterion(hasItem(stone), conditionsFromItem(stone))
+                .criterion(hasItem(ironDoor), conditionsFromItem(ironDoor))
+                .offerTo(exporter, ReinforcedDoorBlock::class.id())
+        }
+    }
+}
 
 /**
  * 建筑泡沫：喷在 [IronScaffoldBlock] 上会得到 [ReinforcedFoamBlock]（见喷枪逻辑）。

@@ -24,7 +24,6 @@ class ModBlockLootTableProvider(output: FabricDataOutput) : FabricBlockLootTable
         "lead_ore",
         "tin_ore",
         "uranium_ore",
-        "iridium_ore",
         "deepslate_lead_ore",
         "deepslate_tin_ore",
         "deepslate_uranium_ore",
@@ -81,6 +80,9 @@ class ModBlockLootTableProvider(output: FabricDataOutput) : FabricBlockLootTable
         for (oreId in oreBlockIds) {
             addDrop(Registries.BLOCK.get(Identifier(Ic2_120.MOD_ID, oreId)))
         }
+
+        val reinforcedDoor = Registries.BLOCK.get(Identifier(Ic2_120.MOD_ID, "reinforced_door"))
+        addDrop(reinforcedDoor, doorDrops(reinforcedDoor))
     }
 
     private fun createMachineLootTable(block: MachineBlock): LootTable.Builder {

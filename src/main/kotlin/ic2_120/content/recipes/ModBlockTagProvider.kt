@@ -27,7 +27,6 @@ class ModBlockTagProvider(
         "lead_ore",
         "tin_ore",
         "uranium_ore",
-        "iridium_ore",
         "deepslate_lead_ore",
         "deepslate_tin_ore",
         "deepslate_uranium_ore",
@@ -36,6 +35,11 @@ class ModBlockTagProvider(
     override fun configure(registries: RegistryWrapper.WrapperLookup) {
         val pickaxeBuilder = getOrCreateTagBuilder(BlockTags.PICKAXE_MINEABLE).setReplace(false)
         val ironToolBuilder = getOrCreateTagBuilder(BlockTags.NEEDS_IRON_TOOL).setReplace(false)
+        val stoneToolBuilder = getOrCreateTagBuilder(BlockTags.NEEDS_STONE_TOOL).setReplace(false)
+
+        val reinforcedDoor = Registries.BLOCK.get(Identifier(Ic2_120.MOD_ID, "reinforced_door"))
+        pickaxeBuilder.add(reinforcedDoor)
+        stoneToolBuilder.add(reinforcedDoor)
 
         for (block in Registries.BLOCK) {
             val id = Registries.BLOCK.getId(block)

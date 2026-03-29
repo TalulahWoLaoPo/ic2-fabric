@@ -12,6 +12,7 @@ import ic2_120.content.fluid.ModFluids
 import ic2_120.content.network.NetworkManager
 import ic2_120.content.network.BandwidthStatsService
 import ic2_120.content.effect.ModStatusEffects
+import ic2_120.content.worldgen.ChestLootInjector
 import ic2_120.content.worldgen.OreGeneration
 import ic2_120.content.worldgen.RubberTreeGeneration
 import ic2_120.content.item.CellAndBucketFluidRegistration
@@ -91,6 +92,8 @@ object Ic2_120 : ModInitializer {
         RubberTreeGeneration.register()
         // 矿石世界生成（锡/铅/铀，照搬铁矿/金矿/钻石矿）
         OreGeneration.register()
+        // 奖励箱战利品追加注入（避免直接覆盖原版 loot table）
+        ChestLootInjector.register()
 
         // 使用类级别注解的自动注册系统
         ClassScanner.scanAndRegister(
