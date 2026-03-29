@@ -2,13 +2,15 @@
 
 <big>[English](README_EN.md) | 简体中文</big>
 
+> 📢 Q群交流：638382077（反馈bug、讨论开发进度、与作者交流等）
+
 > **⚠️ 必读：安装说明** 使用本模组需要同时复制 release 中的**三个文件**到 Minecraft 的 mods 文件夹：
 > - `ic2_120-*.jar` - 模组本体
 > - `energy-*.jar` - Energy API 运行时依赖
 > - `fabric-language-kotlin-*.jar` - Fabric Kotlin 语言支持库
 > 三个文件缺一不可，否则模组无法正常运行。
 
-> **📢 Sinytra Connector 支持**：本模组已针对 [Sinytra Connector](https://github.com/Sinytra/connector) 进行适配，Forge 端也可通过 Connector 加运行。关于如何在 Forge 环境中使用 Connector 加载 Fabric Mod，请参阅 [Sinytra Connector 官方文档](https://github.com/Sinytra/connector)。
+> **📢 Sinytra Connector(信雅互联) 支持**：本模组已针对 [Sinytra Connector](https://github.com/Sinytra/connector) 进行适配，Forge 端也可通过 Connector 运行。关于如何在 Forge 环境中使用 Connector 加载 Fabric Mod，请参阅 [Sinytra Connector 官方文档](https://github.com/Sinytra/connector)。
 
 IndustrialCraft 2 的 Minecraft 1.20.1 Fabric 移植版本，使用 Kotlin 编写。
 
