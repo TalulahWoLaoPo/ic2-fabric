@@ -152,19 +152,17 @@ object Ic2_120 : ModInitializer {
             "mfsu_chargepad"
         )
         val ic2MachinesKey = RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier(MOD_ID, CreativeTab.IC2_MACHINES.id))
-        if (Ic2Config.current.creative.addFullChargeStorageItems) {
-            ItemGroupEvents.modifyEntriesEvent(ic2MachinesKey).register { entries ->
-                for (id in storageIds) {
-                    val fullStack = ItemStack(Registries.ITEM.get(Identifier(MOD_ID, id)))
-                    fullStack.orCreateNbt.putBoolean(EnergyStorageBlock.NBT_FULL, true)
-                    entries.add(fullStack)
-                }
+        ItemGroupEvents.modifyEntriesEvent(ic2MachinesKey).register { entries ->
+            for (id in storageIds) {
+                val fullStack = ItemStack(Registries.ITEM.get(Identifier(MOD_ID, id)))
+                fullStack.orCreateNbt.putBoolean(EnergyStorageBlock.NBT_FULL, true)
+                entries.add(fullStack)
             }
         }
 
         // 注册满燃料喷气背包到创造模式
         val jetpackItem = Registries.ITEM.get(Identifier(MOD_ID, "jetpack"))
-        if (jetpackItem != null && Ic2Config.current.creative.addFullFuelJetpack) {
+        if (jetpackItem != null) {
             val ic2MaterialsKey =
                 RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier(MOD_ID, CreativeTab.IC2_MATERIALS.id))
             ItemGroupEvents.modifyEntriesEvent(ic2MaterialsKey).register { entries ->
@@ -177,17 +175,15 @@ object Ic2_120 : ModInitializer {
         }
 
         // 建筑泡沫喷枪：满流体（8 桶）变体
-        if (Ic2Config.current.creative.addFullFoamSprayer) {
-            val ic2MaterialsKey =
-                RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier(MOD_ID, CreativeTab.IC2_MATERIALS.id))
-            ItemGroupEvents.modifyEntriesEvent(ic2MaterialsKey).register { entries ->
-                val sprayer = Registries.ITEM.get(Identifier(MOD_ID, "foam_sprayer"))
-                if (sprayer == Items.AIR || sprayer !is FoamSprayerItem) return@register
-                val fullSprayer = ItemStack(sprayer).also {
-                    FoamSprayerItem.setFluidAmount(it, FoamSprayerItem.CAPACITY_DROPLETS)
-                }
-                entries.addAfter(sprayer, fullSprayer)
+        val ic2MaterialsKey =
+            RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier(MOD_ID, CreativeTab.IC2_MATERIALS.id))
+        ItemGroupEvents.modifyEntriesEvent(ic2MaterialsKey).register { entries ->
+            val sprayer = Registries.ITEM.get(Identifier(MOD_ID, "foam_sprayer"))
+            if (sprayer == Items.AIR || sprayer !is FoamSprayerItem) return@register
+            val fullSprayer = ItemStack(sprayer).also {
+                FoamSprayerItem.setFluidAmount(it, FoamSprayerItem.CAPACITY_DROPLETS)
             }
+            entries.addAfter(sprayer, fullSprayer)
         }
 
         // 杂交作物初始种子袋（三维属性 1/1/1）加入作物种子物品栏

@@ -1,6 +1,7 @@
 package ic2_120.content.block.nuclear
 
 import ic2_120.Ic2_120
+import ic2_120.config.Ic2Config
 import ic2_120.content.block.IGenerator
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.block.MachineBlock
@@ -996,8 +997,7 @@ class NuclearReactorBlockEntity(
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
 
         if (sync.temperature >= NuclearReactorSync.HEAT_EXPLODE_THRESHOLD) {
-            explode()
-            return
+            if (tryExplode()) return
         }
 
         if (shouldTick) {
@@ -1139,13 +1139,26 @@ class NuclearReactorBlockEntity(
         if (sync.temperature < NuclearReactorSync.HEAT_FIRE_THRESHOLD) return false
         val power = sync.temperature.toFloat() / NuclearReactorSync.HEAT_CAPACITY
         if (power >= 1f) {
-            explode()
-            return true
+            return tryExplode()
         }
         return false
     }
 
+    private fun tryExplode(): Boolean {
+        if (!Ic2Config.current.nuclear.enableReactorExplosion) {
+            meltdownWithoutExplosion()
+            return true
+        }
+        explode()
+        return true
+    }
+
     override fun explode() {
+        if (!Ic2Config.current.nuclear.enableReactorExplosion) {
+            meltdownWithoutExplosion()
+            return
+        }
+
         var boomPower = 10f
         var boomMod = 1f
         val cols = getReactorCols()
@@ -1175,6 +1188,31 @@ class NuclearReactorBlockEntity(
         val cy = pos.y + 0.5
         val cz = pos.z + 0.5
         w.createExplosion(null, cx, cy, cz, boomPower.coerceAtMost(20f), true, World.ExplosionSourceType.BLOCK)
+    }
+
+    private fun meltdownWithoutExplosion() {
+        val w = world ?: return
+
+        for (slot in 0 until INVENTORY_SIZE) {
+            if (!getStack(slot).isEmpty) {
+                setStack(slot, ItemStack.EMPTY)
+            }
+        }
+
+        inputTank.variant = FluidVariant.blank()
+        inputTank.amount = 0L
+        outputTank.variant = FluidVariant.blank()
+        outputTank.amount = 0L
+        pendingEnergyOutput = 0L
+        emitHeatBuffer = 0
+
+        for (dir in Direction.values()) {
+            val neighborPos = pos.offset(dir)
+            if (w.getBlockState(neighborPos).block is ReactorChamberBlock) {
+                w.breakBlock(neighborPos, false)
+            }
+        }
+        w.breakBlock(pos, false)
     }
 
     private fun applyHeatEffects(world: World, pos: BlockPos) {

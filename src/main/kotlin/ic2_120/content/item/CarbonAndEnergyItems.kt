@@ -3,6 +3,7 @@ package ic2_120.content.item
 import ic2_120.Ic2_120
 import ic2_120.content.block.CompressedCoalBall
 import ic2_120.content.block.cables.InsulatedCopperCableBlock
+import ic2_120.content.uu.appendUuTemplateTooltip
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.id
 import ic2_120.registry.instance
@@ -17,6 +18,7 @@ import net.minecraft.data.server.recipe.RecipeJsonProvider
 import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
 import net.minecraft.data.server.recipe.ShapelessRecipeJsonBuilder
 import net.minecraft.data.server.recipe.CookingRecipeJsonBuilder
+import net.minecraft.client.item.TooltipContext
 import net.minecraft.item.Item
 import net.minecraft.item.Items
 import net.minecraft.recipe.Ingredient
@@ -24,7 +26,9 @@ import net.minecraft.recipe.book.RecipeCategory
 import net.minecraft.registry.Registries
 import net.minecraft.registry.tag.ItemTags
 import net.minecraft.registry.tag.TagKey
+import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.minecraft.world.World
 import java.util.function.Consumer
 import ic2_120.registry.annotation.RecipeProvider
 
@@ -435,7 +439,12 @@ class RawCrystalMemory : Item(FabricItemSettings()) {
 }
 
 @ModItem(name = "crystal_memory", tab = CreativeTab.IC2_MATERIALS, group = "pattern_storage")
-class CrystalMemory : Item(FabricItemSettings()) {
+class CrystalMemory : Item(FabricItemSettings().maxCount(1)) {
+    override fun appendTooltip(stack: net.minecraft.item.ItemStack, world: World?, tooltip: MutableList<Text>, context: TooltipContext) {
+        super.appendTooltip(stack, world, tooltip, context)
+        stack.appendUuTemplateTooltip(tooltip)
+    }
+
     companion object {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {

@@ -18,12 +18,9 @@ object ConfigCommand {
                                 val source = context.source
                                 try {
                                     Ic2Config.reloadOrThrow()
-                                    val creative = Ic2Config.current.creative
                                     source.sendFeedback(
                                         {
-                                            Text.literal(
-                                                "ic2_120 config reloaded: fullChargeStorage=${creative.addFullChargeStorageItems}, fullFuelJetpack=${creative.addFullFuelJetpack}, fullFoamSprayer=${creative.addFullFoamSprayer}, recyclerBlacklist=${Ic2Config.current.recycler.blacklist.size}"
-                                            )
+                                            Text.literal("ic2_120 config reloaded:\n${Ic2Config.prettyCurrentConfig()}")
                                         },
                                         true
                                     )
