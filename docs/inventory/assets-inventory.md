@@ -63,7 +63,6 @@ find src -name "*ElectricKineticGenerator*" -o -name "*electric_kinetic_generato
 | - [x] | block.ic2.deepslate_lead_ore | 深层铅矿石 |
 | - [x] | block.ic2.deepslate_tin_ore | 深层锡矿石 |
 | - [x] | block.ic2.deepslate_uranium_ore | 深层铀矿石 |
-| - [x] | block.ic2.iridium_ore | 铱矿石 |
 | - [x] | block.ic2.copper_ore | 铜矿石 |
 
 ### 块状材料类
@@ -340,7 +339,7 @@ find src -name "*ElectricKineticGenerator*" -o -name "*electric_kinetic_generato
 ### 特殊门类
 |  | ID | 名称 |
 |--|----|------|
-| - [ ] | block.ic2.reinforced_door | 防爆门 |
+| - [x] | block.ic2.reinforced_door | 防爆门 |
 
 
 ---
@@ -357,14 +356,14 @@ find src -name "*ElectricKineticGenerator*" -o -name "*electric_kinetic_generato
 | - [x] | `iridium_tank.json` | 铱储罐 |
 | - [ ] | `iron_storage_box.json` | 铁质储物箱 |
 | - [x] | `iron_tank.json` | 铁储罐 |
-| - [ ] | `reinforced_door_bottom_left.json` | 防爆门下半左 |
-| - [ ] | `reinforced_door_bottom_left_open.json` | 防爆门下半左（打开） |
-| - [ ] | `reinforced_door_bottom_right.json` | 防爆门下半右 |
-| - [ ] | `reinforced_door_bottom_right_open.json` | 防爆门下半右（打开） |
-| - [ ] | `reinforced_door_top_left.json` | 防爆门上半左 |
-| - [ ] | `reinforced_door_top_left_open.json` | 防爆门上半左（打开） |
-| - [ ] | `reinforced_door_top_right.json` | 防爆门上半右 |
-| - [ ] | `reinforced_door_top_right_open.json` | 防爆门上半右（打开） |
+| - [x] | `reinforced_door_bottom_left.json` | 防爆门下半左 |
+| - [x] | `reinforced_door_bottom_left_open.json` | 防爆门下半左（打开） |
+| - [x] | `reinforced_door_bottom_right.json` | 防爆门下半右 |
+| - [x] | `reinforced_door_bottom_right_open.json` | 防爆门下半右（打开） |
+| - [x] | `reinforced_door_top_left.json` | 防爆门上半左 |
+| - [x] | `reinforced_door_top_left_open.json` | 防爆门上半左（打开） |
+| - [x] | `reinforced_door_top_right.json` | 防爆门上半右 |
+| - [x] | `reinforced_door_top_right_open.json` | 防爆门上半右（打开） |
 | - [ ] | `reinforced_glass.json` | 防爆玻璃 |
 | - [ ] | `reinforced_stone.json` | 防爆石 |
 | - [ ] | `resin_sheet.json` | 树脂垫 |

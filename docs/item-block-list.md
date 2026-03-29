@@ -2,8 +2,8 @@
 
 > 由脚本自动生成（扫描 @ModBlock / @ModItem 注解 + zh_cn.json）
 
-- **方块总数**: 149  |  **物品总数**: 286
-- **方块分组数**: 19  |  **物品分组数**: 41
+- **方块总数**: 154  |  **物品总数**: 293
+- **方块分组数**: 19  |  **物品分组数**: 42
 
 ## 方块 (Block)
 
@@ -23,7 +23,6 @@
 | `UraniumOreBlock` | `uranium_ore` | 铀矿石 |
 | `IronTransmissionShaftBlock` | `iron_transmission_shaft` | 铁制传动轴 |
 | `LeadOreBlock` | `lead_ore` | 铅矿石 |
-| `IridiumOreBlock` | `iridium_ore` | 铱矿石 |
 | `TinOreBlock` | `tin_ore` | 锡矿石 |
 
 ### **分组: bat_box**
@@ -34,6 +33,10 @@
 | `MfeBlock` | `mfe` | MFE储电箱 |
 | `MfsuBlock` | `mfsu` | MFSU储电箱 |
 | `BatBoxBlock` | `batbox` | 储电箱 |
+| `BatBoxChargepadBlock` | `batbox_chargepad` | 充电座 (BatBox) |
+| `CesuChargepadBlock` | `cesu_chargepad` | 充电座 (CESU) |
+| `MfeChargepadBlock` | `mfe_chargepad` | 充电座 (MFE) |
+| `MfsuChargepadBlock` | `mfsu_chargepad` | 充电座 (MFSU) |
 
 ### **分组: building**
 
@@ -41,11 +44,11 @@
 |------|--------|----------|
 | `ItntBlock` | `itnt` | 工业 TNT |
 | `FoamBlock` | `foam` | 建筑泡沫 |
+| `ReinforcedFoamBlock` | `reinforced_foam` | 强化建筑泡沫 |
 | `ResinSheetBlock` | `resin_sheet` | 树脂垫 |
 | `RubberSheetBlock` | `rubber_sheet` | 橡胶垫 |
 | `WoolSheetBlock` | `wool_sheet` | 羊毛垫 |
 | `MiningPipeBlock` | `mining_pipe` | 采矿管道 |
-| `ReinforcedGlassBlock` | `reinforced_glass` | 防爆玻璃 |
 
 ### **分组: cables**
 
@@ -101,7 +104,7 @@
 
 | 类名 | 注册名 | 中文翻译 |
 |------|--------|----------|
-| `CoalBlock` | `coal_block` | 压缩煤球 |
+| `CompressedCoalBall` | `coal_block` | 压缩煤球 |
 | `BasaltBlock` | `basalt` | 玄武石 |
 | `SteelBlock` | `steel_block` | 钢块 |
 | `UraniumBlock` | `uranium_block` | 铀块 |
@@ -136,11 +139,15 @@
 
 | 类名 | 注册名 | 中文翻译 |
 |------|--------|----------|
+| `TeleporterBlock` | `teleporter` | 传送机 |
+| `CropmatronBlock` | `cropmatron` | 作物监管机 |
 | `ChunkLoaderBlock` | `chunk_loader` | 区块加载器 |
 | `CompressorBlock` | `compressor` | 压缩机 |
+| `FermenterBlock` | `fermenter` | 发酵机 |
 | `RecyclerBlock` | `recycler` | 回收机 |
 | `SolidCannerBlock` | `solid_canner` | 固体装罐机 |
 | `InductionFurnaceBlock` | `induction_furnace` | 感应炉 |
+| `MaceratorBlock` | `macerator` | 打粉机 |
 | `ExtractorBlock` | `extractor` | 提取机 |
 | `BlockCutterBlock` | `block_cutter` | 方块切割机 |
 | `PumpBlock` | `pump` | 泵 |
@@ -148,8 +155,8 @@
 | `CannerBlock` | `canner` | 流体/固体装罐机 |
 | `FluidBottlerBlock` | `fluid_bottler` | 流体装罐机 |
 | `CentrifugeBlock` | `centrifuge` | 热能离心机 |
-| `ElectricFurnaceBlock` | `electric_furnace` | 电力熔炉 |
-| `MaceratorBlock` | `macerator` | 粉碎机 |
+| `ElectricFurnaceBlock` | `electric_furnace` | 电炉 |
+| `MagnetizerBlock` | `magnetizer` | 磁化机 |
 | `MetalFormerBlock` | `metal_former` | 金属成型机 |
 | `IronFurnaceBlock` | `iron_furnace` | 铁炉 |
 | `BlastFurnaceBlock` | `blast_furnace` | 高炉 |
@@ -173,14 +180,12 @@
 | `NuclearReactorBlock` | `nuclear_reactor` | 核反应堆 |
 | `ReactorVesselBlock` | `reactor_vessel` | 核反应堆压力容器 |
 
-### **分组: scaffold**
+### **分组: resource**
 
 | 类名 | 注册名 | 中文翻译 |
 |------|--------|----------|
-| `ReinforcedWoodenScaffoldBlock` | `reinforced_wooden_scaffold` | 强化脚手架 |
-| `ReinforcedIronScaffoldBlock` | `reinforced_iron_scaffold` | 强化铁质脚手架 |
-| `WoodenScaffoldBlock` | `wooden_scaffold` | 脚手架 |
-| `IronScaffoldBlock` | `iron_scaffold` | 铁质脚手架 |
+| `MinerBlock` | `miner` | 采矿机 |
+| `AdvancedMinerBlock` | `advanced_miner` | 高级采矿机 |
 
 ### **分组: storage**
 
@@ -324,18 +329,12 @@
 
 | 类名 | 注册名 | 中文翻译 |
 |------|--------|----------|
+| `WeedingSpade` | `weeding_spade` | 除草铲 |
 | `BronzeSword` | `bronze_sword` | 青铜剑 |
 | `BronzeAxe` | `bronze_axe` | 青铜斧 |
 | `BronzeShovel` | `bronze_shovel` | 青铜铲 |
 | `BronzeHoe` | `bronze_hoe` | 青铜锄 |
 | `BronzePickaxe` | `bronze_pickaxe` | 青铜镐 |
-
-### **分组: buckets**
-
-| 类名 | 注册名 | 中文翻译 |
-|------|--------|----------|
-| `ConstructionFoamBucket` | `construction_foam_bucket` | 建筑泡沫桶 |
-| `ConstructFoamBucket` | `construct_foam_bucket` | 建筑泡沫桶 |
 
 ### **分组: carbon_materials**
 
@@ -394,13 +393,21 @@
 
 | 类名 | 注册名 | 中文翻译 |
 |------|--------|----------|
+| `FoamSprayerItem` | `foam_sprayer` | 建筑泡沫喷枪 |
 | `CfPowder` | `cf_powder` | 建筑泡沫粉 |
 | `Pellet` | `pellet` | 建筑泡沫颗粒 |
+
+### **分组: containment**
+
+| 类名 | 注册名 | 中文翻译 |
+|------|--------|----------|
+| `ContainmentBoxItem` | `containment_box` | 防辐射容纳盒 |
 
 ### **分组: crops**
 
 | 类名 | 注册名 | 中文翻译 |
 |------|--------|----------|
+| `CropSeedBagItem` | `crop_seed_bag` | 作物种子袋 |
 | `CoffeePowder` | `coffee_powder` | 咖啡粉 |
 | `CoffeeBeans` | `coffee_beans` | 咖啡豆 |
 | `Hops` | `hops` | 啤酒花 |
@@ -474,6 +481,7 @@
 |------|--------|----------|
 | `ElectricWrench` | `electric_wrench` | 电动扳手 |
 | `ElectricTreetap` | `electric_treetap` | 电动树脂提取器 |
+| `NanoSaber` | `nano_saber` | 纳米剑 |
 | `Drill` | `drill` | 采矿钻头 |
 | `DiamondDrill` | `diamond_drill` | 钻石钻头 |
 | `IridiumDrill` | `iridium_drill` | 铱钻头 |
@@ -484,7 +492,6 @@
 | 类名 | 注册名 | 中文翻译 |
 |------|--------|----------|
 | `CompressedPlants` | `compressed_plants` | 压缩植物 |
-| `CompressedHydratedCoal` | `compressed_hydrated_coal` | 压缩煤 |
 | `IndustrialDiamond` | `industrial_diamond` | 工业钻石 |
 | `Scrap` | `scrap` | 废料 |
 | `ScrapBox` | `scrap_box` | 废料盒 |
@@ -520,6 +527,8 @@
 | 类名 | 注册名 | 中文翻译 |
 |------|--------|----------|
 | `RubberItem` | `rubber` | 橡胶 |
+| `IridiumOreItem` | `iridium_ore_item` | 铱矿石 |
+| `IridiumShard` | `iridium_shard` | 铱碎片 |
 
 ### **分组: misc**
 
@@ -527,6 +536,7 @@
 |------|--------|----------|
 | `Slag` | `slag` | 炉渣 |
 | `Iodine` | `iodine` | 碘 |
+| `IodineTablet` | `iodine_tablet` | 碘片 |
 | `Resin` | `resin` | 粘性树脂 |
 
 ### **分组: mugs**
@@ -556,10 +566,8 @@
 | `SmallUranium238` | `small_uranium_238` | 小撮铀 -238 |
 | `RtgPellet` | `rtg_pellet` | 放射性同位素燃料靶丸 |
 | `Uranium` | `uranium` | 浓缩铀核燃料 |
-| `UraniumPellet` | `uranium_pellet` | 浓缩铀核燃料靶丸 |
 | `Plutonium` | `plutonium` | 钚 |
 | `Mox` | `mox` | 钚铀混合氧化物核燃料 (MOX) |
-| `MoxPellet` | `mox_pellet` | 钚铀混合氧化物核燃料靶丸 (MOX) |
 | `Uranium235` | `uranium_235` | 铀 -235 |
 | `Uranium238` | `uranium_238` | 铀 -238 |
 
@@ -573,8 +581,16 @@
 | `EmptyTinCanItem` | `tin_can` | 空锡罐 |
 | `ToolHandleSteelItem` | `steel_shaft` | 铁柄（钢） |
 | `ToolHandleIronItem` | `iron_shaft` | 铁柄（铁） |
+| `ToolHandleBronzeItem` | `bronze_shaft` | 铁柄（青铜） |
 | `FilledTinCanItem` | `filled_tin_can` | 锡罐（满） |
 | `PowerUnitItem` | `power_unit` | 驱动把手 |
+
+### **分组: pattern_storage**
+
+| 类名 | 注册名 | 中文翻译 |
+|------|--------|----------|
+| `CrystalMemory` | `crystal_memory` | 模式存储水晶 |
+| `RawCrystalMemory` | `raw_crystal_memory` | 粗制模式存储水晶 |
 
 ### **分组: plates**
 
@@ -726,6 +742,7 @@
 | `Obscurator` | `obscurator` | 拟态板 |
 | `Treetap` | `treetap` | 木龙头 |
 | `DebugItem` | `debug_item` | 测试工具 |
+| `CropnalyzerItem` | `cropnalyzer` | 种子扫描仪 |
 | `FrequencyTransmitter` | `frequency_transmitter` | 遥控器 |
 | `WindMeter` | `wind_meter` | 风力计 |
 
