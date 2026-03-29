@@ -56,7 +56,7 @@ class EmptyTinCanItem : Item(FabricItemSettings()) {
 /**
  * 满锡罐：由空锡罐在固体装罐机内灌装食物获得，也可在宝箱中开出。
  * 右击食用：生命未满时恢复 1 心生命值，生命满时恢复 1 格饥饿值。
- * 食用速度极快，食用后返还空锡罐。
+ * 一秒能吃2个（10 tick），食用后返还空锡罐。
  */
 @ModItem(name = "filled_tin_can", tab = CreativeTab.IC2_MATERIALS, group = "parts")
 class FilledTinCanItem : Item(
@@ -73,6 +73,9 @@ class FilledTinCanItem : Item(
 
     private val emptyTinCanItem: Item
         get() = Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "tin_can"))
+
+    /** 10 tick ≈ 1秒吃2个） */
+    override fun getMaxUseTime(stack: ItemStack): Int = 10
 
     override fun finishUsing(stack: ItemStack, world: World, user: LivingEntity): ItemStack {
         if (!world.isClient && user is PlayerEntity) {
