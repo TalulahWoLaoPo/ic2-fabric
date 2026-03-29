@@ -41,6 +41,7 @@ import ic2_120.content.player.FlightManager
 import ic2_120.content.entity.ModEntities
 import ic2_120.config.Ic2Config
 import ic2_120.content.command.ConfigCommand
+import ic2_120.content.command.SeedCommand
 import ic2_120.registry.ClassScanner
 import ic2_120.registry.type
 import ic2_120.registry.CreativeTab
@@ -202,6 +203,7 @@ object Ic2_120 : ModInitializer {
         NetworkManager.register()
         // 注册配置重载命令（/ic2config reload）
         ConfigCommand.register()
+        SeedCommand.register()
 
         logger.info("IC2 1.20 模组已加载（类注解驱动自动注册）")
     }
