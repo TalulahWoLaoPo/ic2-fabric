@@ -3,10 +3,14 @@ package ic2_120.content.block.machines
 import ic2_120.content.block.CentrifugeBlock
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.energy.charge.BatteryDischargerComponent
+import ic2_120.content.item.IUpgradeItem
 import ic2_120.content.item.energy.IBatteryItem
 import ic2_120.content.pullEnergyFromNeighbors
-import ic2_120.content.recipes.ModMachineRecipes
+import ic2_120.content.storage.ItemInsertRoute
+import ic2_120.content.storage.RoutedItemStorage
 import ic2_120.content.recipes.centrifuge.CentrifugeRecipe
+import ic2_120.content.recipes.centrifuge.CentrifugeRecipeSerializer
+import ic2_120.content.recipes.getRecipeType
 import ic2_120.content.screen.CentrifugeScreenHandler
 import ic2_120.content.sync.CentrifugeSync
 import ic2_120.content.syncs.SyncedData
@@ -17,9 +21,14 @@ import ic2_120.content.upgrade.ITransformerUpgradeSupport
 import ic2_120.content.upgrade.OverclockerUpgradeComponent
 import ic2_120.content.upgrade.TransformerUpgradeComponent
 import ic2_120.registry.annotation.ModBlockEntity
+import ic2_120.registry.annotation.ModMachineRecipeBinding
 import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
@@ -46,12 +55,13 @@ import net.minecraft.world.World
  * 加热 1 EU/t 不受超频影响；加工 48 EU/t 受超频影响
  */
 @ModBlockEntity(block = CentrifugeBlock::class)
+@ModMachineRecipeBinding(CentrifugeRecipeSerializer::class)
 class CentrifugeBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
 ) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport,
-    IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, ExtendedScreenHandlerFactory {
+    IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, Storage<ItemVariant>, ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = CentrifugeBlock.ACTIVE
 
@@ -79,6 +89,18 @@ class CentrifugeBlockEntity(
     }
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
+    private val itemStorage = RoutedItemStorage(
+        inventory = inventory,
+        maxCountPerStackProvider = { maxCountPerStack },
+        slotValidator = { slot, stack -> isValid(slot, stack) },
+        insertRoutes = listOf(
+            ItemInsertRoute(SLOT_UPGRADE_INDICES, matcher = { it.item is IUpgradeItem }),
+            ItemInsertRoute(intArrayOf(SLOT_DISCHARGING), matcher = { isBatteryItem(it) }, maxPerSlot = 1),
+            ItemInsertRoute(intArrayOf(SLOT_INPUT), matcher = { isRecipeInput(it) })
+        ),
+        extractSlots = intArrayOf(SLOT_OUTPUT_1, SLOT_OUTPUT_2, SLOT_OUTPUT_3),
+        markDirty = { markDirty() }
+    )
 
     val syncedData = SyncedData(this)
     @RegisterEnergy
@@ -116,6 +138,22 @@ class CentrifugeBlockEntity(
     override fun isEmpty(): Boolean = inventory.all { it.isEmpty }
     override fun markDirty() { super.markDirty() }
     override fun canPlayerUse(player: PlayerEntity): Boolean = Inventory.canPlayerUse(this, player)
+
+    override fun isValid(slot: Int, stack: ItemStack): Boolean = when (slot) {
+        SLOT_INPUT -> isRecipeInput(stack)
+        SLOT_OUTPUT_1, SLOT_OUTPUT_2, SLOT_OUTPUT_3 -> false
+        SLOT_DISCHARGING -> isBatteryItem(stack)
+        in SLOT_UPGRADE_0..SLOT_UPGRADE_3 -> stack.item is IUpgradeItem
+        else -> false
+    }
+
+    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.insert(resource, maxAmount, transaction)
+
+    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.extract(resource, maxAmount, transaction)
+
+    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)
@@ -273,11 +311,20 @@ class CentrifugeBlockEntity(
         val recipeManager = world?.recipeManager ?: return null
 
         val optionalRecipe = recipeManager.getFirstMatch(
-            ModMachineRecipes.CENTRIFUGE_TYPE,
+            getRecipeType<CentrifugeRecipe>(),
             inv,
             world ?: return null
         )
 
         return optionalRecipe.orElse(null)
+    }
+
+    private fun isBatteryItem(stack: ItemStack): Boolean = !stack.isEmpty && stack.item is IBatteryItem
+
+    private fun isRecipeInput(stack: ItemStack): Boolean {
+        if (stack.isEmpty || isBatteryItem(stack)) return false
+        val w = world ?: return true
+        val inv = SimpleInventory(stack.copyWithCount(1))
+        return w.recipeManager.getFirstMatch(getRecipeType<CentrifugeRecipe>(), inv, w).isPresent
     }
 }

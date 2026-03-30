@@ -4,8 +4,9 @@ import ic2_120.content.block.ITieredMachine
 import ic2_120.content.block.SolidCannerBlock
 import ic2_120.content.energy.charge.BatteryDischargerComponent
 import ic2_120.content.pullEnergyFromNeighbors
-import ic2_120.content.recipes.ModMachineRecipes
+import ic2_120.content.recipes.getRecipeType
 import ic2_120.content.recipes.solidcanner.SolidCannerRecipe
+import ic2_120.content.recipes.solidcanner.SolidCannerRecipeSerializer
 import ic2_120.content.screen.SolidCannerScreenHandler
 import ic2_120.content.sync.SolidCannerSync
 import ic2_120.content.syncs.SyncedData
@@ -15,10 +16,20 @@ import ic2_120.content.upgrade.IOverclockerUpgradeSupport
 import ic2_120.content.upgrade.ITransformerUpgradeSupport
 import ic2_120.content.upgrade.OverclockerUpgradeComponent
 import ic2_120.content.upgrade.TransformerUpgradeComponent
+import ic2_120.content.item.IUpgradeItem
+import ic2_120.content.item.energy.IBatteryItem
+import ic2_120.content.recipes.SolidCannerRecipes
+import ic2_120.content.storage.ItemInsertRoute
+import ic2_120.content.storage.RoutedItemStorage
 import ic2_120.registry.annotation.ModBlockEntity
+import ic2_120.registry.annotation.ModMachineRecipeBinding
 import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
@@ -32,6 +43,8 @@ import net.minecraft.network.PacketByteBuf
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
+import net.minecraft.registry.Registries
+import net.minecraft.util.Identifier
 import net.minecraft.util.collection.DefaultedList
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
@@ -41,12 +54,13 @@ import net.minecraft.world.World
  * 槽位：锡罐、食物、输出、放电、4 升级
  */
 @ModBlockEntity(block = SolidCannerBlock::class)
+@ModMachineRecipeBinding(SolidCannerRecipeSerializer::class)
 class SolidCannerBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
 ) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport,
-    IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, ExtendedScreenHandlerFactory {
+    IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, Storage<ItemVariant>, ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = SolidCannerBlock.ACTIVE
 
@@ -65,11 +79,28 @@ class SolidCannerBlockEntity(
         const val SLOT_FOOD = 1
         const val SLOT_OUTPUT = 2
         const val SLOT_DISCHARGING = 3
-        val SLOT_UPGRADE_INDICES = intArrayOf(4, 5, 6, 7)
+        const val SLOT_UPGRADE_0 = 4
+        const val SLOT_UPGRADE_1 = 5
+        const val SLOT_UPGRADE_2 = 6
+        const val SLOT_UPGRADE_3 = 7
+        val SLOT_UPGRADE_INDICES = intArrayOf(SLOT_UPGRADE_0, SLOT_UPGRADE_1, SLOT_UPGRADE_2, SLOT_UPGRADE_3)
         const val INVENTORY_SIZE = 8
     }
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
+    private val itemStorage = RoutedItemStorage(
+        inventory = inventory,
+        maxCountPerStackProvider = { maxCountPerStack },
+        slotValidator = { slot, stack -> isValid(slot, stack) },
+        insertRoutes = listOf(
+            ItemInsertRoute(SLOT_UPGRADE_INDICES, matcher = { it.item is IUpgradeItem }),
+            ItemInsertRoute(intArrayOf(SLOT_DISCHARGING), matcher = { isBatteryItem(it) }, maxPerSlot = 1),
+            ItemInsertRoute(intArrayOf(SLOT_TIN_CAN), matcher = { isTinCan(it) }),
+            ItemInsertRoute(intArrayOf(SLOT_FOOD), matcher = { isFoodInput(it) })
+        ),
+        extractSlots = intArrayOf(SLOT_OUTPUT),
+        markDirty = { markDirty() }
+    )
 
     val syncedData = SyncedData(this)
     @RegisterEnergy
@@ -107,6 +138,23 @@ class SolidCannerBlockEntity(
     override fun isEmpty(): Boolean = inventory.all { it.isEmpty }
     override fun markDirty() { super.markDirty() }
     override fun canPlayerUse(player: PlayerEntity): Boolean = Inventory.canPlayerUse(this, player)
+
+    override fun isValid(slot: Int, stack: ItemStack): Boolean = when (slot) {
+        SLOT_TIN_CAN -> isTinCan(stack)
+        SLOT_FOOD -> isFoodInput(stack)
+        SLOT_OUTPUT -> false
+        SLOT_DISCHARGING -> isBatteryItem(stack)
+        in SLOT_UPGRADE_0..SLOT_UPGRADE_3 -> stack.item is IUpgradeItem
+        else -> false
+    }
+
+    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.insert(resource, maxAmount, transaction)
+
+    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.extract(resource, maxAmount, transaction)
+
+    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)
@@ -156,7 +204,7 @@ class SolidCannerBlockEntity(
         }
 
         val recipeInventory = SimpleInventory(tinCan.copyWithCount(1), food.copyWithCount(1))
-        val match = world.recipeManager.getFirstMatch(ModMachineRecipes.SOLID_CANNER_TYPE, recipeInventory, world)
+        val match = world.recipeManager.getFirstMatch(getRecipeType<SolidCannerRecipe>(), recipeInventory, world)
         if (match.isEmpty) {
             if (sync.progress != 0) sync.progress = 0
             setActiveState(world, pos, state, false)
@@ -223,4 +271,13 @@ class SolidCannerBlockEntity(
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
         markDirty()
     }
+
+    private fun isBatteryItem(stack: ItemStack): Boolean = !stack.isEmpty && stack.item is IBatteryItem
+
+    private fun isTinCan(stack: ItemStack): Boolean =
+        !stack.isEmpty && stack.item == Registries.ITEM.get(Identifier("ic2_120", "tin_can"))
+
+    private fun isFoodInput(stack: ItemStack): Boolean =
+        !stack.isEmpty && stack.item !is IBatteryItem && stack.item !is IUpgradeItem &&
+            SolidCannerRecipes.isCanningFood(stack.item)
 }

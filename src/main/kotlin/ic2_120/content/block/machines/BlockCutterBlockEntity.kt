@@ -1,8 +1,13 @@
 package ic2_120.content.block.machines
 
 import ic2_120.content.item.IBlockCuttingBlade
-import ic2_120.content.recipes.ModMachineRecipes
+import ic2_120.content.item.IUpgradeItem
+import ic2_120.content.item.energy.IBatteryItem
+import ic2_120.content.storage.ItemInsertRoute
+import ic2_120.content.storage.RoutedItemStorage
 import ic2_120.content.recipes.blockcutter.BlockCutterRecipe
+import ic2_120.content.recipes.blockcutter.BlockCutterRecipeSerializer
+import ic2_120.content.recipes.getRecipeType
 import ic2_120.content.sync.BlockCutterSync
 import ic2_120.content.pullEnergyFromNeighbors
 import ic2_120.content.block.BlockCutterBlock
@@ -17,9 +22,14 @@ import ic2_120.content.upgrade.OverclockerUpgradeComponent
 import ic2_120.content.upgrade.TransformerUpgradeComponent
 import ic2_120.content.energy.charge.BatteryDischargerComponent
 import ic2_120.registry.annotation.ModBlockEntity
+import ic2_120.registry.annotation.ModMachineRecipeBinding
 import ic2_120.registry.type
 import ic2_120.registry.annotation.RegisterEnergy
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.minecraft.block.BlockState
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -38,12 +48,13 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 
 @ModBlockEntity(block = BlockCutterBlock::class)
+@ModMachineRecipeBinding(BlockCutterRecipeSerializer::class)
 class BlockCutterBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
 ) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport, IEnergyStorageUpgradeSupport,
-    ITransformerUpgradeSupport, ExtendedScreenHandlerFactory {
+    ITransformerUpgradeSupport, Storage<ItemVariant>, ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = BlockCutterBlock.ACTIVE
 
@@ -71,6 +82,19 @@ class BlockCutterBlockEntity(
     }
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
+    private val itemStorage = RoutedItemStorage(
+        inventory = inventory,
+        maxCountPerStackProvider = { maxCountPerStack },
+        slotValidator = { slot, stack -> isValid(slot, stack) },
+        insertRoutes = listOf(
+            ItemInsertRoute(SLOT_UPGRADE_INDICES, matcher = { it.item is IUpgradeItem }),
+            ItemInsertRoute(intArrayOf(SLOT_DISCHARGING), matcher = { isBatteryItem(it) }, maxPerSlot = 1),
+            ItemInsertRoute(intArrayOf(SLOT_BLADE), matcher = { it.item is IBlockCuttingBlade }, maxPerSlot = 1),
+            ItemInsertRoute(intArrayOf(SLOT_INPUT), matcher = { isRecipeInput(it) })
+        ),
+        extractSlots = intArrayOf(SLOT_OUTPUT),
+        markDirty = { markDirty() }
+    )
 
     val syncedData = SyncedData(this)
     @RegisterEnergy
@@ -110,6 +134,23 @@ class BlockCutterBlockEntity(
     override fun isEmpty(): Boolean = inventory.all { it.isEmpty }
     override fun markDirty() { super.markDirty() }
     override fun canPlayerUse(player: PlayerEntity): Boolean = Inventory.canPlayerUse(this, player)
+
+    override fun isValid(slot: Int, stack: ItemStack): Boolean = when (slot) {
+        SLOT_BLADE -> !stack.isEmpty && stack.item is IBlockCuttingBlade
+        SLOT_INPUT -> isRecipeInput(stack)
+        SLOT_OUTPUT -> false
+        SLOT_DISCHARGING -> isBatteryItem(stack)
+        in SLOT_UPGRADE_0..SLOT_UPGRADE_3 -> stack.item is IUpgradeItem
+        else -> false
+    }
+
+    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.insert(resource, maxAmount, transaction)
+
+    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.extract(resource, maxAmount, transaction)
+
+    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)
@@ -164,12 +205,12 @@ class BlockCutterBlockEntity(
         val recipeManager = world?.recipeManager ?: return null
 
         // 获取第一个匹配的配方（优先选择inputCount较大的配方）
-        val recipe = recipeManager.getFirstMatch(ModMachineRecipes.BLOCK_CUTTER_TYPE, inv, world ?: return null).orElse(null)
+        val recipe = recipeManager.getFirstMatch(getRecipeType<BlockCutterRecipe>(), inv, world ?: return null).orElse(null)
 
         // 对于木板，尝试获取匹配2个输入的配方（木棍配方）
         if (input.count >= 2) {
             val inv2 = SimpleInventory(ItemStack(input.item, 2))
-            val recipe2 = recipeManager.getFirstMatch(ModMachineRecipes.BLOCK_CUTTER_TYPE, inv2, world ?: return null).orElse(null)
+            val recipe2 = recipeManager.getFirstMatch(getRecipeType<BlockCutterRecipe>(), inv2, world ?: return null).orElse(null)
             if (recipe2 != null && recipe2.inputCount == 2) {
                 return recipe2
             }
@@ -299,5 +340,13 @@ class BlockCutterBlockEntity(
         sync.insertEnergy(extracted)
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
         markDirty()
+    }
+
+    private fun isBatteryItem(stack: ItemStack): Boolean = !stack.isEmpty && stack.item is IBatteryItem
+
+    private fun isRecipeInput(stack: ItemStack): Boolean {
+        if (stack.isEmpty || isBatteryItem(stack) || stack.item is IUpgradeItem || stack.item is IBlockCuttingBlade) return false
+        val w = world ?: return true
+        return getRecipeForInput(stack) != null
     }
 }

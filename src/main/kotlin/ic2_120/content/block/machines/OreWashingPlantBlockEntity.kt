@@ -3,10 +3,15 @@ package ic2_120.content.block.machines
 import ic2_120.content.block.OreWashingPlantBlock
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.energy.charge.BatteryDischargerComponent
+import ic2_120.content.item.IUpgradeItem
 import ic2_120.content.item.WaterCell
+import ic2_120.content.item.energy.IBatteryItem
+import ic2_120.content.storage.ItemInsertRoute
+import ic2_120.content.storage.RoutedItemStorage
 import ic2_120.content.pullEnergyFromNeighbors
-import ic2_120.content.recipes.ModMachineRecipes
+import ic2_120.content.recipes.getRecipeType
 import ic2_120.content.recipes.orewashing.OreWashingRecipe
+import ic2_120.content.recipes.orewashing.OreWashingRecipeSerializer
 import ic2_120.content.screen.OreWashingPlantScreenHandler
 import ic2_120.content.sync.OreWashingPlantSync
 import ic2_120.content.syncs.SyncedData
@@ -19,15 +24,19 @@ import ic2_120.content.upgrade.ITransformerUpgradeSupport
 import ic2_120.content.upgrade.OverclockerUpgradeComponent
 import ic2_120.content.upgrade.TransformerUpgradeComponent
 import ic2_120.registry.annotation.ModBlockEntity
+import ic2_120.registry.annotation.ModMachineRecipeBinding
 import ic2_120.registry.annotation.RegisterFluidStorage
 import ic2_120.registry.type
 import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.type
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleVariantStorage
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
@@ -69,13 +78,14 @@ import net.minecraft.util.Identifier
  * - 流体抽取升级：作为 receiver 从管道接收水
  */
 @ModBlockEntity(block = OreWashingPlantBlock::class)
+@ModMachineRecipeBinding(OreWashingRecipeSerializer::class)
 class OreWashingPlantBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
 ) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport,
     IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, IFluidPipeUpgradeSupport,
-    net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
+    Storage<ItemVariant>, net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = OreWashingPlantBlock.ACTIVE
 
@@ -126,6 +136,19 @@ class OreWashingPlantBlockEntity(
     }
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
+    private val itemStorage = RoutedItemStorage(
+        inventory = inventory,
+        maxCountPerStackProvider = { maxCountPerStack },
+        slotValidator = { slot, stack -> isValid(slot, stack) },
+        insertRoutes = listOf(
+            ItemInsertRoute(SLOT_UPGRADE_INDICES, matcher = { it.item is IUpgradeItem }),
+            ItemInsertRoute(intArrayOf(SLOT_DISCHARGING), matcher = { isBatteryItem(it) }, maxPerSlot = 1),
+            ItemInsertRoute(intArrayOf(SLOT_INPUT_ORE), matcher = { isCrushedOreInput(it) }),
+            ItemInsertRoute(intArrayOf(SLOT_INPUT_WATER), matcher = { isWaterInput(it) })
+        ),
+        extractSlots = intArrayOf(SLOT_OUTPUT_1, SLOT_OUTPUT_2, SLOT_OUTPUT_3, SLOT_OUTPUT_EMPTY),
+        markDirty = { markDirty() }
+    )
 
     val syncedData = SyncedData(this)
 
@@ -214,6 +237,23 @@ class OreWashingPlantBlockEntity(
     override fun markDirty() { super.markDirty() }
     override fun canPlayerUse(player: PlayerEntity): Boolean = Inventory.canPlayerUse(this, player)
 
+    override fun isValid(slot: Int, stack: ItemStack): Boolean = when (slot) {
+        SLOT_INPUT_ORE -> isCrushedOreInput(stack)
+        SLOT_INPUT_WATER -> isWaterInput(stack)
+        SLOT_OUTPUT_1, SLOT_OUTPUT_2, SLOT_OUTPUT_3, SLOT_OUTPUT_EMPTY -> false
+        SLOT_DISCHARGING -> isBatteryItem(stack)
+        in SLOT_UPGRADE_0..SLOT_UPGRADE_3 -> stack.item is IUpgradeItem
+        else -> false
+    }
+
+    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.insert(resource, maxAmount, transaction)
+
+    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.extract(resource, maxAmount, transaction)
+
+    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
+
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)
         buf.writeVarInt(syncedData.size())
@@ -264,7 +304,7 @@ class OreWashingPlantBlockEntity(
         val inv = OreWashingRecipe.Input(input)
         val recipeManager = world?.recipeManager ?: return null
 
-        return recipeManager.getFirstMatch(ModMachineRecipes.ORE_WASHING_TYPE, inv, world ?: return null).orElse(null)
+        return recipeManager.getFirstMatch(getRecipeType<OreWashingRecipe>(), inv, world ?: return null).orElse(null)
     }
 
     fun tick(world: World, pos: BlockPos, state: BlockState) {
@@ -445,4 +485,16 @@ class OreWashingPlantBlockEntity(
         val after = perOperation * toProgress.toLong() / max
         return (after - before).coerceAtLeast(0L)
     }
+
+    private fun isBatteryItem(stack: ItemStack): Boolean = !stack.isEmpty && stack.item is IBatteryItem
+
+    private fun isCrushedOreInput(stack: ItemStack): Boolean {
+        if (stack.isEmpty || stack.item is IBatteryItem) return false
+        val item = stack.item
+        return item.toString().contains("crushed") ||
+            Registries.ITEM.getId(item).path.contains("crushed")
+    }
+
+    private fun isWaterInput(stack: ItemStack): Boolean =
+        !stack.isEmpty && (stack.item == Items.WATER_BUCKET || stack.item is WaterCell)
 }

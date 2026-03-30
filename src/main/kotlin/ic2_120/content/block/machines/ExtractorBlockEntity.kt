@@ -4,7 +4,6 @@ import ic2_120.content.block.ExtractorBlock
 import ic2_120.content.sound.MachineSoundConfig
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.pullEnergyFromNeighbors
-import ic2_120.content.recipes.ModMachineRecipes
 import ic2_120.content.recipes.extractor.ExtractorRecipe
 import ic2_120.content.screen.ExtractorScreenHandler
 import ic2_120.content.sync.ExtractorSync
@@ -16,11 +15,22 @@ import ic2_120.content.upgrade.ITransformerUpgradeSupport
 import ic2_120.content.upgrade.OverclockerUpgradeComponent
 import ic2_120.content.upgrade.TransformerUpgradeComponent
 import ic2_120.content.energy.charge.BatteryDischargerComponent
+import ic2_120.content.item.IUpgradeItem
+import ic2_120.content.item.energy.IBatteryItem
+import ic2_120.content.storage.ItemInsertRoute
+import ic2_120.content.storage.RoutedItemStorage
+import ic2_120.content.recipes.extractor.ExtractorRecipeSerializer
+import ic2_120.content.recipes.getRecipeType
 import ic2_120.registry.annotation.ModBlockEntity
+import ic2_120.registry.annotation.ModMachineRecipeBinding
 import ic2_120.registry.type
 import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.minecraft.block.BlockState
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -38,11 +48,12 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 
 @ModBlockEntity(block = ExtractorBlock::class)
+@ModMachineRecipeBinding(ExtractorRecipeSerializer::class)
 class ExtractorBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport, IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, ExtendedScreenHandlerFactory {
+) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport, IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, Storage<ItemVariant>, ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = ExtractorBlock.ACTIVE
 
@@ -67,11 +78,27 @@ class ExtractorBlockEntity(
         const val SLOT_INPUT = 0
         const val SLOT_OUTPUT = 1
         const val SLOT_DISCHARGING = 2
-        val SLOT_UPGRADE_INDICES = intArrayOf(3, 4, 5, 6)
+        const val SLOT_UPGRADE_0 = 3
+        const val SLOT_UPGRADE_1 = 4
+        const val SLOT_UPGRADE_2 = 5
+        const val SLOT_UPGRADE_3 = 6
+        val SLOT_UPGRADE_INDICES = intArrayOf(SLOT_UPGRADE_0, SLOT_UPGRADE_1, SLOT_UPGRADE_2, SLOT_UPGRADE_3)
         const val INVENTORY_SIZE = 7
     }
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
+    private val itemStorage = RoutedItemStorage(
+        inventory = inventory,
+        maxCountPerStackProvider = { maxCountPerStack },
+        slotValidator = { slot, stack -> isValid(slot, stack) },
+        insertRoutes = listOf(
+            ItemInsertRoute(SLOT_UPGRADE_INDICES, matcher = { it.item is IUpgradeItem }),
+            ItemInsertRoute(intArrayOf(SLOT_DISCHARGING), matcher = { isBatteryItem(it) }, maxPerSlot = 1),
+            ItemInsertRoute(intArrayOf(SLOT_INPUT), matcher = { isRecipeInput(it) })
+        ),
+        extractSlots = intArrayOf(SLOT_OUTPUT),
+        markDirty = { markDirty() }
+    )
 
     val syncedData = SyncedData(this)
     @RegisterEnergy
@@ -111,6 +138,22 @@ class ExtractorBlockEntity(
     override fun isEmpty(): Boolean = inventory.all { it.isEmpty }
     override fun markDirty() { super.markDirty() }
     override fun canPlayerUse(player: PlayerEntity): Boolean = Inventory.canPlayerUse(this, player)
+
+    override fun isValid(slot: Int, stack: ItemStack): Boolean = when (slot) {
+        SLOT_INPUT -> isRecipeInput(stack)
+        SLOT_OUTPUT -> false
+        SLOT_DISCHARGING -> isBatteryItem(stack)
+        in SLOT_UPGRADE_0..SLOT_UPGRADE_3 -> stack.item is IUpgradeItem
+        else -> false
+    }
+
+    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.insert(resource, maxAmount, transaction)
+
+    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.extract(resource, maxAmount, transaction)
+
+    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     override fun writeScreenOpeningData(player: net.minecraft.server.network.ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)
@@ -201,9 +244,19 @@ class ExtractorBlockEntity(
         if (input.isEmpty) return null
         val inventory = SimpleInventory(input)
         val recipeManager = world.recipeManager
-        val optionalRecipe = recipeManager.getFirstMatch(ModMachineRecipes.EXTRACTOR_TYPE, inventory, world)
+        val optionalRecipe = recipeManager.getFirstMatch(getRecipeType<ExtractorRecipe>(), inventory, world)
         return optionalRecipe.orElse(null)
     }
+
+    private fun isBatteryItem(stack: ItemStack): Boolean = !stack.isEmpty && stack.item is IBatteryItem
+
+    private fun isRecipeInput(stack: ItemStack): Boolean {
+        if (stack.isEmpty || isBatteryItem(stack)) return false
+        val w = world ?: return true
+        val inv = SimpleInventory(stack.copyWithCount(1))
+        return w.recipeManager.getFirstMatch(getRecipeType<ExtractorRecipe>(), inv, w).isPresent
+    }
+
     /**
      * 从放电槽提取能量（如果需要）
      */

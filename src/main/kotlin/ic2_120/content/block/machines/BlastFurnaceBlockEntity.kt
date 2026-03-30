@@ -4,16 +4,25 @@ import ic2_120.Ic2_120
 import ic2_120.content.block.BlastFurnaceBlock
 import ic2_120.content.heat.IHeatConsumer
 import ic2_120.content.item.AirCell
-import ic2_120.content.recipes.ModMachineRecipes
+import ic2_120.content.item.IUpgradeItem
+import ic2_120.content.storage.ItemInsertRoute
+import ic2_120.content.storage.RoutedItemStorage
 import ic2_120.content.recipes.blastfurnace.BlastFurnaceRecipe
+import ic2_120.content.recipes.blastfurnace.BlastFurnaceRecipeSerializer
+import ic2_120.content.recipes.getRecipeType
 import ic2_120.content.screen.BlastFurnaceScreenHandler
 import ic2_120.content.sync.BlastFurnaceSync
 import ic2_120.content.syncs.SyncedData
 import ic2_120.content.upgrade.FluidPipeUpgradeComponent
 import ic2_120.content.upgrade.IFluidPipeUpgradeSupport
 import ic2_120.registry.annotation.ModBlockEntity
+import ic2_120.registry.annotation.ModMachineRecipeBinding
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
@@ -48,12 +57,13 @@ import net.minecraft.world.World
  * - 升级槽：4 个
  */
 @ModBlockEntity(block = BlastFurnaceBlock::class)
+@ModMachineRecipeBinding(BlastFurnaceRecipeSerializer::class)
 class BlastFurnaceBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
 ) : HeatConsumerBlockEntityBase(type, pos, state), Inventory, IFluidPipeUpgradeSupport,
-    ExtendedScreenHandlerFactory {
+    Storage<ItemVariant>, ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = BlastFurnaceBlock.ACTIVE
 
@@ -84,6 +94,18 @@ class BlastFurnaceBlockEntity(
     }
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
+    private val itemStorage = RoutedItemStorage(
+        inventory = inventory,
+        maxCountPerStackProvider = { maxCountPerStack },
+        slotValidator = { slot, stack -> isValid(slot, stack) },
+        insertRoutes = listOf(
+            ItemInsertRoute(SLOT_UPGRADE_INDICES, matcher = { it.item is IUpgradeItem }),
+            ItemInsertRoute(intArrayOf(SLOT_AIR_INPUT), matcher = { !it.isEmpty && it.item is AirCell }),
+            ItemInsertRoute(intArrayOf(SLOT_INPUT), matcher = { isBlastRecipeInput(it) })
+        ),
+        extractSlots = intArrayOf(SLOT_OUTPUT_STEEL, SLOT_OUTPUT_SLAG, SLOT_OUTPUT_EMPTY),
+        markDirty = { markDirty() }
+    )
     val syncedData = SyncedData(this)
     val sync = BlastFurnaceSync(syncedData)
 
@@ -109,6 +131,22 @@ class BlastFurnaceBlockEntity(
     override fun isEmpty(): Boolean = inventory.all { it.isEmpty }
     override fun markDirty() { super.markDirty() }
     override fun canPlayerUse(player: PlayerEntity): Boolean = Inventory.canPlayerUse(this, player)
+
+    override fun isValid(slot: Int, stack: ItemStack): Boolean = when (slot) {
+        SLOT_INPUT -> isBlastRecipeInput(stack)
+        SLOT_AIR_INPUT -> !stack.isEmpty && stack.item is AirCell
+        SLOT_OUTPUT_STEEL, SLOT_OUTPUT_SLAG, SLOT_OUTPUT_EMPTY -> false
+        in SLOT_UPGRADE_0..SLOT_UPGRADE_3 -> stack.item is IUpgradeItem
+        else -> false
+    }
+
+    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.insert(resource, maxAmount, transaction)
+
+    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.extract(resource, maxAmount, transaction)
+
+    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)
@@ -157,7 +195,7 @@ class BlastFurnaceBlockEntity(
         val inv = BlastFurnaceRecipe.Input(input)
         val recipeManager = world?.recipeManager ?: return null
 
-        return recipeManager.getFirstMatch(ModMachineRecipes.BLAST_FURNACE_TYPE, inv, world ?: return null).orElse(null)
+        return recipeManager.getFirstMatch(getRecipeType<BlastFurnaceRecipe>(), inv, world ?: return null).orElse(null)
     }
 
     fun tick(world: World, pos: BlockPos, state: BlockState) {
@@ -274,5 +312,10 @@ class BlastFurnaceBlockEntity(
         val steelOk = steel.isEmpty || (ItemStack.areItemsEqual(steel, steelOut) && steel.count + steelOut.count <= steel.maxCount)
         val slagOk = slag.isEmpty || (ItemStack.areItemsEqual(slag, slagOut) && slag.count + slagOut.count <= slag.maxCount)
         return steelOk && slagOk
+    }
+
+    private fun isBlastRecipeInput(stack: ItemStack): Boolean {
+        if (stack.isEmpty) return false
+        return getRecipeForInput(stack) != null
     }
 }
