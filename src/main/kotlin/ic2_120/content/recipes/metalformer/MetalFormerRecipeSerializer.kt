@@ -1,5 +1,6 @@
 package ic2_120.content.recipes.metalformer
 
+import ic2_120.registry.annotation.ModMachineRecipe
 import com.google.gson.JsonObject
 import net.minecraft.item.ItemStack
 import net.minecraft.network.PacketByteBuf
@@ -12,6 +13,7 @@ import net.minecraft.util.JsonHelper
 /**
  * 金属成型机配方序列化器（三种模式共用）
  */
+@ModMachineRecipe(id = "metal_forming", recipeClass = MetalFormerRecipe::class)
 object MetalFormerRecipeSerializer : RecipeSerializer<MetalFormerRecipe> {
     override fun read(id: Identifier, json: JsonObject): MetalFormerRecipe {
         val ingredient = Ingredient.fromJson(JsonHelper.getObject(json, "ingredient"))

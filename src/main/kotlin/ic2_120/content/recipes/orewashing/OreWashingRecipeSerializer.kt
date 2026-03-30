@@ -1,5 +1,6 @@
 package ic2_120.content.recipes.orewashing
 
+import ic2_120.registry.annotation.ModMachineRecipe
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import net.minecraft.item.ItemStack
@@ -25,6 +26,7 @@ import net.minecraft.util.JsonHelper
  *   "water_consumption_mb": 1000
  * }
  */
+@ModMachineRecipe(id = "ore_washing", recipeClass = OreWashingRecipe::class)
 object OreWashingRecipeSerializer : RecipeSerializer<OreWashingRecipe> {
     override fun read(id: Identifier, json: JsonObject): OreWashingRecipe {
         val ingredient = Ingredient.fromJson(JsonHelper.getObject(json, "ingredient"))

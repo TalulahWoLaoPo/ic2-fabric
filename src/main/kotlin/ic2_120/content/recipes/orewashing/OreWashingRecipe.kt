@@ -36,9 +36,9 @@ class OreWashingRecipe(
 
     override fun getId(): Identifier = id
 
-    override fun getSerializer(): RecipeSerializer<*> = ic2_120.content.recipes.ModMachineRecipes.ORE_WASHING_SERIALIZER
+    override fun getSerializer(): RecipeSerializer<*> = ic2_120.content.recipes.ModMachineRecipes.recipeSerializer(OreWashingRecipe::class)
 
-    override fun getType(): RecipeType<*> = ic2_120.content.recipes.ModMachineRecipes.ORE_WASHING_TYPE
+    override fun getType(): RecipeType<*> = ic2_120.content.recipes.ModMachineRecipes.recipeType(OreWashingRecipe::class)
 
     override fun fits(width: Int, height: Int): Boolean = true
 

@@ -1,5 +1,6 @@
 package ic2_120.content.recipes.blockcutter
 
+import ic2_120.registry.annotation.ModMachineRecipe
 import com.google.gson.JsonObject
 import net.minecraft.item.ItemStack
 import net.minecraft.network.PacketByteBuf
@@ -21,6 +22,7 @@ import net.minecraft.util.JsonHelper
  *   "result": { "item": "minecraft:oak_slab", "count": 9 }
  * }
  */
+@ModMachineRecipe(id = "cutting", recipeClass = BlockCutterRecipe::class)
 object BlockCutterRecipeSerializer : RecipeSerializer<BlockCutterRecipe> {
     override fun read(id: Identifier, json: JsonObject): BlockCutterRecipe {
         val ingredient = Ingredient.fromJson(JsonHelper.getObject(json, "ingredient"))

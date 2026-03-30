@@ -70,7 +70,7 @@ object BlastFurnaceRecipeDatagen {
         private val slagOutputCount: Int
     ) : RecipeJsonProvider {
         override fun serialize(json: JsonObject) {
-            json.addProperty("type", "${ModMachineRecipes.BLAST_FURNACE_TYPE}")
+            json.addProperty("type", "${ModMachineRecipes.recipeType(BlastFurnaceRecipe::class)}")
 
             // 输入成分
             val ingredient = JsonObject()
@@ -90,7 +90,7 @@ object BlastFurnaceRecipeDatagen {
             json.add("slag_output", slagResult)
         }
 
-        override fun getSerializer() = ModMachineRecipes.BLAST_FURNACE_SERIALIZER
+        override fun getSerializer() = ModMachineRecipes.recipeSerializer(BlastFurnaceRecipe::class)
 
         override fun getRecipeId(): Identifier = recipeId
 

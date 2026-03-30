@@ -1,5 +1,6 @@
 package ic2_120.content.recipes.centrifuge
 
+import ic2_120.registry.annotation.ModMachineRecipe
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import net.minecraft.item.ItemStack
@@ -25,6 +26,7 @@ import net.minecraft.util.JsonHelper
  *   ]
  * }
  */
+@ModMachineRecipe(id = "centrifuging", recipeClass = CentrifugeRecipe::class)
 object CentrifugeRecipeSerializer : RecipeSerializer<CentrifugeRecipe> {
     override fun read(id: Identifier, json: JsonObject): CentrifugeRecipe {
         val ingredient = Ingredient.fromJson(JsonHelper.getObject(json, "ingredient"))

@@ -32,5 +32,5 @@ class ExtractorRecipe(
 
     override fun getSerializer(): RecipeSerializer<*> = ExtractorRecipeSerializer
 
-    override fun getType(): RecipeType<*> = ModMachineRecipes.EXTRACTOR_TYPE
+    override fun getType(): RecipeType<*> = ModMachineRecipes.recipeType(ExtractorRecipe::class)
 }

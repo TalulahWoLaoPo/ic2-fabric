@@ -164,7 +164,7 @@ object MetalFormerRecipeDatagen {
             json.addProperty("mode", mode.name.lowercase())
         }
 
-        override fun getSerializer() = ModMachineRecipes.METAL_FORMER_SERIALIZER
+        override fun getSerializer() = ModMachineRecipes.recipeSerializer(MetalFormerRecipe::class)
 
         override fun getRecipeId(): Identifier = recipeId
 

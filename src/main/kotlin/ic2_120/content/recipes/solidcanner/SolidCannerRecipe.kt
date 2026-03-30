@@ -48,7 +48,7 @@ class SolidCannerRecipe(
 
     override fun getId(): Identifier = id
 
-    override fun getSerializer(): RecipeSerializer<*> = SolidCannerRecipeSerializer
+    override fun getSerializer(): RecipeSerializer<*> = ModMachineRecipes.recipeSerializer(SolidCannerRecipe::class)
 
-    override fun getType(): RecipeType<*> = ModMachineRecipes.SOLID_CANNER_TYPE
+    override fun getType(): RecipeType<*> = ModMachineRecipes.recipeType(SolidCannerRecipe::class)
 }

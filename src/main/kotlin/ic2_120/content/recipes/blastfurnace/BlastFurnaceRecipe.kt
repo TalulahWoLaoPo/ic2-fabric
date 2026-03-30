@@ -32,9 +32,9 @@ class BlastFurnaceRecipe(
 
     override fun getId(): Identifier = id
 
-    override fun getSerializer(): RecipeSerializer<*> = ic2_120.content.recipes.ModMachineRecipes.BLAST_FURNACE_SERIALIZER
+    override fun getSerializer(): RecipeSerializer<*> = ic2_120.content.recipes.ModMachineRecipes.recipeSerializer(BlastFurnaceRecipe::class)
 
-    override fun getType(): RecipeType<*> = ic2_120.content.recipes.ModMachineRecipes.BLAST_FURNACE_TYPE
+    override fun getType(): RecipeType<*> = ic2_120.content.recipes.ModMachineRecipes.recipeType(BlastFurnaceRecipe::class)
 
     override fun fits(width: Int, height: Int): Boolean = true
 

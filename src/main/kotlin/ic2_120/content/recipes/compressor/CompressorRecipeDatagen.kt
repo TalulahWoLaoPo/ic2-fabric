@@ -133,7 +133,7 @@ object CompressorRecipeDatagen {
         private val outputCount: Int
     ) : RecipeJsonProvider {
         override fun serialize(json: JsonObject) {
-            json.addProperty("type", "${ModMachineRecipes.COMPRESSOR_TYPE}")
+            json.addProperty("type", "${ModMachineRecipes.recipeType(CompressorRecipe::class)}")
             val ingredient = JsonObject()
             ingredient.addProperty("item", Registries.ITEM.getId(inputItem).toString())
             json.add("ingredient", ingredient)
@@ -145,7 +145,7 @@ object CompressorRecipeDatagen {
             json.add("result", result)
         }
 
-        override fun getSerializer() = ModMachineRecipes.COMPRESSOR_SERIALIZER
+        override fun getSerializer() = ModMachineRecipes.recipeSerializer(CompressorRecipe::class)
 
         override fun getRecipeId(): Identifier = recipeId
 

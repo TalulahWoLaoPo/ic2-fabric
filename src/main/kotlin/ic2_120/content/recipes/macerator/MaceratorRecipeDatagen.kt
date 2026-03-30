@@ -1,6 +1,7 @@
 package ic2_120.content.recipes.macerator
 
 import com.google.gson.JsonObject
+import ic2_120.content.recipes.ModMachineRecipes
 import ic2_120.content.block.DeepslateLeadOreBlock
 import ic2_120.content.block.DeepslateTinOreBlock
 import ic2_120.content.block.DeepslateUraniumOreBlock
@@ -110,7 +111,7 @@ object MaceratorRecipeDatagen {
         private val inputCount: Int = 1
     ) : RecipeJsonProvider {
         override fun serialize(json: JsonObject) {
-            json.addProperty("type", "${ModMachineRecipes.MACERATOR_TYPE}")
+            json.addProperty("type", "${ModMachineRecipes.recipeType(MaceratorRecipe::class)}")
             val ingredient = JsonObject()
             ingredient.addProperty("item", Registries.ITEM.getId(inputItem).toString())
             if (inputCount > 1) {
@@ -124,7 +125,7 @@ object MaceratorRecipeDatagen {
             json.add("result", result)
         }
 
-        override fun getSerializer() = ModMachineRecipes.MACERATOR_SERIALIZER
+        override fun getSerializer() = ModMachineRecipes.recipeSerializer(MaceratorRecipe::class)
 
         override fun getRecipeId(): Identifier = recipeId
 

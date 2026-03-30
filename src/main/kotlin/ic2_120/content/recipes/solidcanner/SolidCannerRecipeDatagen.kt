@@ -167,7 +167,7 @@ object SolidCannerRecipeDatagen {
         private val outputCount: Int
     ) : RecipeJsonProvider {
         override fun serialize(json: JsonObject) {
-            json.addProperty("type", "${ModMachineRecipes.SOLID_CANNER_TYPE}")
+            json.addProperty("type", "${ModMachineRecipes.recipeType(SolidCannerRecipe::class)}")
 
             // 槽0 成分（锡罐 或 空燃料棒）
             val slot0Ingredient = JsonObject()
@@ -188,7 +188,7 @@ object SolidCannerRecipeDatagen {
             json.add("result", result)
         }
 
-        override fun getSerializer() = ModMachineRecipes.SOLID_CANNER_SERIALIZER
+        override fun getSerializer() = ModMachineRecipes.recipeSerializer(SolidCannerRecipe::class)
 
         override fun getRecipeId(): Identifier = recipeId
 

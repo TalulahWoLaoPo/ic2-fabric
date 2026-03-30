@@ -1,5 +1,6 @@
 package ic2_120.content.recipes.blastfurnace
 
+import ic2_120.registry.annotation.ModMachineRecipe
 import com.google.gson.JsonObject
 import net.minecraft.item.ItemStack
 import net.minecraft.network.PacketByteBuf
@@ -20,6 +21,7 @@ import net.minecraft.util.JsonHelper
  *   "slag_output": { "item": "ic2_120:slag", "count": 1 }
  * }
  */
+@ModMachineRecipe(id = "blast_furnacing", recipeClass = BlastFurnaceRecipe::class)
 object BlastFurnaceRecipeSerializer : RecipeSerializer<BlastFurnaceRecipe> {
     override fun read(id: Identifier, json: JsonObject): BlastFurnaceRecipe {
         val ingredient = Ingredient.fromJson(JsonHelper.getObject(json, "ingredient"))

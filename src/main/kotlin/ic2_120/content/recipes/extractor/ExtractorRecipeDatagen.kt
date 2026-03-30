@@ -77,7 +77,7 @@ object ExtractorRecipeDatagen {
         private val outputCount: Int
     ) : RecipeJsonProvider {
         override fun serialize(json: JsonObject) {
-            json.addProperty("type", "${ModMachineRecipes.EXTRACTOR_TYPE}")
+            json.addProperty("type", "${ModMachineRecipes.recipeType(ExtractorRecipe::class)}")
             val ingredient = JsonObject()
             ingredient.addProperty("item", Registries.ITEM.getId(inputItem).toString())
             json.add("ingredient", ingredient)
@@ -88,7 +88,7 @@ object ExtractorRecipeDatagen {
             json.add("result", result)
         }
 
-        override fun getSerializer() = ModMachineRecipes.EXTRACTOR_SERIALIZER
+        override fun getSerializer() = ModMachineRecipes.recipeSerializer(ExtractorRecipe::class)
 
         override fun getRecipeId(): Identifier = recipeId
 

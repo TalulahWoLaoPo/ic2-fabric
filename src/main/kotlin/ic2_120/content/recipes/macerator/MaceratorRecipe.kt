@@ -1,5 +1,6 @@
- package ic2_120.content.recipes.macerator
+package ic2_120.content.recipes.macerator
 
+import ic2_120.content.recipes.ModMachineRecipes
 import net.minecraft.inventory.SimpleInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.recipe.Ingredient
@@ -29,7 +30,7 @@ class MaceratorRecipe(
 
     override fun getId(): Identifier = id
 
-    override fun getSerializer(): RecipeSerializer<*> = MaceratorRecipeSerializer
+    override fun getSerializer(): RecipeSerializer<*> = ModMachineRecipes.recipeSerializer(MaceratorRecipe::class)
 
-    override fun getType(): RecipeType<*> = ModMachineRecipes.MACERATOR_TYPE
+    override fun getType(): RecipeType<*> = ModMachineRecipes.recipeType(MaceratorRecipe::class)
 }

@@ -294,7 +294,7 @@ object CentrifugeRecipeDatagen {
         private val outputs: List<OutputEntry>
     ) : RecipeJsonProvider {
         override fun serialize(json: JsonObject) {
-            json.addProperty("type", "${ModMachineRecipes.CENTRIFUGE_TYPE}")
+            json.addProperty("type", "${ModMachineRecipes.recipeType(CentrifugeRecipe::class)}")
 
             // 输入成分
             val ingredient = JsonObject()
@@ -318,7 +318,7 @@ object CentrifugeRecipeDatagen {
             json.add("results", resultsArray)
         }
 
-        override fun getSerializer() = ModMachineRecipes.CENTRIFUGE_SERIALIZER
+        override fun getSerializer() = ModMachineRecipes.recipeSerializer(CentrifugeRecipe::class)
 
         override fun getRecipeId(): Identifier = recipeId
 

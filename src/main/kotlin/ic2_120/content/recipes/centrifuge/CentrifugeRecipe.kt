@@ -56,7 +56,7 @@ class CentrifugeRecipe(
 
     override fun getId(): Identifier = id
 
-    override fun getSerializer(): RecipeSerializer<*> = ModMachineRecipes.CENTRIFUGE_SERIALIZER
+    override fun getSerializer(): RecipeSerializer<*> = ModMachineRecipes.recipeSerializer(CentrifugeRecipe::class)
 
-    override fun getType(): RecipeType<*> = ModMachineRecipes.CENTRIFUGE_TYPE
+    override fun getType(): RecipeType<*> = ModMachineRecipes.recipeType(CentrifugeRecipe::class)
 }

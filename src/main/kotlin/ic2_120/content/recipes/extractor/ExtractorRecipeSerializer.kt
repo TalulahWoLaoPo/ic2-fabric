@@ -1,5 +1,6 @@
 package ic2_120.content.recipes.extractor
 
+import ic2_120.registry.annotation.ModMachineRecipe
 import com.google.gson.JsonObject
 import net.minecraft.item.ItemStack
 import net.minecraft.network.PacketByteBuf
@@ -9,6 +10,7 @@ import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
 import net.minecraft.util.JsonHelper
 
+@ModMachineRecipe(id = "extracting", recipeClass = ExtractorRecipe::class)
 object ExtractorRecipeSerializer : RecipeSerializer<ExtractorRecipe> {
     override fun read(id: Identifier, json: JsonObject): ExtractorRecipe {
         val ingredient = Ingredient.fromJson(JsonHelper.getObject(json, "ingredient"))

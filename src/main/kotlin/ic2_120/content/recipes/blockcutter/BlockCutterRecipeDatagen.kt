@@ -159,7 +159,7 @@ object BlockCutterRecipeDatagen {
         private val outputCount: Int
     ) : RecipeJsonProvider {
         override fun serialize(json: JsonObject) {
-            json.addProperty("type", "${ModMachineRecipes.BLOCK_CUTTER_TYPE}")
+            json.addProperty("type", "${ModMachineRecipes.recipeType(BlockCutterRecipe::class)}")
 
             // 输入成分
             val ingredient = JsonObject()
@@ -179,7 +179,7 @@ object BlockCutterRecipeDatagen {
             json.add("result", result)
         }
 
-        override fun getSerializer() = ModMachineRecipes.BLOCK_CUTTER_SERIALIZER
+        override fun getSerializer() = ModMachineRecipes.recipeSerializer(BlockCutterRecipe::class)
 
         override fun getRecipeId(): Identifier = recipeId
 

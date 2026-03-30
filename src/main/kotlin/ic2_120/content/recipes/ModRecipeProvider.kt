@@ -16,7 +16,8 @@ import java.util.function.Consumer
 class ModRecipeProvider(output: FabricDataOutput) : FabricRecipeProvider(output) {
 
     override fun generate(recipeExporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
-        // 调用 ClassScanner 中收集到的所有配方生成器
+        // 机器配方类型/序列化器须先于各 *RecipeDatagen 中的 recipeType/recipeSerializer 查询完成注册
+        ModMachineRecipes.register()
         ClassScanner.generateAllRecipes(recipeExporter)
     }
 }

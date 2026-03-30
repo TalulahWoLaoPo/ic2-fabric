@@ -137,7 +137,7 @@ object OreWashingRecipeDatagen {
         private val waterConsumptionMb: Long
     ) : RecipeJsonProvider {
         override fun serialize(json: JsonObject) {
-            json.addProperty("type", "${ModMachineRecipes.ORE_WASHING_TYPE}")
+            json.addProperty("type", "${ModMachineRecipes.recipeType(OreWashingRecipe::class)}")
 
             // 输入成分
             val ingredient = JsonObject()
@@ -158,7 +158,7 @@ object OreWashingRecipeDatagen {
             json.addProperty("water_consumption_mb", waterConsumptionMb)
         }
 
-        override fun getSerializer() = ModMachineRecipes.ORE_WASHING_SERIALIZER
+        override fun getSerializer() = ModMachineRecipes.recipeSerializer(OreWashingRecipe::class)
 
         override fun getRecipeId(): Identifier = recipeId
 

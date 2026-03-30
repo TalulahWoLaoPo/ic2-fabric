@@ -34,5 +34,5 @@ class CompressorRecipe(
 
     override fun getSerializer(): RecipeSerializer<*> = CompressorRecipeSerializer
 
-    override fun getType(): RecipeType<*> = ModMachineRecipes.COMPRESSOR_TYPE
+    override fun getType(): RecipeType<*> = ModMachineRecipes.recipeType(CompressorRecipe::class)
 }

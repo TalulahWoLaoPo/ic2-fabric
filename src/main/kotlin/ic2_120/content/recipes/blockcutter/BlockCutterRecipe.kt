@@ -50,9 +50,9 @@ class BlockCutterRecipe(
 
     override fun getId(): Identifier = id
 
-    override fun getSerializer(): RecipeSerializer<*> = ModMachineRecipes.BLOCK_CUTTER_SERIALIZER
+    override fun getSerializer(): RecipeSerializer<*> = ModMachineRecipes.recipeSerializer(BlockCutterRecipe::class)
 
-    override fun getType(): RecipeType<*> = ModMachineRecipes.BLOCK_CUTTER_TYPE
+    override fun getType(): RecipeType<*> = ModMachineRecipes.recipeType(BlockCutterRecipe::class)
 
     /**
      * 检查刀片硬度是否足够

@@ -1,5 +1,6 @@
 package ic2_120.content.recipes.solidcanner
 
+import ic2_120.registry.annotation.ModMachineRecipe
 import com.google.gson.JsonObject
 import net.minecraft.item.ItemStack
 import net.minecraft.network.PacketByteBuf
@@ -8,6 +9,7 @@ import net.minecraft.recipe.RecipeSerializer
 import net.minecraft.util.Identifier
 import net.minecraft.util.JsonHelper
 
+@ModMachineRecipe(id = "solid_canning", recipeClass = SolidCannerRecipe::class)
 object SolidCannerRecipeSerializer : RecipeSerializer<SolidCannerRecipe> {
 
     override fun read(id: Identifier, json: JsonObject): SolidCannerRecipe {

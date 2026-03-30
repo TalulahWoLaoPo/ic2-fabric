@@ -48,6 +48,10 @@ sealed class MetalFormerRecipe(
         override fun canPlayerUse(player: net.minecraft.entity.player.PlayerEntity): Boolean = true
     }
 
+    override fun getSerializer(): RecipeSerializer<*> = ModMachineRecipes.recipeSerializer(MetalFormerRecipe::class)
+
+    override fun getType(): RecipeType<*> = ModMachineRecipes.recipeType(MetalFormerRecipe::class)
+
     companion object {
         fun getOutput(recipe: MetalFormerRecipe): ItemStack = recipe.output.copy()
     }
@@ -60,10 +64,7 @@ class RollingRecipe(
     recipeId: Identifier,
     ingredient: Ingredient,
     output: ItemStack
-) : MetalFormerRecipe(recipeId, ingredient, output) {
-    override fun getSerializer(): RecipeSerializer<*> = ModMachineRecipes.METAL_FORMER_SERIALIZER
-    override fun getType(): RecipeType<*> = ModMachineRecipes.METAL_FORMER_TYPE
-}
+) : MetalFormerRecipe(recipeId, ingredient, output)
 
 /**
  * 切割模式配方：板 -> 导线，外壳 -> 货币
@@ -72,10 +73,7 @@ class CuttingRecipe(
     recipeId: Identifier,
     ingredient: Ingredient,
     output: ItemStack
-) : MetalFormerRecipe(recipeId, ingredient, output) {
-    override fun getSerializer(): RecipeSerializer<*> = ModMachineRecipes.METAL_FORMER_SERIALIZER
-    override fun getType(): RecipeType<*> = ModMachineRecipes.METAL_FORMER_TYPE
-}
+) : MetalFormerRecipe(recipeId, ingredient, output)
 
 /**
  * 挤压模式配方：锭/板/块 -> 导线或组件
@@ -84,7 +82,4 @@ class ExtrudingRecipe(
     recipeId: Identifier,
     ingredient: Ingredient,
     output: ItemStack
-) : MetalFormerRecipe(recipeId, ingredient, output) {
-    override fun getSerializer(): RecipeSerializer<*> = ModMachineRecipes.METAL_FORMER_SERIALIZER
-    override fun getType(): RecipeType<*> = ModMachineRecipes.METAL_FORMER_TYPE
-}
+) : MetalFormerRecipe(recipeId, ingredient, output)
