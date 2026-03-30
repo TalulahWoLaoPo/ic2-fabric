@@ -13,6 +13,8 @@ import ic2_120.content.upgrade.TransformerUpgradeComponent
 import ic2_120.content.pullEnergyFromNeighbors
 import ic2_120.content.block.MetalFormerBlock
 import ic2_120.content.block.ITieredMachine
+import ic2_120.content.item.IUpgradeItem
+import ic2_120.content.item.energy.IBatteryItem
 import ic2_120.content.screen.MetalFormerScreenHandler
 import ic2_120.content.syncs.SyncedData
 import ic2_120.registry.annotation.ModBlockEntity
@@ -33,6 +35,7 @@ import net.minecraft.recipe.RecipeManager
 import net.minecraft.text.Text
 import net.minecraft.util.collection.DefaultedList
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 
 @ModBlockEntity(block = MetalFormerBlock::class)
@@ -41,7 +44,7 @@ class MetalFormerBlockEntity(
     pos: BlockPos,
     state: BlockState
 ) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport, IEnergyStorageUpgradeSupport,
-    ITransformerUpgradeSupport, ExtendedScreenHandlerFactory {
+    ITransformerUpgradeSupport, net.minecraft.inventory.SidedInventory, ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = MetalFormerBlock.ACTIVE
 
@@ -65,6 +68,9 @@ class MetalFormerBlockEntity(
         const val SLOT_UPGRADE_3 = 6
         val SLOT_UPGRADE_INDICES = intArrayOf(SLOT_UPGRADE_0, SLOT_UPGRADE_1, SLOT_UPGRADE_2, SLOT_UPGRADE_3)
         const val INVENTORY_SIZE = 7
+        val TOP_INSERT_SLOTS: IntArray = intArrayOf(SLOT_INPUT)
+        val BOTTOM_EXTRACT_SLOTS: IntArray = intArrayOf(SLOT_OUTPUT)
+        val NO_AUTOMATION_SLOTS: IntArray = intArrayOf()
     }
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
@@ -111,6 +117,32 @@ class MetalFormerBlockEntity(
     }
 
     override fun canPlayerUse(player: PlayerEntity): Boolean = Inventory.canPlayerUse(this, player)
+
+    override fun isValid(slot: Int, stack: ItemStack): Boolean = when (slot) {
+        SLOT_INPUT -> isInputItem(stack)
+        SLOT_OUTPUT -> false
+        SLOT_DISCHARGING -> isBatteryItem(stack)
+        in SLOT_UPGRADE_0..SLOT_UPGRADE_3 -> stack.item is IUpgradeItem
+        else -> false
+    }
+
+    override fun getAvailableSlots(side: Direction): IntArray = when (side) {
+        Direction.UP -> TOP_INSERT_SLOTS
+        Direction.DOWN -> BOTTOM_EXTRACT_SLOTS
+        else -> NO_AUTOMATION_SLOTS
+    }
+
+    override fun canInsert(slot: Int, stack: ItemStack, dir: Direction?): Boolean {
+        if (dir != Direction.UP) return false
+        if (slot != SLOT_INPUT) return false
+        return isInputItem(stack)
+    }
+
+    override fun canExtract(slot: Int, stack: ItemStack, dir: Direction): Boolean {
+        if (dir != Direction.DOWN) return false
+        if (slot != SLOT_OUTPUT) return false
+        return !stack.isEmpty
+    }
 
     override fun writeScreenOpeningData(player: net.minecraft.server.network.ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)
@@ -260,4 +292,9 @@ class MetalFormerBlockEntity(
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
         markDirty()
     }
+
+    private fun isInputItem(stack: ItemStack): Boolean = !stack.isEmpty && stack.item !is IBatteryItem
+
+    private fun isBatteryItem(stack: ItemStack): Boolean = !stack.isEmpty && stack.item is IBatteryItem
+
 }
