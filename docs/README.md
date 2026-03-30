@@ -34,6 +34,7 @@
 
 ### ui（界面与槽位）
 
+- `docs/ui/gui-size-handlers.md`（GuiSize 与 ScreenHandler 坐标约定）
 - `docs/ui/compose-ui.md`
 - `docs/ui/slot-spec-system.md`
 - `docs/ui/drawcontext-methods.md`
