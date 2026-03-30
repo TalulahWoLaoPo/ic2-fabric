@@ -173,7 +173,9 @@ private fun defaultReplicationWhitelist(): Map<String, Int> = linkedMapOf(
     "minecraft:music_disc_13" to 35353755,
     "minecraft:music_disc_cat" to 39371228,
     "minecraft:wet_sponge" to 66628231,
-    "minecraft:black_wool" to 54323740
+    "minecraft:black_wool" to 54323740,
+    "ic2_120:iridium_ore_item" to 120000,
+    "ic2_120:iridium_shard" to 13330
 )
 
 private val DEFAULT_CONFIG_TEMPLATE = Ic2MainConfig(
