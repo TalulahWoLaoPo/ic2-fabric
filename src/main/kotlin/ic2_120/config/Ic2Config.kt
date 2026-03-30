@@ -56,7 +56,7 @@ private val DEFAULT_CONFIG_TEMPLATE = Ic2MainConfig(
         enableReactorExplosion = true
     ),
     uuReplication = UuReplicationConfig(
-        replicationWhitelist = defaultReplicationWhitelist()
+        replicationWhitelist = UuReplicationDefaults.defaultWhitelist
     )
 )
 

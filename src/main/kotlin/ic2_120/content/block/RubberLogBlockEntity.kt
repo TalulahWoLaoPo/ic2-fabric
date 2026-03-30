@@ -10,6 +10,7 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
+import java.util.ArrayDeque
 
 /** 1 MC 天 = 24000 tick */
 private const val RECOVERY_TICKS = 24000L
@@ -61,31 +62,24 @@ class RubberLogBlockEntity(
             val block = state.block
             if (block !is RubberLogBlock) return
 
-            // Fallback：当 onBlockAdded 未被调用时（世界生成、创造放置）在首次 tick 时初始化橡胶孔
-            if (state.get(RubberLogBlock.RUBBER_NORTH) == RubberFaceState.NONE &&
-                state.get(RubberLogBlock.RUBBER_SOUTH) == RubberFaceState.NONE &&
-                state.get(RubberLogBlock.RUBBER_EAST) == RubberFaceState.NONE &&
-                state.get(RubberLogBlock.RUBBER_WEST) == RubberFaceState.NONE
-            ) {
-                val faces = listOf(Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST)
-                val r = world.random.nextInt(14)
-                val count = when {
-                    r < 11 -> 0
-                    r < 13 -> 1
-                    else -> 2
-                }
-                val indices = (0..3).toMutableList()
-                for (i in 0 until count) {
-                    val j = i + world.random.nextInt(4 - i)
-                    indices[i] = indices[j].also { indices[j] = indices[i] }
-                }
-                var newState = state
-                for (i in 0 until count) {
-                    newState = newState.with(RubberLogBlock.propFor(faces[indices[i]]), RubberFaceState.WET)
-                }
-                world.setBlockState(pos, newState)
+            // Fallback：当 onBlockAdded 未触发时，仅为自然生成的原木初始化橡胶孔。
+            if (state.get(RubberLogBlock.NATURAL) && RubberLogBlock.hasNoRubberFaces(state)) {
+                world.setBlockState(pos, RubberLogBlock.initializeNaturalState(state, world.random))
                 return
             }
+
+            var hasRecoverableFace = false
+            for (i in 0..3) {
+                val face = faceOf(i)
+                if (be.extractedAt[i] == 0L) continue
+                if (block.getRubberState(state, face) != RubberFaceState.DRY) continue
+                if (world.time - be.extractedAt[i] >= RECOVERY_TICKS) {
+                    hasRecoverableFace = true
+                    break
+                }
+            }
+
+            if (!hasRecoverableFace || !hasConnectedRubberLeaves(world, pos)) return
 
             var newState = state
             var changed = false
@@ -99,10 +93,39 @@ class RubberLogBlockEntity(
                     changed = true
                 }
             }
+
             if (changed) {
                 world.setBlockState(pos, newState)
                 be.markDirty()
             }
+        }
+
+        private fun hasConnectedRubberLeaves(world: World, startPos: BlockPos): Boolean {
+            val queue = ArrayDeque<BlockPos>()
+            val visited = HashSet<BlockPos>()
+
+            queue.add(startPos)
+            visited.add(startPos)
+
+            while (queue.isNotEmpty()) {
+                val current = queue.removeFirst()
+
+                for (direction in Direction.values()) {
+                    val neighborPos = current.offset(direction)
+                    val neighborState = world.getBlockState(neighborPos)
+                    val neighborBlock = neighborState.block
+
+                    if (neighborBlock is RubberLeavesBlock) {
+                        return true
+                    }
+
+                    if (neighborBlock is RubberLogBlock && visited.add(neighborPos)) {
+                        queue.add(neighborPos.toImmutable())
+                    }
+                }
+            }
+
+            return false
         }
 
         private fun indexOf(face: Direction): Int = when (face) {

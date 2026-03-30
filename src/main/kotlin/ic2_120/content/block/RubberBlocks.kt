@@ -13,12 +13,14 @@ import net.minecraft.item.ItemPlacementContext
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.state.StateManager
+import net.minecraft.state.property.BooleanProperty
 import net.minecraft.state.property.EnumProperty
 import net.minecraft.state.property.Properties
 import net.minecraft.util.Identifier
 import net.minecraft.util.StringIdentifiable
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
+import net.minecraft.util.math.random.Random
 import net.minecraft.world.World
 import net.minecraft.world.gen.feature.ConfiguredFeature
 
@@ -36,12 +38,18 @@ enum class RubberFaceState(private val id: String) : StringIdentifiable {
     override fun asString() = id
 }
 
-/** 橡胶树原木。放置时 0-2 个侧面随机生成可提取槽位，湿面用木龙头/电动树脂提取器可提取 1 粘性树脂（凋落物），提取后变为干面，1 MC 天后恢复为湿面。 */
+/** 橡胶树原木。仅自然生成的原木会随机生成可提取槽位，玩家放置的原木不会产出树脂。 */
 @ModBlock(name = "rubber_log", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "wood")
 class RubberLogBlock(settings: AbstractBlock.Settings = AbstractBlock.Settings.copy(Blocks.OAK_LOG).strength(2.0f)) : BlockWithEntity(settings) {
 
     init {
-        defaultState = defaultState.with(Properties.AXIS, Direction.Axis.Y)
+        defaultState = stateManager.defaultState
+            .with(Properties.AXIS, Direction.Axis.Y)
+            .with(RUBBER_NORTH, RubberFaceState.NONE)
+            .with(RUBBER_SOUTH, RubberFaceState.NONE)
+            .with(RUBBER_EAST, RubberFaceState.NONE)
+            .with(RUBBER_WEST, RubberFaceState.NONE)
+            .with(NATURAL, false)
     }
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? =
@@ -57,7 +65,7 @@ class RubberLogBlock(settings: AbstractBlock.Settings = AbstractBlock.Settings.c
 
     override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {
         super.appendProperties(builder)
-        builder.add(Properties.AXIS, RUBBER_NORTH, RUBBER_SOUTH, RUBBER_EAST, RUBBER_WEST)
+        builder.add(Properties.AXIS, RUBBER_NORTH, RUBBER_SOUTH, RUBBER_EAST, RUBBER_WEST, NATURAL)
     }
 
     override fun getPlacementState(ctx: ItemPlacementContext): BlockState =
@@ -67,30 +75,8 @@ class RubberLogBlock(settings: AbstractBlock.Settings = AbstractBlock.Settings.c
 
     override fun onBlockAdded(state: BlockState, world: World, pos: BlockPos, oldState: BlockState, notify: Boolean) {
         super.onBlockAdded(state, world, pos, oldState, notify)
-        // 仅当所有面为 NONE 时随机初始化（新放置），避免区块加载时重复随机
-        if (state.get(RUBBER_NORTH) == RubberFaceState.NONE &&
-            state.get(RUBBER_SOUTH) == RubberFaceState.NONE &&
-            state.get(RUBBER_EAST) == RubberFaceState.NONE &&
-            state.get(RUBBER_WEST) == RubberFaceState.NONE
-        ) {
-            val faces = listOf(Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST)
-            // 0孔 11/14、1孔 2/14、2孔 1/14，每根平均 2/7 孔，整树（约 7 根）平均 2 个
-            val r = world.random.nextInt(14)
-            val count = when {
-                r < 11 -> 0
-                r < 13 -> 1
-                else -> 2
-            }
-            val indices = (0..3).toMutableList()
-            for (i in 0 until count) {
-                val j = i + world.random.nextInt(4 - i)
-                indices[i] = indices[j].also { indices[j] = indices[i] }
-            }
-            var newState = state
-            for (i in 0 until count) {
-                newState = newState.with(propFor(faces[indices[i]]), RubberFaceState.WET)
-            }
-            world.setBlockState(pos, newState)
+        if (!world.isClient && state.get(NATURAL) && hasNoRubberFaces(state)) {
+            world.setBlockState(pos, initializeNaturalState(state, world.random))
         }
     }
 
@@ -105,6 +91,7 @@ class RubberLogBlock(settings: AbstractBlock.Settings = AbstractBlock.Settings.c
         val RUBBER_SOUTH: EnumProperty<RubberFaceState> = EnumProperty.of("rubber_south", RubberFaceState::class.java)
         val RUBBER_EAST: EnumProperty<RubberFaceState> = EnumProperty.of("rubber_east", RubberFaceState::class.java)
         val RUBBER_WEST: EnumProperty<RubberFaceState> = EnumProperty.of("rubber_west", RubberFaceState::class.java)
+        val NATURAL: BooleanProperty = BooleanProperty.of("natural")
 
         fun propFor(face: Direction): EnumProperty<RubberFaceState> = when (face) {
             Direction.NORTH -> RUBBER_NORTH
@@ -112,6 +99,34 @@ class RubberLogBlock(settings: AbstractBlock.Settings = AbstractBlock.Settings.c
             Direction.EAST -> RUBBER_EAST
             Direction.WEST -> RUBBER_WEST
             else -> RUBBER_NORTH
+        }
+
+        fun hasNoRubberFaces(state: BlockState): Boolean =
+            state.get(RUBBER_NORTH) == RubberFaceState.NONE &&
+                state.get(RUBBER_SOUTH) == RubberFaceState.NONE &&
+                state.get(RUBBER_EAST) == RubberFaceState.NONE &&
+                state.get(RUBBER_WEST) == RubberFaceState.NONE
+
+        fun initializeNaturalState(state: BlockState, random: Random): BlockState {
+            val faces = listOf(Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST)
+            // 0孔 11/14、1孔 2/14、2孔 1/14，每根平均 2/7 孔，整树（约 7 根）平均 2 个
+            val r = random.nextInt(14)
+            val count = when {
+                r < 11 -> 0
+                r < 13 -> 1
+                else -> 2
+            }
+            val indices = (0..3).toMutableList()
+            for (i in 0 until count) {
+                val j = i + random.nextInt(4 - i)
+                indices[i] = indices[j].also { indices[j] = indices[i] }
+            }
+
+            var newState = state.with(NATURAL, false)
+            for (i in 0 until count) {
+                newState = newState.with(propFor(faces[indices[i]]), RubberFaceState.WET)
+            }
+            return newState
         }
     }
 }

@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.biome.v1.BiomeSelectors
 // import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.RegistryKeys
+import net.minecraft.registry.tag.BiomeTags
 import net.minecraft.util.Identifier
 // import net.minecraft.util.math.BlockPos
 // import net.minecraft.util.math.Direction
@@ -29,7 +30,9 @@ object RubberTreeGeneration {
         // 确保自定义 FoliagePlacerType 已注册（供 JSON 中 rubber_tree 配置引用）
         ModWorldgen.RUBBER_TREE_FOLIAGE_PLACER_TYPE
         BiomeModifications.addFeature(
-            BiomeSelectors.foundInOverworld(),
+            BiomeSelectors.foundInOverworld().and { context ->
+                !context.hasTag(BiomeTags.IS_OCEAN) && !context.hasTag(BiomeTags.IS_RIVER)
+            },
             GenerationStep.Feature.VEGETAL_DECORATION,
             RUBBER_TREE_PLACED_KEY
         )

@@ -6,7 +6,8 @@
       "state": {
         "Name": "ic2_120:rubber_log",
         "Properties": {
-          "axis": "y"
+          "axis": "y",
+          "natural": "true"
         }
       }
     },

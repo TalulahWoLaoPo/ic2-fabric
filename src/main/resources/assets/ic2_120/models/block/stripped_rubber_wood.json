@@ -1,7 +1,6 @@
 {
-  "parent": "minecraft:block/cube_column",
+  "parent": "minecraft:block/cube_all",
   "textures": {
-    "side": "ic2:block/resource/rubber_wood_dry_leftrightback",
-    "end": "ic2:block/resource/rubber_wood_bottomtop"
+    "all": "ic2:block/resource/stripped_rubber_wood"
   }
 }

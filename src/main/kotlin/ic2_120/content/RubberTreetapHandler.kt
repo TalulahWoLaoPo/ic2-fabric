@@ -74,13 +74,21 @@ object RubberTreetapHandler {
                 else -> 3
             }
             val resinStack = ItemStack(resin, count)
-            // 粘性树脂以凋落物形式掉落在方块位置
+            val spawnX = pos.x + 0.5 + face.offsetX * 0.6
+            val spawnY = pos.y + 0.5 + face.offsetY * 0.35
+            val spawnZ = pos.z + 0.5 + face.offsetZ * 0.6
+            // 粘性树脂从被采集的那一面掉出，并带一点向外的速度
             val itemEntity = ItemEntity(
                 world,
-                pos.x + 0.5,
-                pos.y + 0.5,
-                pos.z + 0.5,
+                spawnX,
+                spawnY,
+                spawnZ,
                 resinStack
+            )
+            itemEntity.velocity = itemEntity.velocity.add(
+                face.offsetX * 0.08,
+                face.offsetY * 0.04,
+                face.offsetZ * 0.08
             )
             itemEntity.setToDefaultPickupDelay()
             world.spawnEntity(itemEntity)
