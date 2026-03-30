@@ -9,6 +9,12 @@ import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.registry.FuelRegistry
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
+import ic2_120.content.storage.ItemInsertRoute
+import ic2_120.content.storage.RoutedItemStorage
 import net.minecraft.block.BlockState
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -39,7 +45,7 @@ class IronFurnaceBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : MachineBlockEntity(type, pos, state), Inventory, ExtendedScreenHandlerFactory {
+) : MachineBlockEntity(type, pos, state), Inventory, Storage<ItemVariant>, ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = IronFurnaceBlock.ACTIVE
 
@@ -68,6 +74,17 @@ class IronFurnaceBlockEntity(
     }
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
+    private val itemStorage = RoutedItemStorage(
+        inventory = inventory,
+        maxCountPerStackProvider = { maxCountPerStack },
+        slotValidator = { slot, stack -> isValid(slot, stack) },
+        insertRoutes = listOf(
+            ItemInsertRoute(intArrayOf(SLOT_INPUT), matcher = { isSmeltingInput(it) }),
+            ItemInsertRoute(intArrayOf(SLOT_FUEL), matcher = { getFuelTime(it) > 0 })
+        ),
+        extractSlots = intArrayOf(SLOT_OUTPUT),
+        markDirty = { markDirty() }
+    )
 
     val syncedData = SyncedData(this)
     val sync = IronFurnaceSync(syncedData)
@@ -94,6 +111,16 @@ class IronFurnaceBlockEntity(
     }
     override fun canPlayerUse(player: PlayerEntity): Boolean =
         Inventory.canPlayerUse(this, player)
+
+    override fun isValid(slot: Int, stack: ItemStack): Boolean = canPlaceInSlot(slot, stack)
+
+    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.insert(resource, maxAmount, transaction)
+
+    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.extract(resource, maxAmount, transaction)
+
+    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     override fun writeScreenOpeningData(player: net.minecraft.server.network.ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)
@@ -248,6 +275,13 @@ class IronFurnaceBlockEntity(
             SLOT_OUTPUT -> false  // 输出槽只能从机器内部放入
             else -> false
         }
+    }
+
+    private fun isSmeltingInput(stack: ItemStack): Boolean {
+        if (stack.isEmpty) return false
+        val w = world ?: return true
+        val inv = SimpleInventory(stack.copyWithCount(1))
+        return w.recipeManager.getFirstMatch(RecipeType.SMELTING, inv, w).isPresent
     }
 }
 

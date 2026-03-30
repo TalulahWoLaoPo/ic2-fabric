@@ -5,7 +5,10 @@ import ic2_120.content.block.WaterGeneratorBlock
 import ic2_120.content.sound.MachineSoundConfig
 import ic2_120.content.block.IGenerator
 import ic2_120.content.energy.charge.BatteryChargerComponent
+import ic2_120.content.item.IUpgradeItem
 import ic2_120.content.item.isWaterFuel
+import ic2_120.content.storage.ItemInsertRoute
+import ic2_120.content.storage.RoutedItemStorage
 import ic2_120.content.item.energy.canBeCharged
 import ic2_120.content.sync.WaterGeneratorSync
 import ic2_120.content.screen.WaterGeneratorScreenHandler
@@ -20,7 +23,10 @@ import ic2_120.registry.type
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleVariantStorage
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
@@ -62,7 +68,7 @@ class WaterGeneratorBlockEntity(
     pos: BlockPos,
     state: BlockState
 ) : MachineBlockEntity(type, pos, state), Inventory, IGenerator, IFluidPipeUpgradeSupport,
-    net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
+    Storage<ItemVariant>, net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
 
     // 流体管道升级支持属性（IFluidPipeUpgradeSupport 接口实现）
     override var fluidPipeProviderEnabled: Boolean = false  // 是否作为 provider 向管道输出流体
@@ -118,6 +124,18 @@ class WaterGeneratorBlockEntity(
     )
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
+    private val itemStorage = RoutedItemStorage(
+        inventory = inventory,
+        maxCountPerStackProvider = { maxCountPerStack },
+        slotValidator = { slot, stack -> isValid(slot, stack) },
+        insertRoutes = listOf(
+            ItemInsertRoute(SLOT_UPGRADE_INDICES, matcher = { it.item is IUpgradeItem }),
+            ItemInsertRoute(intArrayOf(BATTERY_SLOT), matcher = { isValid(BATTERY_SLOT, it) }, maxPerSlot = 1),
+            ItemInsertRoute(intArrayOf(FUEL_SLOT), matcher = { isValid(FUEL_SLOT, it) })
+        ),
+        extractSlots = intArrayOf(FUEL_SLOT, EMPTY_CONTAINER_SLOT, BATTERY_SLOT, *SLOT_UPGRADE_INDICES),
+        markDirty = { markDirty() }
+    )
 
     val syncedData = SyncedData(this)
 
@@ -237,6 +255,23 @@ class WaterGeneratorBlockEntity(
             else -> false
         }
     }
+
+    override fun isValid(slot: Int, stack: ItemStack): Boolean = when {
+        stack.isEmpty -> false
+        slot == FUEL_SLOT -> stack.isWaterFuel()
+        slot == EMPTY_CONTAINER_SLOT -> false
+        slot == BATTERY_SLOT -> stack.canBeCharged()
+        SLOT_UPGRADE_INDICES.contains(slot) -> stack.item is IUpgradeItem
+        else -> false
+    }
+
+    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.insert(resource, maxAmount, transaction)
+
+    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.extract(resource, maxAmount, transaction)
+
+    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     private fun tryInsertEmptyContainer(emptyStack: ItemStack): Boolean {
         if (emptyStack.isEmpty) return false

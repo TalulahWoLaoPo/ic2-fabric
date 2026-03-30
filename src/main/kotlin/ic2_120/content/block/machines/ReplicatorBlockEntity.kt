@@ -4,7 +4,13 @@ import ic2_120.content.block.ITieredMachine
 import ic2_120.content.block.ReplicatorBlock
 import ic2_120.content.energy.charge.BatteryDischargerComponent
 import ic2_120.content.fluid.ModFluids
+import ic2_120.content.item.IUpgradeItem
+import ic2_120.content.item.getFluidCellVariant
+import ic2_120.content.item.isFluidCellEmpty
 import ic2_120.content.item.ModFluidCell
+import ic2_120.content.item.energy.IBatteryItem
+import ic2_120.content.storage.ItemInsertRoute
+import ic2_120.content.storage.RoutedItemStorage
 import ic2_120.content.pullEnergyFromNeighbors
 import ic2_120.content.screen.ReplicatorScreenHandler
 import ic2_120.content.sync.ReplicatorSync
@@ -23,12 +29,15 @@ import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.annotation.RegisterFluidStorage
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleVariantStorage
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntityType
@@ -58,7 +67,8 @@ class ReplicatorBlockEntity(
     pos: BlockPos,
     state: BlockState
 ) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport,
-    IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, IFluidPipeUpgradeSupport, ExtendedScreenHandlerFactory {
+    IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, IFluidPipeUpgradeSupport,
+    Storage<ItemVariant>, ExtendedScreenHandlerFactory {
 
     override val activeProperty = ReplicatorBlock.ACTIVE
     override val tier: Int = ReplicatorSync.REPLICATOR_TIER
@@ -106,6 +116,18 @@ class ReplicatorBlockEntity(
     }
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
+    private val itemStorage = RoutedItemStorage(
+        inventory = inventory,
+        maxCountPerStackProvider = { maxCountPerStack },
+        slotValidator = { slot, stack -> isValid(slot, stack) },
+        insertRoutes = listOf(
+            ItemInsertRoute(SLOT_UPGRADE_INDICES, matcher = { it.item is IUpgradeItem }),
+            ItemInsertRoute(intArrayOf(SLOT_DISCHARGING), matcher = { !it.isEmpty && it.item is IBatteryItem }, maxPerSlot = 1),
+            ItemInsertRoute(intArrayOf(SLOT_CONTAINER_INPUT), matcher = { isValid(SLOT_CONTAINER_INPUT, it) }, maxPerSlot = 1)
+        ),
+        extractSlots = intArrayOf(SLOT_OUTPUT, SLOT_CONTAINER_INPUT, SLOT_CONTAINER_OUTPUT, SLOT_DISCHARGING),
+        markDirty = { markDirty() }
+    )
     private var singlePulseConsumed = false
     private var fluidConsumptionRemainder = 0L
     private val emptyCellItem by lazy { Registries.ITEM.get(Identifier("ic2_120", "empty_cell")) }
@@ -179,6 +201,33 @@ class ReplicatorBlockEntity(
     override fun clear() = inventory.clear()
     override fun markDirty() { super.markDirty() }
     override fun canPlayerUse(player: PlayerEntity): Boolean = Inventory.canPlayerUse(this, player)
+
+    private fun replicatorIsDrainableUuContainer(stack: ItemStack): Boolean {
+        if (stack.isEmpty) return false
+        val itemId = Registries.ITEM.getId(stack.item)
+        val fluidCellId = Identifier("ic2_120", "fluid_cell")
+        return itemId.path == "uu_matter_bucket" ||
+            itemId.path == "uu_matter_cell" ||
+            (itemId == fluidCellId &&
+                !stack.isFluidCellEmpty() &&
+                stack.getFluidCellVariant()?.fluid.let { it == ModFluids.UU_MATTER_STILL || it == ModFluids.UU_MATTER_FLOWING })
+    }
+
+    override fun isValid(slot: Int, stack: ItemStack): Boolean = when (slot) {
+        SLOT_OUTPUT -> false
+        SLOT_CONTAINER_INPUT -> !stack.isEmpty && stack.item !is IBatteryItem && replicatorIsDrainableUuContainer(stack)
+        SLOT_CONTAINER_OUTPUT -> false
+        SLOT_DISCHARGING -> !stack.isEmpty && stack.item is IBatteryItem
+        else -> SLOT_UPGRADE_INDICES.contains(slot) && stack.item is IUpgradeItem
+    }
+
+    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.insert(resource, maxAmount, transaction)
+
+    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.extract(resource, maxAmount, transaction)
+
+    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)

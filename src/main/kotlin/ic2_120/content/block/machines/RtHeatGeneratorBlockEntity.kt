@@ -8,7 +8,13 @@ import ic2_120.content.sync.RtHeatGeneratorSync
 import ic2_120.content.syncs.SyncedData
 import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.type
+import ic2_120.content.storage.ItemInsertRoute
+import ic2_120.content.storage.RoutedItemStorage
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
@@ -38,7 +44,7 @@ class RtHeatGeneratorBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : HeatGeneratorBlockEntityBase(type, pos, state), Inventory, ExtendedScreenHandlerFactory {
+) : HeatGeneratorBlockEntityBase(type, pos, state), Inventory, Storage<ItemVariant>, ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = RtHeatGeneratorBlock.ACTIVE
 
@@ -66,6 +72,16 @@ class RtHeatGeneratorBlockEntity(
 
     override val tier: Int = 1
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
+    private val itemStorage = RoutedItemStorage(
+        inventory = inventory,
+        maxCountPerStackProvider = { maxCountPerStack },
+        slotValidator = { slot, stack -> isValid(slot, stack) },
+        insertRoutes = (FUEL_SLOT_START..FUEL_SLOT_END).map { s ->
+            ItemInsertRoute(intArrayOf(s), matcher = { isValid(s, it) }, maxPerSlot = 1)
+        },
+        extractSlots = intArrayOf(0, 1, 2, 3, 4, 5),
+        markDirty = { markDirty() }
+    )
     val syncedData = SyncedData(this)
     override val heatFlow = HeatFlowSync(syncedData, this)
     val sync = RtHeatGeneratorSync(syncedData, heatFlow)
@@ -111,6 +127,17 @@ class RtHeatGeneratorBlockEntity(
         inventory[slot] = stack
         markDirty()
     }
+
+    override fun isValid(slot: Int, stack: ItemStack): Boolean =
+        slot in FUEL_SLOT_START..FUEL_SLOT_END && !stack.isEmpty && isRtgPellet(stack)
+
+    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.insert(resource, maxAmount, transaction)
+
+    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.extract(resource, maxAmount, transaction)
+
+    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     override fun readNbt(nbt: NbtCompound) {
         super.readNbt(nbt)

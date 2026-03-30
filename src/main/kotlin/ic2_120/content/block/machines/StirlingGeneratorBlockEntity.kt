@@ -3,6 +3,7 @@ package ic2_120.content.block.machines
 import ic2_120.content.block.StirlingGeneratorBlock
 import ic2_120.content.block.IGenerator
 import ic2_120.content.energy.charge.BatteryChargerComponent
+import ic2_120.content.item.energy.canBeCharged
 import ic2_120.content.screen.StirlingGeneratorScreenHandler
 import ic2_120.content.sync.StirlingGeneratorSync
 import ic2_120.content.syncs.SyncedData
@@ -11,7 +12,13 @@ import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.type
 import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.type
+import ic2_120.content.storage.ItemInsertRoute
+import ic2_120.content.storage.RoutedItemStorage
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
@@ -35,7 +42,7 @@ class StirlingGeneratorBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : HeatConsumerBlockEntityBase(type, pos, state), Inventory, IGenerator, ExtendedScreenHandlerFactory {
+) : HeatConsumerBlockEntityBase(type, pos, state), Inventory, IGenerator, Storage<ItemVariant>, ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = StirlingGeneratorBlock.ACTIVE
 
@@ -53,6 +60,16 @@ class StirlingGeneratorBlockEntity(
 
     override val tier: Int = STIRLING_TIER
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
+    private val itemStorage = RoutedItemStorage(
+        inventory = inventory,
+        maxCountPerStackProvider = { maxCountPerStack },
+        slotValidator = { slot, stack -> isValid(slot, stack) },
+        insertRoutes = listOf(
+            ItemInsertRoute(intArrayOf(BATTERY_SLOT), matcher = { isValid(BATTERY_SLOT, it) }, maxPerSlot = 1)
+        ),
+        extractSlots = intArrayOf(BATTERY_SLOT),
+        markDirty = { markDirty() }
+    )
     val syncedData = SyncedData(this)
 
     @RegisterEnergy
@@ -92,6 +109,17 @@ class StirlingGeneratorBlockEntity(
         inventory[slot] = stack
         markDirty()
     }
+
+    override fun isValid(slot: Int, stack: ItemStack): Boolean =
+        slot == BATTERY_SLOT && !stack.isEmpty && stack.canBeCharged()
+
+    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.insert(resource, maxAmount, transaction)
+
+    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.extract(resource, maxAmount, transaction)
+
+    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)

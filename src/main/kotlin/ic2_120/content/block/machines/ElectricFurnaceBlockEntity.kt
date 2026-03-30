@@ -8,11 +8,18 @@ import ic2_120.content.block.ITieredMachine
 import ic2_120.content.screen.ElectricFurnaceScreenHandler
 import ic2_120.content.syncs.SyncedData
 import ic2_120.content.energy.charge.BatteryDischargerComponent
+import ic2_120.content.item.energy.IBatteryItem
+import ic2_120.content.storage.ItemInsertRoute
+import ic2_120.content.storage.RoutedItemStorage
 import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.type
 import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.minecraft.block.BlockState
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -38,7 +45,7 @@ class ElectricFurnaceBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, ExtendedScreenHandlerFactory {
+) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, Storage<ItemVariant>, ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = ElectricFurnaceBlock.ACTIVE
 
@@ -63,6 +70,17 @@ class ElectricFurnaceBlockEntity(
     }
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)  // 0: 输入, 1: 输出, 2: 放电
+    private val itemStorage = RoutedItemStorage(
+        inventory = inventory,
+        maxCountPerStackProvider = { maxCountPerStack },
+        slotValidator = { slot, stack -> isValid(slot, stack) },
+        insertRoutes = listOf(
+            ItemInsertRoute(intArrayOf(SLOT_DISCHARGING), matcher = { isBatteryItem(it) }, maxPerSlot = 1),
+            ItemInsertRoute(intArrayOf(SLOT_INPUT), matcher = { isSmeltingInput(it) })
+        ),
+        extractSlots = intArrayOf(SLOT_OUTPUT),
+        markDirty = { markDirty() }
+    )
 
     val syncedData = SyncedData(this)
     @RegisterEnergy
@@ -100,6 +118,21 @@ class ElectricFurnaceBlockEntity(
     }
     override fun canPlayerUse(player: PlayerEntity): Boolean =
         Inventory.canPlayerUse(this, player)
+
+    override fun isValid(slot: Int, stack: ItemStack): Boolean = when (slot) {
+        SLOT_INPUT -> isSmeltingInput(stack)
+        SLOT_OUTPUT -> false
+        SLOT_DISCHARGING -> isBatteryItem(stack)
+        else -> false
+    }
+
+    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.insert(resource, maxAmount, transaction)
+
+    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.extract(resource, maxAmount, transaction)
+
+    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     override fun writeScreenOpeningData(player: net.minecraft.server.network.ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)
@@ -200,13 +233,22 @@ class ElectricFurnaceBlockEntity(
         val space = (ElectricFurnaceSync.ENERGY_CAPACITY - sync.amount).coerceAtLeast(0L)
         if (space <= 0L) return
 
-        val request = minOf(space, ElectricFurnaceSync.MAX_EXTRACT.toLong())
+        val request = minOf(space, ElectricFurnaceSync.MAX_EXTRACT)
         val extracted = batteryDischarger.tick(request)
         if (extracted <= 0L) return
 
         sync.insertEnergy(extracted)
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
         markDirty()
+    }
+
+    private fun isBatteryItem(stack: ItemStack): Boolean = !stack.isEmpty && stack.item is IBatteryItem
+
+    private fun isSmeltingInput(stack: ItemStack): Boolean {
+        if (stack.isEmpty || isBatteryItem(stack)) return false
+        val w = world ?: return true
+        val inv = SimpleInventory(stack.copyWithCount(1))
+        return w.recipeManager.getFirstMatch(RecipeType.SMELTING, inv, w).isPresent
     }
 }
 

@@ -3,6 +3,7 @@ package ic2_120.content.recipes
 import ic2_120.Ic2_120
 import ic2_120.content.block.CreativeGeneratorBlock
 import ic2_120.content.block.MachineBlock
+import ic2_120.registry.ClassScanner
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricBlockLootTableProvider
 import net.minecraft.loot.LootPool
@@ -24,6 +25,7 @@ import net.minecraft.util.Identifier
  * - 储物箱 / 储罐：跳过；其在 [ic2_120.content.block.storage.StorageBoxBlock]、[TankBlock] 的
  *   `onStateReplaced` 中掉落带 `BlockEntityTag` 的物品。若此处再生成标准 `addDrop` loot 表，
  *   `Block.dropStacks` 会先按 loot 掉一个空方块，再与上述逻辑叠加，造成**重复掉落**。
+ * - `@ModBlock(generateBlockLootTable = false)`：由 [ClassScanner] 记录路径，此处跳过（如作物方块由代码掉落种子袋与作物架）。
  */
 class ModBlockLootTableProvider(output: FabricDataOutput) : FabricBlockLootTableProvider(output) {
 
@@ -53,7 +55,7 @@ class ModBlockLootTableProvider(output: FabricDataOutput) : FabricBlockLootTable
         for (block in Registries.BLOCK) {
             val id = Registries.BLOCK.getId(block)
             if (id.namespace != Ic2_120.MOD_ID) continue
-            if (id.path in skipGeneratedLootTable) continue
+            if (id.path in skipGeneratedLootTable || ClassScanner.shouldSkipGeneratedBlockLootTable(id.path)) continue
 
             when {
                 block is CreativeGeneratorBlock -> addDrop(block)

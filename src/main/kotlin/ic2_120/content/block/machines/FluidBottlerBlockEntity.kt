@@ -17,11 +17,17 @@ import ic2_120.content.upgrade.IOverclockerUpgradeSupport
 import ic2_120.content.upgrade.ITransformerUpgradeSupport
 import ic2_120.content.upgrade.OverclockerUpgradeComponent
 import ic2_120.content.upgrade.TransformerUpgradeComponent
+import ic2_120.content.item.IUpgradeItem
+import ic2_120.content.item.energy.IBatteryItem
+import ic2_120.content.storage.ItemInsertRoute
+import ic2_120.content.storage.RoutedItemStorage
 import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.annotation.RegisterFluidStorage
 import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
@@ -68,7 +74,7 @@ class FluidBottlerBlockEntity(
     state: BlockState
 ) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport,
     IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, IFluidPipeUpgradeSupport,
-    ExtendedScreenHandlerFactory {
+    net.fabricmc.fabric.api.transfer.v1.storage.Storage<ItemVariant>, ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = FluidBottlerBlock.ACTIVE
 
@@ -112,6 +118,19 @@ class FluidBottlerBlockEntity(
     }
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
+    private val itemStorage = RoutedItemStorage(
+        inventory = inventory,
+        maxCountPerStackProvider = { maxCountPerStack },
+        slotValidator = { slot, stack -> isValid(slot, stack) },
+        insertRoutes = listOf(
+            ItemInsertRoute(SLOT_UPGRADE_INDICES, matcher = { it.item is IUpgradeItem }),
+            ItemInsertRoute(intArrayOf(SLOT_DISCHARGING), matcher = { !it.isEmpty && it.item is IBatteryItem }, maxPerSlot = 1),
+            ItemInsertRoute(intArrayOf(SLOT_INPUT_FILLED), matcher = { !it.isEmpty && it.item !is IBatteryItem && isFilledFluidContainer(it) }),
+            ItemInsertRoute(intArrayOf(SLOT_INPUT_EMPTY), matcher = { !it.isEmpty && it.item !is IBatteryItem && isEmptyFluidContainerForBottler(it) })
+        ),
+        extractSlots = intArrayOf(SLOT_INPUT_FILLED, SLOT_INPUT_EMPTY, SLOT_OUTPUT, SLOT_DISCHARGING),
+        markDirty = { markDirty() }
+    )
 
     val syncedData = SyncedData(this)
     @RegisterEnergy
@@ -159,6 +178,22 @@ class FluidBottlerBlockEntity(
     override fun isEmpty(): Boolean = inventory.all { it.isEmpty }
     override fun markDirty() { super.markDirty() }
     override fun canPlayerUse(player: PlayerEntity): Boolean = Inventory.canPlayerUse(this, player)
+
+    override fun isValid(slot: Int, stack: ItemStack): Boolean = when (slot) {
+        SLOT_INPUT_FILLED -> !stack.isEmpty && stack.item !is IBatteryItem && isFilledFluidContainer(stack)
+        SLOT_INPUT_EMPTY -> !stack.isEmpty && stack.item !is IBatteryItem && isEmptyFluidContainerForBottler(stack)
+        SLOT_OUTPUT -> false
+        SLOT_DISCHARGING -> !stack.isEmpty && stack.item is IBatteryItem
+        else -> SLOT_UPGRADE_INDICES.contains(slot) && stack.item is IUpgradeItem
+    }
+
+    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext): Long =
+        itemStorage.insert(resource, maxAmount, transaction)
+
+    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext): Long =
+        itemStorage.extract(resource, maxAmount, transaction)
+
+    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)
@@ -498,5 +533,24 @@ class FluidBottlerBlockEntity(
         sync.insertEnergy(extracted)
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
         markDirty()
+    }
+
+    private fun isFilledFluidContainer(stack: ItemStack): Boolean {
+        if (stack.isEmpty) return false
+        if (stack.item == Items.WATER_BUCKET || stack.item == Items.LAVA_BUCKET) return true
+        val ctx = ContainerItemContext.withConstant(stack)
+        val fluidItemStorage = ctx.find(FluidStorage.ITEM) ?: return false
+        for (view in fluidItemStorage) {
+            if (view.amount >= FluidConstants.BUCKET && !view.resource.isBlank) return true
+        }
+        return false
+    }
+
+    private fun isEmptyFluidContainerForBottler(stack: ItemStack): Boolean {
+        if (stack.isEmpty) return false
+        if (stack.item == Items.BUCKET) return true
+        val ctx = ContainerItemContext.withConstant(stack)
+        val fluidItemStorage = ctx.find(FluidStorage.ITEM) ?: return false
+        return fluidItemStorage.supportsInsertion()
     }
 }

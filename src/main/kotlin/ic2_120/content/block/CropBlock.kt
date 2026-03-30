@@ -66,7 +66,8 @@ import net.minecraft.server.world.ServerWorld
     registerItem = true,
     tab = CreativeTab.IC2_MATERIALS,
     group = "crops",
-    renderLayer = "cutout"
+    renderLayer = "cutout",
+    generateBlockLootTable = false
 )
 class CropBlock : BlockWithEntity(
     AbstractBlock.Settings.copy(Blocks.WHEAT)
@@ -187,6 +188,16 @@ class CropBlock : BlockWithEntity(
             }
         }
         super.onBreak(world, pos, state, player)
+    }
+
+    override fun onStacksDropped(
+        state: BlockState,
+        world: ServerWorld,
+        pos: BlockPos,
+        tool: ItemStack,
+        dropExperience: Boolean
+    ) {
+        // 不掉落默认战利品表项；种子袋与作物架由 [onBreak] 处理
     }
 
     companion object {

@@ -13,10 +13,14 @@ import ic2_120.content.sync.FermenterSync
 import ic2_120.content.syncs.SyncedData
 import ic2_120.content.upgrade.FluidPipeUpgradeComponent
 import ic2_120.content.upgrade.IFluidPipeUpgradeSupport
+import ic2_120.content.item.IUpgradeItem
+import ic2_120.content.storage.ItemInsertRoute
+import ic2_120.content.storage.RoutedItemStorage
 import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.annotation.RegisterFluidStorage
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant
@@ -59,7 +63,8 @@ class FermenterBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : HeatConsumerBlockEntityBase(type, pos, state), Inventory, IFluidPipeUpgradeSupport, ExtendedScreenHandlerFactory {
+) : HeatConsumerBlockEntityBase(type, pos, state), Inventory, IFluidPipeUpgradeSupport,
+    net.fabricmc.fabric.api.transfer.v1.storage.Storage<ItemVariant>, ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = FermenterBlock.ACTIVE
     override val tier: Int = 1
@@ -101,6 +106,23 @@ class FermenterBlockEntity(
     }
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
+    private val itemStorage = RoutedItemStorage(
+        inventory = inventory,
+        maxCountPerStackProvider = { maxCountPerStack },
+        slotValidator = { slot, stack -> isValid(slot, stack) },
+        insertRoutes = listOf(
+            ItemInsertRoute(SLOT_UPGRADE_INDICES, matcher = { it.item is IUpgradeItem }),
+            ItemInsertRoute(intArrayOf(SLOT_INPUT_FILLED_CONTAINER), matcher = { isBiomassFilledContainer(it) }),
+            ItemInsertRoute(intArrayOf(SLOT_OUTPUT_EMPTY_CONTAINER), matcher = { isEmptyContainerForFermenter(it) })
+        ),
+        extractSlots = intArrayOf(
+            SLOT_INPUT_FILLED_CONTAINER,
+            SLOT_INPUT_EMPTY_CONTAINER,
+            SLOT_OUTPUT_EMPTY_CONTAINER,
+            SLOT_OUTPUT_FILLED_CONTAINER
+        ),
+        markDirty = { markDirty() }
+    )
     private val emptyCellItem by lazy { Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "empty_cell")) }
     private val fluidCellItem by lazy { Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "fluid_cell")) }
     private val biomassCellItem by lazy { Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "biomass_cell")) }
@@ -263,6 +285,24 @@ class FermenterBlockEntity(
     override fun clear() = inventory.clear()
     override fun isEmpty(): Boolean = inventory.all { it.isEmpty }
     override fun canPlayerUse(player: PlayerEntity): Boolean = Inventory.canPlayerUse(this, player)
+
+    override fun isValid(slot: Int, stack: ItemStack): Boolean = when (slot) {
+        SLOT_INPUT_FILLED_CONTAINER -> isBiomassFilledContainer(stack)
+        SLOT_INPUT_EMPTY_CONTAINER -> false
+        SLOT_OUTPUT_EMPTY_CONTAINER -> isEmptyContainerForFermenter(stack)
+        SLOT_OUTPUT_FILLED_CONTAINER -> false
+        in SLOT_UPGRADE_0..SLOT_UPGRADE_3 -> stack.item is IUpgradeItem
+        else -> false
+    }
+
+    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext): Long =
+        itemStorage.insert(resource, maxAmount, transaction)
+
+    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext): Long =
+        itemStorage.extract(resource, maxAmount, transaction)
+
+    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
+
     override fun markDirty() {
         super.markDirty()
     }
@@ -436,4 +476,24 @@ class FermenterBlockEntity(
         if (toInsert.isEmpty) return false
         return current.isEmpty || (ItemStack.canCombine(current, toInsert) && current.count < current.maxCount)
     }
+
+    private fun isBiomassFilledContainer(stack: ItemStack): Boolean {
+        if (stack.isEmpty) return false
+        return when {
+            stack.item == ModFluids.BIOMASS_BUCKET -> true
+            Registries.ITEM.getId(stack.item) == Identifier("ic2_120", "biomass_cell") -> true
+            stack.item is FluidCellItem -> {
+                val fluid = stack.getFluidCellVariant()?.fluid
+                fluid != null && isBiomass(fluid)
+            }
+            else -> false
+        }
+    }
+
+    private fun isEmptyContainerForFermenter(stack: ItemStack): Boolean =
+        !stack.isEmpty && (
+            stack.item == Items.BUCKET ||
+                Registries.ITEM.getId(stack.item) == Identifier("ic2_120", "empty_cell") ||
+                (stack.item is FluidCellItem && stack.isFluidCellEmpty())
+            )
 }

@@ -11,6 +11,9 @@ import ic2_120.content.item.setFluidCellVariant
 import ic2_120.content.screen.SolarDistillerScreenHandler
 import ic2_120.content.sync.SolarDistillerSync
 import ic2_120.content.syncs.SyncedData
+import ic2_120.content.item.IUpgradeItem
+import ic2_120.content.storage.ItemInsertRoute
+import ic2_120.content.storage.RoutedItemStorage
 import ic2_120.content.upgrade.IFluidPipeUpgradeSupport
 import ic2_120.content.upgrade.FluidPipeUpgradeComponent
 import ic2_120.registry.annotation.ModBlockEntity
@@ -48,6 +51,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
 
 /**
  * 太阳能蒸馏机方块实体
@@ -71,7 +75,8 @@ class SolarDistillerBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, IFluidPipeUpgradeSupport, ExtendedScreenHandlerFactory {
+) : BlockEntity(type, pos, state), Inventory, IFluidPipeUpgradeSupport,
+    net.fabricmc.fabric.api.transfer.v1.storage.Storage<ItemVariant>, ExtendedScreenHandlerFactory {
     // 流体管道升级支持属性（IFluidPipeUpgradeSupport 接口实现）
     override var fluidPipeProviderEnabled: Boolean = false  // 是否作为 provider 向管道输出流体
     override var fluidPipeReceiverEnabled: Boolean = false  // 是否作为 receiver 从管道接收流体
@@ -118,6 +123,18 @@ class SolarDistillerBlockEntity(
     }
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
+    private val itemStorage = RoutedItemStorage(
+        inventory = inventory,
+        maxCountPerStackProvider = { maxCountPerStack },
+        slotValidator = { slot, stack -> isValid(slot, stack) },
+        insertRoutes = listOf(
+            ItemInsertRoute(SLOT_UPGRADE_INDICES, matcher = { it.item is IUpgradeItem }),
+            ItemInsertRoute(intArrayOf(SLOT_INPUT_WATER), matcher = { isWaterInputStack(it) }),
+            ItemInsertRoute(intArrayOf(SLOT_INPUT_CELL), matcher = { isInputCellStack(it) })
+        ),
+        extractSlots = intArrayOf(SLOT_INPUT_WATER, SLOT_OUTPUT_EMPTY, SLOT_INPUT_CELL, SLOT_OUTPUT_CELL),
+        markDirty = { markDirty() }
+    )
     val syncedData = SyncedData(this)
     val sync = SolarDistillerSync(syncedData)
 
@@ -321,6 +338,24 @@ class SolarDistillerBlockEntity(
     }
 
     override fun canPlayerUse(player: PlayerEntity): Boolean = Inventory.canPlayerUse(this, player)
+
+    override fun isValid(slot: Int, stack: ItemStack): Boolean = when (slot) {
+        SLOT_INPUT_WATER -> isWaterInputStack(stack)
+        SLOT_OUTPUT_EMPTY -> false
+        SLOT_INPUT_CELL -> isInputCellStack(stack)
+        SLOT_OUTPUT_CELL -> false
+        else -> SLOT_UPGRADE_INDICES.contains(slot) && stack.item is IUpgradeItem
+    }
+
+    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.insert(resource, maxAmount, transaction)
+
+    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.extract(resource, maxAmount, transaction)
+
+    override fun iterator(): MutableIterator<net.fabricmc.fabric.api.transfer.v1.storage.StorageView<ItemVariant>> =
+        itemStorage.iterator()
+
     override fun setStack(slot: Int, stack: ItemStack) {
         inventory[slot] = stack
         if (stack.count > maxCountPerStack) stack.count = maxCountPerStack
@@ -525,5 +560,15 @@ class SolarDistillerBlockEntity(
         // 正面（水平朝向面）禁用流体口，保留为机器交互面；其余面均开放管道/容器访问。
         if (side == (world?.getBlockState(pos)?.get(Properties.HORIZONTAL_FACING) ?: Direction.NORTH)) return null
         return ioStorage
+    }
+
+    private fun isWaterInputStack(stack: ItemStack): Boolean =
+        !stack.isEmpty && (stack.item == Items.WATER_BUCKET || stack.item is WaterCell ||
+            (stack.item is FluidCellItem && stack.isWaterFuel()))
+
+    private fun isInputCellStack(stack: ItemStack): Boolean {
+        if (stack.isEmpty) return false
+        val emptyCell = Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "empty_cell"))
+        return stack.item == emptyCell || (stack.item is FluidCellItem && stack.isFluidCellEmpty())
     }
 }

@@ -116,8 +116,16 @@ object ClassScanner {
     /** 配方生成器列表 */
     private val recipeGenerators = mutableListOf<(Consumer<RecipeJsonProvider>) -> Unit>()
 
+    /**
+     * `@ModBlock(generateBlockLootTable = false)` 的方块注册名（path），供 [ic2_120.content.recipes.ModBlockLootTableProvider] 跳过自动生成。
+     */
+    private val blockPathsSkippingGeneratedLootTable = mutableSetOf<String>()
+
     /** 已处理类名集合，避免同一类在多资源入口下被重复处理 */
     private val processedClassNames = mutableSetOf<String>()
+
+    fun shouldSkipGeneratedBlockLootTable(path: String): Boolean =
+        path in blockPathsSkippingGeneratedLootTable
 
     /**
      * 扫描并注册所有带注解的类。
@@ -151,6 +159,7 @@ object ClassScanner {
         itemInstances.clear()
         blockToBlockEntityType.clear()
         recipeGenerators.clear()
+        blockPathsSkippingGeneratedLootTable.clear()
         processedClassNames.clear()
         MaterialTagRegistry.clear()
 
@@ -821,6 +830,9 @@ object ClassScanner {
                 Registry.register(Registries.BLOCK, id, instance)
                 blockClassToName[clazz] = name
                 blockInstances[clazz] = instance
+                if (!annotation.generateBlockLootTable) {
+                    blockPathsSkippingGeneratedLootTable.add(name)
+                }
                 if (annotation.materialTags.isNotEmpty()) {
                     MaterialTagRegistry.blockEntries.add(clazz to annotation.materialTags.toList())
                 }

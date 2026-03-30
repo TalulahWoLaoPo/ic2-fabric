@@ -10,8 +10,12 @@ import ic2_120.content.energy.charge.BatteryDischargerComponent
 import ic2_120.content.item.ModFluidCell
 import ic2_120.content.item.fluidToFilledCellStack
 import ic2_120.content.pullEnergyFromNeighbors
+import ic2_120.content.item.IUpgradeItem
+import ic2_120.content.item.energy.IBatteryItem
 import ic2_120.content.recipes.CannerMixingRecipes
 import ic2_120.content.recipes.SolidCannerRecipes
+import ic2_120.content.storage.ItemInsertRoute
+import ic2_120.content.storage.RoutedItemStorage
 import ic2_120.content.screen.CannerScreenHandler
 import ic2_120.content.sync.CannerSync
 import ic2_120.content.syncs.SyncedData
@@ -28,6 +32,7 @@ import ic2_120.registry.annotation.RegisterFluidStorage
 import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
@@ -77,7 +82,7 @@ class CannerBlockEntity(
     state: BlockState
 ) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport,
     IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, IFluidPipeUpgradeSupport,
-    ExtendedScreenHandlerFactory {
+    net.fabricmc.fabric.api.transfer.v1.storage.Storage<ItemVariant>, ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = CannerBlock.ACTIVE
 
@@ -104,7 +109,11 @@ class CannerBlockEntity(
         const val SLOT_MATERIAL = 1    // 中间槽（混合固体/固体装罐输入2）
         const val SLOT_OUTPUT = 2      // 右上槽（流体单元IO/固体装罐输出）
         const val SLOT_DISCHARGING = 3
-        val SLOT_UPGRADE_INDICES = intArrayOf(4, 5, 6, 7)
+        const val SLOT_UPGRADE_0 = 4
+        const val SLOT_UPGRADE_1 = 5
+        const val SLOT_UPGRADE_2 = 6
+        const val SLOT_UPGRADE_3 = 7
+        val SLOT_UPGRADE_INDICES = intArrayOf(SLOT_UPGRADE_0, SLOT_UPGRADE_1, SLOT_UPGRADE_2, SLOT_UPGRADE_3)
         const val INVENTORY_SIZE = 8
         private const val NBT_LEFT_FLUID_AMOUNT = "LeftFluidAmount"
         private const val NBT_LEFT_FLUID_VARIANT = "LeftFluidVariant"
@@ -127,6 +136,20 @@ class CannerBlockEntity(
     }
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
+    private val itemStorage = RoutedItemStorage(
+        inventory = inventory,
+        maxCountPerStackProvider = { maxCountPerStack },
+        slotValidator = { slot, stack -> isValid(slot, stack) },
+        insertRoutes = listOf(
+            ItemInsertRoute(SLOT_UPGRADE_INDICES, matcher = { it.item is IUpgradeItem }),
+            ItemInsertRoute(intArrayOf(SLOT_DISCHARGING), matcher = { !it.isEmpty && it.item is IBatteryItem }, maxPerSlot = 1),
+            ItemInsertRoute(intArrayOf(SLOT_CONTAINER), matcher = { isValid(SLOT_CONTAINER, it) }),
+            ItemInsertRoute(intArrayOf(SLOT_MATERIAL), matcher = { isValid(SLOT_MATERIAL, it) }),
+            ItemInsertRoute(intArrayOf(SLOT_OUTPUT), matcher = { isValid(SLOT_OUTPUT, it) })
+        ),
+        extractSlots = intArrayOf(SLOT_CONTAINER, SLOT_MATERIAL, SLOT_OUTPUT, SLOT_DISCHARGING),
+        markDirty = { markDirty() }
+    )
 
     val syncedData = SyncedData(this)
     @RegisterEnergy
@@ -186,6 +209,53 @@ class CannerBlockEntity(
     override fun isEmpty(): Boolean = inventory.all { it.isEmpty }
     override fun markDirty() { super.markDirty() }
     override fun canPlayerUse(player: PlayerEntity): Boolean = Inventory.canPlayerUse(this, player)
+
+    private fun cannerIsFilledFluidContainer(stack: ItemStack): Boolean {
+        if (stack.isEmpty) return false
+        if (stack.item == Items.WATER_BUCKET || stack.item == Items.LAVA_BUCKET) return true
+        val ctx = ContainerItemContext.withConstant(stack)
+        val fluidItemStorage = ctx.find(FluidStorage.ITEM) ?: return false
+        for (view in fluidItemStorage) {
+            if (view.amount >= FluidConstants.BUCKET && !view.resource.isBlank) return true
+        }
+        return false
+    }
+
+    private fun cannerIsEmptyFluidContainer(stack: ItemStack): Boolean {
+        if (stack.isEmpty) return false
+        if (stack.item == Items.BUCKET) return true
+        val ctx = ContainerItemContext.withConstant(stack)
+        val fluidItemStorage = ctx.find(FluidStorage.ITEM) ?: return false
+        return fluidItemStorage.supportsInsertion()
+    }
+
+    override fun isValid(slot: Int, stack: ItemStack): Boolean = when (slot) {
+        SLOT_CONTAINER -> !stack.isEmpty && stack.item !is IBatteryItem && stack.item !is FoamSprayerItem && (
+            cannerIsFilledFluidContainer(stack) || cannerIsEmptyFluidContainer(stack) || stack.item == tinCanItem
+            )
+        SLOT_MATERIAL -> !stack.isEmpty && stack.item !is IBatteryItem && (
+            SolidCannerRecipes.isCanningFood(stack.item) ||
+                CannerMixingRecipes.isMixingMaterial(stack.item) ||
+                (sync.getMode() == CannerSync.Mode.BOTTLE_LIQUID && stack.item is FoamSprayerItem &&
+                    FoamSprayerItem.getFluidAmount(stack) < FoamSprayerItem.CAPACITY_DROPLETS)
+            )
+        SLOT_OUTPUT -> when {
+            stack.isEmpty -> false
+            sync.getMode() == CannerSync.Mode.BOTTLE_SOLID -> false
+            else -> stack.item !is IBatteryItem && stack.item !is FoamSprayerItem && cannerIsEmptyFluidContainer(stack)
+        }
+        SLOT_DISCHARGING -> !stack.isEmpty && stack.item is IBatteryItem
+        else -> SLOT_UPGRADE_INDICES.contains(slot) && stack.item is IUpgradeItem
+    }
+
+    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext): Long =
+        itemStorage.insert(resource, maxAmount, transaction)
+
+    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext): Long =
+        itemStorage.extract(resource, maxAmount, transaction)
+
+    override fun iterator(): MutableIterator<net.fabricmc.fabric.api.transfer.v1.storage.StorageView<ItemVariant>> =
+        itemStorage.iterator()
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)

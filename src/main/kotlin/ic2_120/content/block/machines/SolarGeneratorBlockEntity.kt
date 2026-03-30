@@ -5,6 +5,8 @@ import ic2_120.content.block.ITieredMachine
 import ic2_120.content.block.SolarGeneratorBlock
 import ic2_120.content.energy.charge.BatteryChargerComponent
 import ic2_120.content.item.energy.canBeCharged
+import ic2_120.content.storage.ItemInsertRoute
+import ic2_120.content.storage.RoutedItemStorage
 import ic2_120.content.screen.SolarGeneratorScreenHandler
 import ic2_120.content.sync.SolarGeneratorSync
 import ic2_120.content.syncs.SyncedData
@@ -26,6 +28,10 @@ import net.minecraft.screen.ScreenHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.state.property.Properties
 import net.minecraft.text.Text
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.minecraft.util.collection.DefaultedList
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
@@ -45,7 +51,7 @@ class SolarGeneratorBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : MachineBlockEntity(type, pos, state), Inventory, IGenerator,
+) : MachineBlockEntity(type, pos, state), Inventory, IGenerator, Storage<ItemVariant>,
     net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = SolarGeneratorBlock.ACTIVE
@@ -63,6 +69,16 @@ class SolarGeneratorBlockEntity(
     override val tier: Int = GENERATOR_TIER
 
     private val inventory = DefaultedList.ofSize(1, ItemStack.EMPTY)  // 仅电池槽
+    private val itemStorage = RoutedItemStorage(
+        inventory = inventory,
+        maxCountPerStackProvider = { maxCountPerStack },
+        slotValidator = { slot, stack -> isValid(slot, stack) },
+        insertRoutes = listOf(
+            ItemInsertRoute(intArrayOf(BATTERY_SLOT), matcher = { isValid(BATTERY_SLOT, it) }, maxPerSlot = 1)
+        ),
+        extractSlots = intArrayOf(BATTERY_SLOT),
+        markDirty = { markDirty() }
+    )
 
     val syncedData = SyncedData(this)
 
@@ -111,6 +127,16 @@ class SolarGeneratorBlockEntity(
             else -> false
         }
     }
+
+    override fun isValid(slot: Int, stack: ItemStack): Boolean = canPlaceInSlot(slot, stack)
+
+    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.insert(resource, maxAmount, transaction)
+
+    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.extract(resource, maxAmount, transaction)
+
+    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)

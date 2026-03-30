@@ -6,7 +6,12 @@ import ic2_120.content.crop.CropCareTarget
 import ic2_120.content.energy.charge.BatteryDischargerComponent
 import ic2_120.content.fluid.ModFluids
 import ic2_120.content.item.FluidCellItem
+import ic2_120.content.item.IUpgradeItem
 import ic2_120.content.item.Fertilizer
+import ic2_120.content.item.energy.IBatteryItem
+import ic2_120.content.item.getFluidCellVariant
+import ic2_120.content.storage.ItemInsertRoute
+import ic2_120.content.storage.RoutedItemStorage
 import ic2_120.content.item.getFluidCellVariant
 import ic2_120.content.pullEnergyFromNeighbors
 import ic2_120.content.screen.CropmatronScreenHandler
@@ -23,6 +28,10 @@ import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.instance
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.minecraft.block.BlockState
 import net.minecraft.block.FarmlandBlock
 import net.minecraft.block.entity.BlockEntityType
@@ -55,6 +64,7 @@ class CropmatronBlockEntity(
     IOverclockerUpgradeSupport,
     IEnergyStorageUpgradeSupport,
     ITransformerUpgradeSupport,
+    Storage<ItemVariant>,
     ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = CropmatronBlock.ACTIVE
@@ -66,6 +76,20 @@ class CropmatronBlockEntity(
     override var voltageTierBonus: Int = 0
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
+    private val itemStorage = RoutedItemStorage(
+        inventory = inventory,
+        maxCountPerStackProvider = { maxCountPerStack },
+        slotValidator = { slot, stack -> isValid(slot, stack) },
+        insertRoutes = listOf(
+            ItemInsertRoute(SLOT_UPGRADE_INDICES, matcher = { it.item is IUpgradeItem }),
+            ItemInsertRoute(intArrayOf(SLOT_DISCHARGING), matcher = { !it.isEmpty && it.item is IBatteryItem }, maxPerSlot = 1),
+            ItemInsertRoute(intArrayOf(SLOT_WATER_INPUT), matcher = { isValid(SLOT_WATER_INPUT, it) }),
+            ItemInsertRoute(intArrayOf(SLOT_WEED_EX_INPUT), matcher = { isValid(SLOT_WEED_EX_INPUT, it) }),
+            ItemInsertRoute(SLOT_FERTILIZER_INDICES, matcher = { isValid(SLOT_FERTILIZER_0, it) })
+        ),
+        extractSlots = IntArray(INVENTORY_SIZE) { it },
+        markDirty = { markDirty() }
+    )
     val syncedData = SyncedData(this)
     private val discharger = BatteryDischargerComponent(
         inventory = this,
@@ -109,6 +133,58 @@ class CropmatronBlockEntity(
         if (stack.count > maxCountPerStack) stack.count = maxCountPerStack
         markDirty()
     }
+
+    private fun cropmatronMatchesWaterInput(stack: ItemStack): Boolean {
+        if (stack.isEmpty) return false
+        val fluidCellId = Identifier(Ic2_120.MOD_ID, "fluid_cell")
+        val waterCellId = Identifier(Ic2_120.MOD_ID, "water_cell")
+        val distilledWaterCellId = Identifier(Ic2_120.MOD_ID, "distilled_water_cell")
+        return when {
+            stack.item == Items.WATER_BUCKET || stack.item == ModFluids.DISTILLED_WATER_BUCKET -> true
+            Registries.ITEM.getId(stack.item) == waterCellId -> true
+            Registries.ITEM.getId(stack.item) == distilledWaterCellId -> true
+            Registries.ITEM.getId(stack.item) == fluidCellId && stack.item is FluidCellItem -> {
+                val fluid = stack.getFluidCellVariant()?.fluid
+                fluid == Fluids.WATER || fluid == Fluids.FLOWING_WATER ||
+                    fluid == ModFluids.DISTILLED_WATER_STILL || fluid == ModFluids.DISTILLED_WATER_FLOWING
+            }
+            else -> false
+        }
+    }
+
+    private fun cropmatronMatchesWeedExInput(stack: ItemStack): Boolean {
+        if (stack.isEmpty) return false
+        val fluidCellId = Identifier(Ic2_120.MOD_ID, "fluid_cell")
+        val weedExCellId = Identifier(Ic2_120.MOD_ID, "weed_ex_cell")
+        return when {
+            stack.item == ModFluids.WEED_EX_BUCKET -> true
+            Registries.ITEM.getId(stack.item) == weedExCellId -> true
+            Registries.ITEM.getId(stack.item) == fluidCellId && stack.item is FluidCellItem -> {
+                val fluid = stack.getFluidCellVariant()?.fluid
+                fluid == ModFluids.WEED_EX_STILL || fluid == ModFluids.WEED_EX_FLOWING
+            }
+            else -> false
+        }
+    }
+
+    override fun isValid(slot: Int, stack: ItemStack): Boolean = when {
+        stack.isEmpty -> false
+        slot == SLOT_WATER_OUTPUT || slot == SLOT_WEED_EX_OUTPUT -> false
+        slot == SLOT_WATER_INPUT -> cropmatronMatchesWaterInput(stack)
+        slot == SLOT_WEED_EX_INPUT -> cropmatronMatchesWeedExInput(stack)
+        slot == SLOT_DISCHARGING -> stack.item is IBatteryItem
+        SLOT_FERTILIZER_INDICES.contains(slot) -> stack.item is Fertilizer
+        SLOT_UPGRADE_INDICES.contains(slot) -> stack.item is IUpgradeItem
+        else -> false
+    }
+
+    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.insert(resource, maxAmount, transaction)
+
+    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.extract(resource, maxAmount, transaction)
+
+    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)

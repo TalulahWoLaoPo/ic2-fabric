@@ -3,7 +3,10 @@ package ic2_120.content.block.machines
 import ic2_120.Ic2_120
 import ic2_120.content.block.FluidHeatExchangerBlock
 import ic2_120.content.fluid.ModFluids
+import ic2_120.content.item.IUpgradeItem
 import ic2_120.content.item.FluidCellItem
+import ic2_120.content.storage.ItemInsertRoute
+import ic2_120.content.storage.RoutedItemStorage
 import ic2_120.content.item.fluidToFilledCellStack
 import ic2_120.content.item.getFluidCellVariant
 import ic2_120.content.item.isFluidCellEmpty
@@ -18,14 +21,15 @@ import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.annotation.RegisterFluidStorage
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage
 import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleVariantStorage
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
@@ -63,7 +67,7 @@ class FluidHeatExchangerBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : HeatGeneratorBlockEntityBase(type, pos, state), Inventory, IFluidPipeUpgradeSupport, ExtendedScreenHandlerFactory {
+) : HeatGeneratorBlockEntityBase(type, pos, state), Inventory, IFluidPipeUpgradeSupport, Storage<ItemVariant>, ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = FluidHeatExchangerBlock.ACTIVE
 
@@ -137,6 +141,21 @@ class FluidHeatExchangerBlockEntity(
     }
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
+    private val itemStorage = RoutedItemStorage(
+        inventory = inventory,
+        maxCountPerStackProvider = { maxCountPerStack },
+        slotValidator = { slot, stack -> isValid(slot, stack) },
+        insertRoutes = buildList {
+            add(ItemInsertRoute(SLOT_UPGRADE_INDICES, matcher = { it.item is IUpgradeItem }))
+            for (idx in SLOT_EXCHANGER_INDICES) {
+                add(ItemInsertRoute(intArrayOf(idx), matcher = { isValid(idx, it) }, maxPerSlot = 1))
+            }
+            add(ItemInsertRoute(intArrayOf(SLOT_INPUT_FILLED_CONTAINER), matcher = { isValid(SLOT_INPUT_FILLED_CONTAINER, it) }))
+            add(ItemInsertRoute(intArrayOf(SLOT_OUTPUT_EMPTY_CONTAINER), matcher = { isValid(SLOT_OUTPUT_EMPTY_CONTAINER, it) }))
+        },
+        extractSlots = IntArray(INVENTORY_SIZE) { it },
+        markDirty = { markDirty() }
+    )
     private val heatConductorItem by lazy { Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "heat_conductor")) }
     private val emptyCellItem by lazy { Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "empty_cell")) }
     private val fluidCellItem by lazy { Registries.ITEM.get(Identifier(Ic2_120.MOD_ID, "fluid_cell")) }
@@ -364,6 +383,43 @@ class FluidHeatExchangerBlockEntity(
         }
         markDirty()
     }
+
+    private fun fheMatchesInputFilledContainer(stack: ItemStack): Boolean = when {
+        stack.item == Items.LAVA_BUCKET -> true
+        stack.item == ModFluids.HOT_COOLANT_BUCKET -> true
+        Registries.ITEM.getId(stack.item) == Identifier("ic2_120", "lava_cell") -> true
+        Registries.ITEM.getId(stack.item) == Identifier("ic2_120", "hot_coolant_cell") -> true
+        stack.item is FluidCellItem -> {
+            val fluid = stack.getFluidCellVariant()?.fluid
+            fluid == Fluids.LAVA || fluid == Fluids.FLOWING_LAVA ||
+                fluid == ModFluids.HOT_COOLANT_STILL || fluid == ModFluids.HOT_COOLANT_FLOWING
+        }
+        else -> false
+    }
+
+    private fun fheMatchesOutputEmptyContainer(stack: ItemStack): Boolean =
+        stack.item == Items.BUCKET ||
+            Registries.ITEM.getId(stack.item) == Identifier("ic2_120", "empty_cell") ||
+            (stack.item is FluidCellItem && stack.isFluidCellEmpty())
+
+    override fun isValid(slot: Int, stack: ItemStack): Boolean = when {
+        stack.isEmpty -> false
+        slot in SLOT_EXCHANGER_INDICES -> stack.item == heatConductorItem
+        slot in SLOT_UPGRADE_INDICES -> stack.item is IUpgradeItem
+        slot == SLOT_INPUT_FILLED_CONTAINER -> fheMatchesInputFilledContainer(stack)
+        slot == SLOT_INPUT_EMPTY_CONTAINER -> false
+        slot == SLOT_OUTPUT_EMPTY_CONTAINER -> fheMatchesOutputEmptyContainer(stack)
+        slot == SLOT_OUTPUT_FILLED_CONTAINER -> false
+        else -> false
+    }
+
+    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.insert(resource, maxAmount, transaction)
+
+    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
+        itemStorage.extract(resource, maxAmount, transaction)
+
+    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)
