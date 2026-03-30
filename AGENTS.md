@@ -75,6 +75,8 @@
 ./gradlew clean compileKotlin compileClientKotlin
 ```
 
+- 运行 Gradle 时**不要**使用 `--no-daemon`（保持 daemon 以复用 JVM、加快增量构建）。
+
 若只改文档，可跳过编译；若改 Kotlin/资源/注册链路，不可跳过。
 
 - 若遇到 Gradle lock（如 `gradle-*.zip.lck`）导致构建或 datagen 失败，直接删除对应 `.lck` 文件后重试（示例：`Remove-Item -Force "C:\Users\wangyu\.gradle\wrapper\dists\...\gradle-*.zip.lck" -ErrorAction SilentlyContinue`）。

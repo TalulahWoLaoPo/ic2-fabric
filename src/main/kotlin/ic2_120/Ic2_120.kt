@@ -79,7 +79,6 @@ object Ic2_120 : ModInitializer {
 
     override fun onInitialize() {
         Ic2Config.loadOrThrow()
-        ModMachineRecipes.register()
         ModCraftingRecipes.register()
 
         ModStatusEffects.register()
@@ -107,6 +106,9 @@ object Ic2_120 : ModInitializer {
                 "ic2_120.content.item"     // 扫描物品类（含 @ModItem 船物品）
             )
         )
+
+        // 机器 RecipeType/Serializer：扫描 recipes 包时先 Class.forName(initialize=false)，仅带 @ModMachineRecipe 的序列化器会完成初始化；须在物品/方块注册之后
+        ModMachineRecipes.register()
 
         // 特殊处理：导线 BlockEntity 需在所有方块注册后统一注册（一个 BE 类型关联多种导线方块）
         CableBlockEntity.register(MOD_ID)
