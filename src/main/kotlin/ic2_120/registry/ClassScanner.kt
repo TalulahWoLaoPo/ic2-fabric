@@ -18,7 +18,11 @@ import ic2_120.registry.annotation.ScreenFactory
 import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.annotation.RegisterFluidStorage
 import ic2_120.registry.type
+import ic2_120.registry.annotation.ModMachineRecipe
+import ic2_120.registry.annotation.ModMachineRecipeBinding
+import ic2_120.registry.MachineRecipeScanEntry
 import ic2_120.content.recipes.MaterialTagRegistry
+import net.minecraft.recipe.RecipeSerializer
 import net.minecraft.util.math.Direction
 import team.reborn.energy.api.EnergyStorage
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
@@ -80,6 +84,12 @@ object ClassScanner {
 
     private val logger = LoggerFactory.getLogger("ic2_120/ClassScanner")
     private var currentModId: String = "ic2_120"
+
+    /** 扫描机器配方 [ModMachineRecipe] 的包 */
+    private val machineRecipeScanPackages = listOf("ic2_120.content.recipes")
+
+    /** 扫描 [ic2_120.registry.annotation.ModMachineRecipeBinding]（BlockEntity → 序列化器） */
+    private val machineRecipeBindingScanPackages = listOf("ic2_120.content.block.machines")
 
     // 跟踪每个物品栏应该包含的物品ID及分组（group 用于排序，相同 group 排在一起；空字符串表示不分组）
     // 同时存储类类型，用于在创建物品栏时检查是否需要添加多个电量变体
@@ -166,6 +176,15 @@ object ClassScanner {
         screenHandlerClasses: MutableList<ScreenHandlerClassInfo>,
         itemClasses: MutableList<ItemClassInfo>
     ) {
+        forEachClassInPackage(packageName) { className ->
+            processClass(className, tabClasses, blockClasses, blockEntityClasses, screenHandlerClasses, itemClasses)
+        }
+    }
+
+    /**
+     * 遍历包内所有 .class 对应的 JVM 类名（支持 file / jar / union，与 [scanPackage] 一致）。
+     */
+    private fun forEachClassInPackage(packageName: String, onClass: (String) -> Unit) {
         try {
             logger.info("扫描包: {}", packageName)
 
@@ -180,17 +199,17 @@ object ClassScanner {
                 when (url.protocol) {
                     "file" -> {
                         foundSupportedResource = true
-                        scanDirectory(url.path, packageName, tabClasses, blockClasses, blockEntityClasses, screenHandlerClasses, itemClasses)
+                        scanDirectoryForClassFiles(url.path, packageName, onClass)
                     }
                     "jar" -> {
                         foundSupportedResource = true
-                        scanJarFile(url, packageName, tabClasses, blockClasses, blockEntityClasses, screenHandlerClasses, itemClasses)
+                        scanJarFileForClassFiles(url, packageName, onClass)
                     }
                     "union" -> {
                         foundSupportedResource = true
                         // 信雅互联（Sinytra Connector）兼容代码：
                         // 直接扫描 union 虚拟文件系统，不走 codeSource fallback。
-                        scanUnionResource(url, packageName, tabClasses, blockClasses, blockEntityClasses, screenHandlerClasses, itemClasses)
+                        scanUnionResourceForClassFiles(url, packageName, onClass)
                     }
                     else -> {
                         logger.warn("未支持的协议: {}", url.protocol)
@@ -210,14 +229,10 @@ object ClassScanner {
      * 信雅互联（Sinytra Connector）兼容代码：
      * 直接扫描 union 协议对应的虚拟文件系统资源。
      */
-    private fun scanUnionResource(
+    private fun scanUnionResourceForClassFiles(
         url: java.net.URL,
         packageName: String,
-        tabClasses: MutableList<TabClassInfo>,
-        blockClasses: MutableList<BlockClassInfo>,
-        blockEntityClasses: MutableList<BlockEntityClassInfo>,
-        screenHandlerClasses: MutableList<ScreenHandlerClassInfo>,
-        itemClasses: MutableList<ItemClassInfo>
+        onClass: (String) -> Unit
     ) {
         try {
             val rootPath = Paths.get(url.toURI())
@@ -232,7 +247,7 @@ object ClassScanner {
                         val relative = rootPath.relativize(classFile).toString().replace('\\', '/')
                         val relativeClassName = relative.removeSuffix(".class").replace('/', '.')
                         val className = "$packageName.$relativeClassName"
-                        processClass(className, tabClasses, blockClasses, blockEntityClasses, screenHandlerClasses, itemClasses)
+                        onClass(className)
                     }
             }
         } catch (e: Exception) {
@@ -240,14 +255,10 @@ object ClassScanner {
         }
     }
 
-    private fun scanDirectory(
+    private fun scanDirectoryForClassFiles(
         path: String,
         packageName: String,
-        tabClasses: MutableList<TabClassInfo>,
-        blockClasses: MutableList<BlockClassInfo>,
-        blockEntityClasses: MutableList<BlockEntityClassInfo>,
-        screenHandlerClasses: MutableList<ScreenHandlerClassInfo>,
-        itemClasses: MutableList<ItemClassInfo>
+        onClass: (String) -> Unit
     ) {
         val dir = java.io.File(path)
         if (!dir.exists() || !dir.isDirectory) return
@@ -255,24 +266,20 @@ object ClassScanner {
         dir.listFiles()?.forEach { file ->
             when {
                 file.isDirectory -> {
-                    scanDirectory(file.path, packageName + "." + file.name, tabClasses, blockClasses, blockEntityClasses, screenHandlerClasses, itemClasses)
+                    scanDirectoryForClassFiles(file.path, packageName + "." + file.name, onClass)
                 }
                 file.name.endsWith(".class") -> {
                     val className = packageName + "." + file.name.removeSuffix(".class")
-                    processClass(className, tabClasses, blockClasses, blockEntityClasses, screenHandlerClasses, itemClasses)
+                    onClass(className)
                 }
             }
         }
     }
 
-    private fun scanJarFile(
+    private fun scanJarFileForClassFiles(
         url: java.net.URL,
         packageName: String,
-        tabClasses: MutableList<TabClassInfo>,
-        blockClasses: MutableList<BlockClassInfo>,
-        blockEntityClasses: MutableList<BlockEntityClassInfo>,
-        screenHandlerClasses: MutableList<ScreenHandlerClassInfo>,
-        itemClasses: MutableList<ItemClassInfo>
+        onClass: (String) -> Unit
     ) {
         // jar: URL 格式: jar:file:/path.jar!/package/path
         // 需要提取文件路径并正确解码 URL 编码字符（如 %20 -> 空格）
@@ -285,17 +292,13 @@ object ClassScanner {
         }
         // URL 解码路径中的特殊字符
         val decodedPath = java.net.URLDecoder.decode(cleanPath, "UTF-8")
-        scanJarPath(decodedPath, packageName, tabClasses, blockClasses, blockEntityClasses, screenHandlerClasses, itemClasses)
+        scanJarPathForClassFiles(decodedPath, packageName, onClass)
     }
 
-    private fun scanJarPath(
+    private fun scanJarPathForClassFiles(
         jarPath: String,
         packageName: String,
-        tabClasses: MutableList<TabClassInfo>,
-        blockClasses: MutableList<BlockClassInfo>,
-        blockEntityClasses: MutableList<BlockEntityClassInfo>,
-        screenHandlerClasses: MutableList<ScreenHandlerClassInfo>,
-        itemClasses: MutableList<ItemClassInfo>
+        onClass: (String) -> Unit
     ) {
         val jarFile = java.util.jar.JarFile(jarPath)
         val entries = jarFile.entries()
@@ -309,11 +312,106 @@ object ClassScanner {
                 val className = entryName
                     .removeSuffix(".class")
                     .replace('/', '.')
-                processClass(className, tabClasses, blockClasses, blockEntityClasses, screenHandlerClasses, itemClasses)
+                onClass(className)
             }
         }
 
         jarFile.close()
+    }
+
+    /**
+     * 收集 [ModMachineRecipe] 声明的注册条目，
+     * 供 [ic2_120.content.recipes.ModMachineRecipes.register] 创建并注册 [net.minecraft.recipe.RecipeType] / [RecipeSerializer]。
+     */
+    fun collectMachineRecipeRegistrations(): List<MachineRecipeScanEntry> {
+        val list = mutableListOf<MachineRecipeScanEntry>()
+        val seenSerializers = mutableSetOf<KClass<*>>()
+        for (pkg in machineRecipeScanPackages) {
+            forEachClassInPackage(pkg) { className ->
+                collectMachineRecipeRegistrationsFromClass(className, list, seenSerializers)
+            }
+        }
+        logger.info("机器配方注解扫描: {} 个序列化器条目", list.size)
+        return list
+    }
+
+    private fun collectMachineRecipeRegistrationsFromClass(
+        className: String,
+        into: MutableList<MachineRecipeScanEntry>,
+        seenSerializers: MutableSet<KClass<*>>
+    ) {
+        try {
+            val loader = Thread.currentThread().contextClassLoader ?: ClassScanner::class.java.classLoader
+            /*
+             * 第二参数 false = 不执行静态初始化（<clinit>）。
+             *
+             * runDatagen 曾在此崩溃的典型链路（已配合 [Ic2_120] 中「先 ClassScanner.scanAndRegister、再 ModMachineRecipes.register」修复）：
+             * 1) 本方法会枚举 `ic2_120.content.recipes` 下几乎所有 .class（含 *RecipeDatagen、辅助类等），不仅有序列化器。
+             * 2) 若使用 Class.forName(name) 默认行为（initialize=true），每加载一个类都会跑 <clinit>。
+             * 3) 例如 BlockCutterRecipeDatagen 的静态初始化里会引用物品（如 IronPlate.instance）；而当时若在
+             *    ClassScanner 完成方块/物品注册之前就扫描配方包，注册表里还没有该物品 → IllegalStateException，游戏在 Initializing 阶段直接崩。
+             * 4) 传 false 时：可先读 @ModMachineRecipe；无该注解则立即 return，该类永不初始化，避免误触 Datagen 的 <clinit>。
+             *    仅有注解的序列化器才会继续走到 objectInstance，此时初始化发生在物品已注册之后（见模组入口顺序）。
+             */
+            val jClass = Class.forName(className, false, loader)
+            val kotlinClazz = jClass.kotlin
+            val single = kotlinClazz.findAnnotation<ModMachineRecipe>() ?: return
+            if (!kotlinClazz.isSubclassOf(RecipeSerializer::class)) {
+                logger.warn("@ModMachineRecipe 仅适用于 RecipeSerializer: {}", className)
+                return
+            }
+            if (kotlinClazz.objectInstance == null) {
+                logger.warn("@ModMachineRecipe 要求 Kotlin object 序列化器: {}", className)
+                return
+            }
+            if (!seenSerializers.add(kotlinClazz)) {
+                return
+            }
+            @Suppress("UNCHECKED_CAST")
+            val serClass = kotlinClazz as KClass<out RecipeSerializer<*>>
+            into.add(MachineRecipeScanEntry(single.id, single.recipeClass, serClass))
+        } catch (e: ClassNotFoundException) {
+            logger.warn("无法加载类: {}", className)
+        } catch (e: NoClassDefFoundError) {
+            logger.warn("类依赖缺失，跳过机器配方注解 {}: {}", className, e.message)
+        } catch (e: Exception) {
+            logger.debug("处理机器配方注解 {} 时出错: {}", className, e.message)
+        }
+    }
+
+    /**
+     * 收集 [ModMachineRecipeBinding]，建立 BlockEntity 类 → 序列化器类（用于 [ic2_120.content.recipes.ModMachineRecipes.getRecipeType]）。
+     */
+    fun collectMachineRecipeBindings(): List<Pair<KClass<*>, KClass<out RecipeSerializer<*>>>> {
+        val out = mutableListOf<Pair<KClass<*>, KClass<out RecipeSerializer<*>>>>()
+        for (pkg in machineRecipeBindingScanPackages) {
+            forEachClassInPackage(pkg) { className ->
+                collectMachineRecipeBindingFromClass(className, out)
+            }
+        }
+        logger.info("机器配方 BlockEntity 绑定: {} 条", out.size)
+        return out
+    }
+
+    private fun collectMachineRecipeBindingFromClass(
+        className: String,
+        into: MutableList<Pair<KClass<*>, KClass<out RecipeSerializer<*>>>>
+    ) {
+        try {
+            val clazz = Class.forName(className).kotlin
+            val ann = clazz.findAnnotation<ModMachineRecipeBinding>() ?: return
+            if (!clazz.isSubclassOf(BlockEntity::class)) {
+                logger.warn("@ModMachineRecipeBinding 仅适用于 BlockEntity 子类: {}", className)
+                return
+            }
+            into.add(clazz to ann.serializerClass)
+        } catch (e: ClassNotFoundException) {
+            logger.warn("无法加载类: {}", className)
+        } catch (e: NoClassDefFoundError) {
+            logger.warn("类依赖缺失，跳过机器配方绑定 {}: {}", className, e.message)
+        } catch (e: Exception) {
+            logger.debug("处理机器配方绑定 {} 时出错: {}", className, e.message)
+        }
     }
 
     private fun processClass(
