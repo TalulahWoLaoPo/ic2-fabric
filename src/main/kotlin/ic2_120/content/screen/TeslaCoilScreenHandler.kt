@@ -12,6 +12,7 @@ import net.minecraft.screen.ArrayPropertyDelegate
 import net.minecraft.screen.PropertyDelegate
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
+import net.minecraft.screen.slot.Slot
 import ic2_120.registry.annotation.ScreenFactory
 
 /**
@@ -34,11 +35,11 @@ class TeslaCoilScreenHandler(
         addProperties(propertyDelegate)
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(net.minecraft.screen.slot.Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 84 + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(net.minecraft.screen.slot.Slot(playerInventory, col, 8 + col * 18, 142))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -55,6 +56,9 @@ class TeslaCoilScreenHandler(
         }, true)
 
     companion object {
+        const val PLAYER_INV_START = 0
+        const val HOTBAR_END = 35
+
         @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): TeslaCoilScreenHandler {
             val pos = buf.readBlockPos()

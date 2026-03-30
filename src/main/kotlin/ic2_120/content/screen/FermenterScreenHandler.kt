@@ -50,42 +50,18 @@ class FermenterScreenHandler(
         checkSize(blockInventory, FermenterBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
 
-        addSlot(PredicateSlot(
-            blockInventory,
-            FermenterBlockEntity.SLOT_INPUT_FILLED_CONTAINER,
-            INPUT_FILLED_CONTAINER_X,
-            TOP_CONTAINER_Y,
-            INPUT_FILLED_CONTAINER_SLOT_SPEC
-        ))
-        addSlot(PredicateSlot(
-            blockInventory,
-            FermenterBlockEntity.SLOT_INPUT_EMPTY_CONTAINER,
-            INPUT_FILLED_CONTAINER_X,
-            BOTTOM_CONTAINER_Y,
-            OUTPUT_ONLY_SLOT_SPEC
-        ))
-        addSlot(PredicateSlot(
-            blockInventory,
-            FermenterBlockEntity.SLOT_OUTPUT_EMPTY_CONTAINER,
-            OUTPUT_CONTAINER_X,
-            TOP_CONTAINER_Y,
-            OUTPUT_EMPTY_CONTAINER_SLOT_SPEC
-        ))
-        addSlot(PredicateSlot(
-            blockInventory,
-            FermenterBlockEntity.SLOT_OUTPUT_FILLED_CONTAINER,
-            OUTPUT_CONTAINER_X,
-            BOTTOM_CONTAINER_Y,
-            OUTPUT_ONLY_SLOT_SPEC
-        ))
+        addSlot(PredicateSlot(blockInventory, FermenterBlockEntity.SLOT_INPUT_FILLED_CONTAINER, 0, 0, INPUT_FILLED_CONTAINER_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, FermenterBlockEntity.SLOT_INPUT_EMPTY_CONTAINER, 0, 0, OUTPUT_ONLY_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, FermenterBlockEntity.SLOT_OUTPUT_EMPTY_CONTAINER, 0, 0, OUTPUT_EMPTY_CONTAINER_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, FermenterBlockEntity.SLOT_OUTPUT_FILLED_CONTAINER, 0, 0, OUTPUT_ONLY_SLOT_SPEC))
 
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
             addSlot(
                 PredicateSlot(
                     blockInventory,
                     FermenterBlockEntity.SLOT_UPGRADE_INDICES[i],
-                    UpgradeSlotLayout.SLOT_X,
-                    UpgradeSlotLayout.slotY(i),
+                    0,
+                    0,
                     upgradeSlotSpec
                 )
             )
@@ -93,11 +69,11 @@ class FermenterScreenHandler(
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, PLAYER_INV_X + col * SLOT_SIZE, PLAYER_INV_Y + row * SLOT_SIZE))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, PLAYER_INV_X + col * SLOT_SIZE, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -142,15 +118,6 @@ class FermenterScreenHandler(
 
     companion object {
         const val SLOT_SIZE = 18
-
-        const val INPUT_FILLED_CONTAINER_X = 26
-        const val OUTPUT_CONTAINER_X = 122
-        const val TOP_CONTAINER_Y = 35
-        const val BOTTOM_CONTAINER_Y = 53
-
-        const val PLAYER_INV_X = 8
-        const val PLAYER_INV_Y = 108
-        const val HOTBAR_Y = 166
 
         const val SLOT_INPUT_FILLED_CONTAINER_INDEX = 0
         const val SLOT_INPUT_EMPTY_CONTAINER_INDEX = 1

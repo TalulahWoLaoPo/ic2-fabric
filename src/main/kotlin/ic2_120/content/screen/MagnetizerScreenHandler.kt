@@ -44,15 +44,15 @@ class MagnetizerScreenHandler(
         checkSize(blockInventory, MagnetizerBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
 
-        addSlot(PredicateSlot(blockInventory, MagnetizerBlockEntity.SLOT_DISCHARGING, DISCHARGING_SLOT_X, DISCHARGING_SLOT_Y, DISCHARGING_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, MagnetizerBlockEntity.SLOT_DISCHARGING, 0, 0, DISCHARGING_SLOT_SPEC))
 
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
             addSlot(
                 PredicateSlot(
                     blockInventory,
                     MagnetizerBlockEntity.SLOT_UPGRADE_INDICES[i],
-                    UpgradeSlotLayout.SLOT_X,
-                    UpgradeSlotLayout.slotY(i),
+                    0,
+                    0,
                     upgradeSlotSpec
                 )
             )
@@ -60,12 +60,12 @@ class MagnetizerScreenHandler(
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, PLAYER_INV_X + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
 
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, PLAYER_INV_X + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -110,18 +110,12 @@ class MagnetizerScreenHandler(
         }, true)
 
     companion object {
-        const val DISCHARGING_SLOT_X = 80
-        const val DISCHARGING_SLOT_Y = 45
         const val SLOT_SIZE = 18
 
         private val DISCHARGING_SLOT_SPEC = SlotSpec(
             maxItemCount = 1,
             canInsert = { stack -> stack.item is IBatteryItem }
         )
-
-        const val PLAYER_INV_X = 8
-        const val PLAYER_INV_Y = 108
-        const val HOTBAR_Y = 166
 
         const val SLOT_DISCHARGING_INDEX = 0
         const val SLOT_UPGRADE_INDEX_START = 1

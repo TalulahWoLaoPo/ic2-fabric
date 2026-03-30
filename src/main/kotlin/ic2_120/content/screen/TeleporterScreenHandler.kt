@@ -51,14 +51,14 @@ class TeleporterScreenHandler(
         checkSize(blockInventory, TeleporterBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
 
-        addSlot(PredicateSlot(blockInventory, TeleporterBlockEntity.SLOT_DISCHARGING, BATTERY_X, BATTERY_Y, dischargingSlotSpec))
+        addSlot(PredicateSlot(blockInventory, TeleporterBlockEntity.SLOT_DISCHARGING, 0, 0, dischargingSlotSpec))
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
             addSlot(
                 PredicateSlot(
                     blockInventory,
                     TeleporterBlockEntity.SLOT_UPGRADE_INDICES[i],
-                    UpgradeSlotLayout.SLOT_X,
-                    UpgradeSlotLayout.slotY(i),
+                    0,
+                    0,
                     upgradeSlotSpec
                 )
             )
@@ -66,11 +66,11 @@ class TeleporterScreenHandler(
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, 8 + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -129,11 +129,6 @@ class TeleporterScreenHandler(
         }, true)
 
     companion object {
-        const val BATTERY_X = 80
-        const val BATTERY_Y = 44
-        const val PLAYER_INV_Y = 84
-        const val HOTBAR_Y = 142
-
         const val SLOT_DISCHARGING_INDEX = 0
         const val SLOT_UPGRADE_INDEX_START = 1
         const val SLOT_UPGRADE_INDEX_END = 4

@@ -46,23 +46,10 @@ class BlockCutterScreenHandler(
         checkSize(blockInventory, BlockCutterBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
 
-        // 1: 原料槽（第二行左）
-        addSlot(PredicateSlot(blockInventory, BlockCutterBlockEntity.SLOT_INPUT, INPUT_SLOT_X, INPUT_SLOT_Y, INPUT_SLOT_SPEC))
-
-        // 2: 供电槽（第四行左）
-        addSlot(PredicateSlot(
-            blockInventory,
-            BlockCutterBlockEntity.SLOT_DISCHARGING,
-            DISCHARGING_SLOT_X,
-            DISCHARGING_SLOT_Y,
-            DISCHARGING_SLOT_SPEC
-        ))
-
-        // 3: 成品槽（第二行右）
-        addSlot(PredicateSlot(blockInventory, BlockCutterBlockEntity.SLOT_OUTPUT, OUTPUT_SLOT_X, OUTPUT_SLOT_Y, OUTPUT_SLOT_SPEC))
-
-        // 4: 锯片槽（第三行居中，进度条下方）
-        addSlot(PredicateSlot(blockInventory, BlockCutterBlockEntity.SLOT_BLADE, BLADE_SLOT_X, BLADE_SLOT_Y, BLADE_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, BlockCutterBlockEntity.SLOT_INPUT, 0, 0, INPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, BlockCutterBlockEntity.SLOT_DISCHARGING, 0, 0, DISCHARGING_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, BlockCutterBlockEntity.SLOT_OUTPUT, 0, 0, OUTPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, BlockCutterBlockEntity.SLOT_BLADE, 0, 0, BLADE_SLOT_SPEC))
 
         // 5: 升级插件槽 x4
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
@@ -70,8 +57,8 @@ class BlockCutterScreenHandler(
                 PredicateSlot(
                     blockInventory,
                     BlockCutterBlockEntity.SLOT_UPGRADE_INDICES[i],
-                    UpgradeSlotLayout.SLOT_X,
-                    UpgradeSlotLayout.slotY(i) + MACHINE_OFFSET_Y,
+                    0,
+                    0,
                     upgradeSlotSpec
                 )
             )
@@ -79,11 +66,11 @@ class BlockCutterScreenHandler(
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, PLAYER_INV_X + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, PLAYER_INV_X + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -141,23 +128,7 @@ class BlockCutterScreenHandler(
         }, true)
 
     companion object {
-        /** 机器区域整体下移量（为顶行标题+能量留出空间） */
-        const val MACHINE_OFFSET_Y = 22
-
-        const val INPUT_SLOT_X = 56
-        const val INPUT_SLOT_Y = 17 + MACHINE_OFFSET_Y
-        const val DISCHARGING_SLOT_X = 56
-        const val DISCHARGING_SLOT_Y = 53 + MACHINE_OFFSET_Y
-        const val OUTPUT_SLOT_X = 116
-        const val OUTPUT_SLOT_Y = 17 + MACHINE_OFFSET_Y
-        /** 锯片槽居中于进度条下方：(176/2 - 18/2) = 79 */
-        const val BLADE_SLOT_X = 79
-        const val BLADE_SLOT_Y = 35 + MACHINE_OFFSET_Y
         const val SLOT_SIZE = 18
-
-        const val PLAYER_INV_X = 8
-        const val PLAYER_INV_Y = 108
-        const val HOTBAR_Y = 166
 
         private val BLADE_SLOT_SPEC = SlotSpec(
             maxItemCount = 1,

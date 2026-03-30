@@ -48,21 +48,15 @@ class CreativeGeneratorScreenHandler(
         addProperties(propertyDelegate)
 
         // 电池槽
-        addSlot(PredicateSlot(
-            blockInventory,
-            CreativeGeneratorBlockEntity.BATTERY_SLOT,
-            BATTERY_SLOT_X,
-            BLOCK_SLOTS_Y,
-            batterySlotSpec
-        ))
+        addSlot(PredicateSlot(blockInventory, CreativeGeneratorBlockEntity.BATTERY_SLOT, 0, 0, batterySlotSpec))
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, PLAYER_INV_X + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, PLAYER_INV_X + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -97,11 +91,7 @@ class CreativeGeneratorScreenHandler(
         }, true)
 
     companion object {
-        const val BATTERY_SLOT_X = 80
-        const val BLOCK_SLOTS_Y = 35
-        const val PLAYER_INV_X = 8
-        const val PLAYER_INV_Y = 84
-        const val HOTBAR_Y = 142
+        const val PLAYER_INV_START = 1
         const val SLOT_SIZE = 18
 
         @ScreenFactory

@@ -43,15 +43,15 @@ class SolarGeneratorScreenHandler(
         checkSize(blockInventory, 1)
         addProperties(propertyDelegate)
 
-        addSlot(PredicateSlot(blockInventory, SolarGeneratorBlockEntity.BATTERY_SLOT, BATTERY_SLOT_X, BLOCK_SLOTS_Y, BATTERY_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, SolarGeneratorBlockEntity.BATTERY_SLOT, 0, 0, BATTERY_SLOT_SPEC))
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, 8 + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -88,10 +88,7 @@ class SolarGeneratorScreenHandler(
         }, true)
 
     companion object {
-        const val BATTERY_SLOT_X = 80
-        const val BLOCK_SLOTS_Y = 54
-        const val PLAYER_INV_Y = 84
-        const val HOTBAR_Y = 142
+        const val PLAYER_INV_START = 1
         const val SLOT_SIZE = 18
         private val BATTERY_SLOT_SPEC = SlotSpec(
             maxItemCount = 1,

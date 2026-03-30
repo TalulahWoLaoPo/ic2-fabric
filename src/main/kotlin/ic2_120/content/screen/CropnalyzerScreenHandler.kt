@@ -41,37 +41,15 @@ class CropnalyzerScreenHandler(
     init {
         addProperties(propertyDelegate)
 
-        addSlot(
-            PredicateSlot(
-                itemInventory,
-                SLOT_SEED,
-                StandardGuiLayout.centeredSlotGridStartX(1),
-                StandardGuiLayout.FIRST_MACHINE_ROW_Y + 18,
-                seedSlotSpec
-            )
-        )
+        addSlot(PredicateSlot(itemInventory, SLOT_SEED, 0, 0, seedSlotSpec))
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(
-                    Slot(
-                        playerInventory,
-                        col + row * 9 + 9,
-                        StandardGuiLayout.PLAYER_INV_X + col * StandardGuiLayout.SLOT_SIZE,
-                        StandardGuiLayout.PLAYER_INV_Y + row * StandardGuiLayout.SLOT_SIZE
-                    )
-                )
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(
-                Slot(
-                    playerInventory,
-                    col,
-                    StandardGuiLayout.PLAYER_INV_X + col * StandardGuiLayout.SLOT_SIZE,
-                    StandardGuiLayout.HOTBAR_Y
-                )
-            )
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
 
         refreshEnergyState()

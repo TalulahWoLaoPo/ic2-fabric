@@ -61,17 +61,7 @@ class FluidHeatExchangerScreenHandler(
 
         for (i in FluidHeatExchangerBlockEntity.SLOT_EXCHANGER_INDICES.indices) {
             val slotIndex = FluidHeatExchangerBlockEntity.SLOT_EXCHANGER_INDICES[i]
-            val col = i % EXCHANGER_COLS
-            val row = i / EXCHANGER_COLS
-            addSlot(
-                PredicateSlot(
-                    blockInventory,
-                    slotIndex,
-                    EXCHANGER_SLOT_X + col * SLOT_SPACING,
-                    EXCHANGER_SLOT_Y + row * SLOT_SPACING,
-                    EXCHANGER_SLOT_SPEC
-                )
-            )
+            addSlot(PredicateSlot(blockInventory, slotIndex, 0, 0, EXCHANGER_SLOT_SPEC))
         }
 
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
@@ -79,8 +69,8 @@ class FluidHeatExchangerScreenHandler(
                 PredicateSlot(
                     blockInventory,
                     FluidHeatExchangerBlockEntity.SLOT_UPGRADE_INDICES[i],
-                    UPGRADE_SLOT_X + i * SLOT_SPACING,
-                    UPGRADE_SLOT_Y,
+                    0,
+                    0,
                     upgradeSlotSpec
                 )
             )
@@ -90,8 +80,8 @@ class FluidHeatExchangerScreenHandler(
             PredicateSlot(
                 blockInventory,
                 FluidHeatExchangerBlockEntity.SLOT_INPUT_FILLED_CONTAINER,
-                LEFT_CONTAINER_X,
-                TOP_CONTAINER_Y,
+                0,
+                0,
                 INPUT_FILLED_CONTAINER_SLOT_SPEC
             )
         )
@@ -99,8 +89,8 @@ class FluidHeatExchangerScreenHandler(
             PredicateSlot(
                 blockInventory,
                 FluidHeatExchangerBlockEntity.SLOT_INPUT_EMPTY_CONTAINER,
-                LEFT_CONTAINER_X,
-                BOTTOM_CONTAINER_Y,
+                0,
+                0,
                 OUTPUT_ONLY_SLOT_SPEC
             )
         )
@@ -108,8 +98,8 @@ class FluidHeatExchangerScreenHandler(
             PredicateSlot(
                 blockInventory,
                 FluidHeatExchangerBlockEntity.SLOT_OUTPUT_EMPTY_CONTAINER,
-                RIGHT_CONTAINER_X,
-                TOP_CONTAINER_Y,
+                0,
+                0,
                 OUTPUT_EMPTY_CONTAINER_SLOT_SPEC
             )
         )
@@ -117,20 +107,20 @@ class FluidHeatExchangerScreenHandler(
             PredicateSlot(
                 blockInventory,
                 FluidHeatExchangerBlockEntity.SLOT_OUTPUT_FILLED_CONTAINER,
-                RIGHT_CONTAINER_X,
-                BOTTOM_CONTAINER_Y,
+                0,
+                0,
                 OUTPUT_ONLY_SLOT_SPEC
             )
         )
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, PLAYER_INV_X + col * SLOT_SPACING, PLAYER_INV_Y + row * SLOT_SPACING))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
 
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, PLAYER_INV_X + col * SLOT_SPACING, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -189,21 +179,6 @@ class FluidHeatExchangerScreenHandler(
 
     companion object {
         const val SLOT_SIZE = 18
-
-        private const val EXCHANGER_COLS = 5
-        private const val EXCHANGER_SLOT_X = 43
-        private const val EXCHANGER_SLOT_Y = 26
-        private const val UPGRADE_SLOT_X = 52
-        private const val UPGRADE_SLOT_Y = 66
-        private const val LEFT_CONTAINER_X = 24
-        private const val RIGHT_CONTAINER_X = 134
-        private const val TOP_CONTAINER_Y = 26
-        private const val BOTTOM_CONTAINER_Y = 44
-        private const val SLOT_SPACING = 18
-
-        const val PLAYER_INV_X = 8
-        const val PLAYER_INV_Y = 108
-        const val HOTBAR_Y = 166
 
         const val EXCHANGER_SLOT_INDEX_START = 0
         const val EXCHANGER_SLOT_INDEX_END = 9

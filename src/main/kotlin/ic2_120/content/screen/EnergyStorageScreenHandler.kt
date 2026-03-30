@@ -95,27 +95,24 @@ class EnergyStorageScreenHandler(
         checkSize(blockInventory, machineSlotCount)
         addProperties(propertyDelegate)
 
-        val slotY = 55
-        val slotSpacing = 18
-
         // 4 个装备槽（左侧，slot 1-4），MFE/MFSU 专用
         if (config.useEquipmentSlots) {
-            addSlot(PredicateSlot(blockInventory, 1, 8, slotY, equipmentSlotSpecs[0]))
-            addSlot(PredicateSlot(blockInventory, 2, 8 + slotSpacing, slotY, equipmentSlotSpecs[1]))
-            addSlot(PredicateSlot(blockInventory, 3, 8 + slotSpacing * 2, slotY, equipmentSlotSpecs[2]))
-            addSlot(PredicateSlot(blockInventory, 4, 8 + slotSpacing * 3, slotY, equipmentSlotSpecs[3]))
+            addSlot(PredicateSlot(blockInventory, 1, 0, 0, equipmentSlotSpecs[0]))
+            addSlot(PredicateSlot(blockInventory, 2, 0, 0, equipmentSlotSpecs[1]))
+            addSlot(PredicateSlot(blockInventory, 3, 0, 0, equipmentSlotSpecs[2]))
+            addSlot(PredicateSlot(blockInventory, 4, 0, 0, equipmentSlotSpecs[3]))
         }
 
         // 1 个充电槽（右侧，slot 0），所有等级都有
-        addSlot(PredicateSlot(blockInventory, 0, 8 + slotSpacing * 4, slotY, chargeSlotSpec))
+        addSlot(PredicateSlot(blockInventory, 0, 0, 0, chargeSlotSpec))
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, 8 + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -130,14 +127,14 @@ class EnergyStorageScreenHandler(
             val movedFromMachine = index in machineSlotIndices()
             val moved = when {
                 movedFromMachine -> {
-                    if (!insertItem(stackInSlot, playerInvStart, hotbarEnd + 1, true)) {
+                    if (!insertItem(stackInSlot, playerInventorySlotStart, hotbarEnd + 1, true)) {
                         false
                     } else {
                         slot.onQuickTransfer(stackInSlot, stack)
                         true
                     }
                 }
-                index in playerInvStart..hotbarEnd -> {
+                index in playerInventorySlotStart..hotbarEnd -> {
                     SlotMoveHelper.insertIntoTargets(stackInSlot, machineSlotTargets())
                 }
                 else -> false
@@ -171,11 +168,10 @@ class EnergyStorageScreenHandler(
         return targets
     }
 
-    private val playerInvStart: Int
-        get() = machineSlotCount
+    val playerInventorySlotStart: Int get() = machineSlotCount
 
     private val hotbarEnd: Int
-        get() = playerInvStart + 35
+        get() = playerInventorySlotStart + 35
 
     override fun canUse(player: PlayerEntity): Boolean =
         context.get({ world, pos ->
@@ -185,8 +181,6 @@ class EnergyStorageScreenHandler(
         }, true)
 
     companion object {
-        const val PLAYER_INV_Y = 84
-        const val HOTBAR_Y = 142
         const val SLOT_SIZE = 18
 
         @ScreenFactory

@@ -24,6 +24,9 @@ class StorageBoxScreenHandler(
     val inventory: Inventory
 ) : ScreenHandler(StorageBoxScreenHandler::class.type(), syncId) {
 
+    /** 玩家主背包首槽索引（随储物格数量变化） */
+    val playerInventorySlotStart: Int get() = inventory.size()
+
     init {
         // 储物箱槽位：统一使用单列 9 格布局
         val inventorySize = inventory.size()
@@ -33,21 +36,20 @@ class StorageBoxScreenHandler(
             for (col in 0 until 9) {
                 val slotIndex = row * 9 + col
                 if (slotIndex < inventorySize) {
-                    addSlot(Slot(inventory, slotIndex, 8 + col * 18, 18 + row * 18))
+                    addSlot(Slot(inventory, slotIndex, 0, 0))
                 }
             }
         }
 
-        // 玩家背包槽位（3x9）
+        // 玩家背包槽位（3x9）；坐标由 StorageBoxScreen Compose 锚点写回
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
 
-        // 玩家快捷栏槽位
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, 8 + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -84,10 +86,6 @@ class StorageBoxScreenHandler(
     }
 
     companion object {
-        // 玩家背包 Y 起始（与 StorageBoxScreen 保持一致）
-        const val PLAYER_INV_Y = 152
-        const val HOTBAR_Y = 210
-
         /**
          * 从 PacketByteBuf 创建 ScreenHandler（客户端）
          */

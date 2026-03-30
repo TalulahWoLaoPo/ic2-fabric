@@ -44,34 +44,29 @@ class BlastFurnaceScreenHandler(
         checkSize(blockInventory, BlastFurnaceBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
 
-        addSlot(PredicateSlot(blockInventory, BlastFurnaceBlockEntity.SLOT_INPUT,
-            INPUT_SLOT_X, INPUT_SLOT_Y, INPUT_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, BlastFurnaceBlockEntity.SLOT_AIR_INPUT,
-            AIR_INPUT_SLOT_X, AIR_INPUT_SLOT_Y, AIR_INPUT_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, BlastFurnaceBlockEntity.SLOT_OUTPUT_STEEL,
-            OUTPUT_STEEL_SLOT_X, OUTPUT_STEEL_SLOT_Y, OUTPUT_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, BlastFurnaceBlockEntity.SLOT_OUTPUT_SLAG,
-            OUTPUT_SLAG_SLOT_X, OUTPUT_SLAG_SLOT_Y, OUTPUT_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, BlastFurnaceBlockEntity.SLOT_OUTPUT_EMPTY,
-            EMPTY_OUTPUT_SLOT_X, EMPTY_OUTPUT_SLOT_Y, EMPTY_OUTPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, BlastFurnaceBlockEntity.SLOT_INPUT, 0, 0, INPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, BlastFurnaceBlockEntity.SLOT_AIR_INPUT, 0, 0, AIR_INPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, BlastFurnaceBlockEntity.SLOT_OUTPUT_STEEL, 0, 0, OUTPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, BlastFurnaceBlockEntity.SLOT_OUTPUT_SLAG, 0, 0, OUTPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, BlastFurnaceBlockEntity.SLOT_OUTPUT_EMPTY, 0, 0, EMPTY_OUTPUT_SLOT_SPEC))
 
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
             addSlot(PredicateSlot(
                 blockInventory,
                 BlastFurnaceBlockEntity.SLOT_UPGRADE_INDICES[i],
-                UpgradeSlotLayout.SLOT_X,
-                UpgradeSlotLayout.slotY(i),
+                0,
+                0,
                 upgradeSlotSpec
             ))
         }
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, PLAYER_INV_X + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, PLAYER_INV_X + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -124,20 +119,7 @@ class BlastFurnaceScreenHandler(
         }, true)
 
     companion object {
-        const val INPUT_SLOT_X = 56
-        const val INPUT_SLOT_Y = 35
-        const val AIR_INPUT_SLOT_X = 56
-        const val AIR_INPUT_SLOT_Y = 53
-        const val OUTPUT_STEEL_SLOT_X = 116
-        const val OUTPUT_STEEL_SLOT_Y = 35
-        const val OUTPUT_SLAG_SLOT_X = 116
-        const val OUTPUT_SLAG_SLOT_Y = 53
-        const val EMPTY_OUTPUT_SLOT_X = 56
-        const val EMPTY_OUTPUT_SLOT_Y = 71
         const val SLOT_SIZE = 18
-        const val PLAYER_INV_X = 8
-        const val PLAYER_INV_Y = 108
-        const val HOTBAR_Y = 166
 
         private val INPUT_SLOT_SPEC = SlotSpec(
             canInsert = { stack -> !stack.isEmpty }

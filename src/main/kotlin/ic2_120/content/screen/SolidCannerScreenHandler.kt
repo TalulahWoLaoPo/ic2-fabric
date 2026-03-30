@@ -62,28 +62,28 @@ class SolidCannerScreenHandler(
     init {
         checkSize(blockInventory, SolidCannerBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
-        addSlot(PredicateSlot(blockInventory, SolidCannerBlockEntity.SLOT_TIN_CAN, TIN_CAN_SLOT_X, BLOCK_SLOTS_Y, tinCanSlotSpec))
-        addSlot(PredicateSlot(blockInventory, SolidCannerBlockEntity.SLOT_FOOD, FOOD_SLOT_X, BLOCK_SLOTS_Y, foodSlotSpec))
-        addSlot(PredicateSlot(blockInventory, SolidCannerBlockEntity.SLOT_OUTPUT, OUTPUT_SLOT_X, BLOCK_SLOTS_Y, outputSlotSpec))
-        addSlot(PredicateSlot(blockInventory, SolidCannerBlockEntity.SLOT_DISCHARGING, TIN_CAN_SLOT_X, BLOCK_SLOTS_Y + SLOT_SIZE, dischargingSlotSpec))
+        addSlot(PredicateSlot(blockInventory, SolidCannerBlockEntity.SLOT_TIN_CAN, 0, 0, tinCanSlotSpec))
+        addSlot(PredicateSlot(blockInventory, SolidCannerBlockEntity.SLOT_FOOD, 0, 0, foodSlotSpec))
+        addSlot(PredicateSlot(blockInventory, SolidCannerBlockEntity.SLOT_OUTPUT, 0, 0, outputSlotSpec))
+        addSlot(PredicateSlot(blockInventory, SolidCannerBlockEntity.SLOT_DISCHARGING, 0, 0, dischargingSlotSpec))
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
             addSlot(
                 PredicateSlot(
                     blockInventory,
                     SolidCannerBlockEntity.SLOT_UPGRADE_INDICES[i],
-                    UpgradeSlotLayout.SLOT_X,
-                    UpgradeSlotLayout.slotY(i),
+                    0,
+                    0,
                     upgradeSlotSpec
                 )
             )
         }
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, 8 + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -137,12 +137,6 @@ class SolidCannerScreenHandler(
         }, true)
 
     companion object {
-        const val TIN_CAN_SLOT_X = 38
-        const val FOOD_SLOT_X = 56
-        const val OUTPUT_SLOT_X = 116
-        const val BLOCK_SLOTS_Y = 54
-        const val PLAYER_INV_Y = 108
-        const val HOTBAR_Y = 166
         const val SLOT_SIZE = 18
 
         const val SLOT_TIN_CAN_INDEX = 0

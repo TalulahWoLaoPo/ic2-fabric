@@ -49,8 +49,8 @@ class ReactorFluidPortScreenHandler(
             PredicateSlot(
                 blockInventory,
                 ReactorFluidPortBlockEntity.SLOT_UPGRADE_INDICES[0],
-                UPGRADE_SLOT_X,
-                UPGRADE_SLOT_Y,
+                0,
+                0,
                 upgradeSlotSpec
             )
         )
@@ -58,13 +58,13 @@ class ReactorFluidPortScreenHandler(
         // 玩家物品栏
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, PLAYER_INV_X + col * SLOT_SPACING, PLAYER_INV_Y + row * SLOT_SPACING))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
 
         // 玩家快捷栏
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, PLAYER_INV_X + col * SLOT_SPACING, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -104,14 +104,6 @@ class ReactorFluidPortScreenHandler(
 
     companion object {
         const val SLOT_SIZE = 18
-
-        private const val UPGRADE_SLOT_X = 80
-        private const val UPGRADE_SLOT_Y = 20
-        private const val SLOT_SPACING = 18
-
-        const val PLAYER_INV_X = 8
-        const val PLAYER_INV_Y = 84
-        const val HOTBAR_Y = 142
 
         const val UPGRADE_SLOT_INDEX = 0
         const val PLAYER_INV_START = 1

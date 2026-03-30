@@ -54,14 +54,14 @@ class CropmatronScreenHandler(
         checkSize(blockInventory, CropmatronBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
 
-        addSlot(PredicateSlot(blockInventory, CropmatronBlockEntity.SLOT_WATER_INPUT, 26, 36, WATER_INPUT_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, CropmatronBlockEntity.SLOT_WATER_OUTPUT, 26, 54, OUTPUT_ONLY_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, CropmatronBlockEntity.SLOT_WEED_EX_INPUT, 134, 36, WEED_EX_INPUT_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, CropmatronBlockEntity.SLOT_WEED_EX_OUTPUT, 134, 54, OUTPUT_ONLY_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, CropmatronBlockEntity.SLOT_DISCHARGING, 80, 54, DISCHARGING_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, CropmatronBlockEntity.SLOT_WATER_INPUT, 0, 0, WATER_INPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, CropmatronBlockEntity.SLOT_WATER_OUTPUT, 0, 0, OUTPUT_ONLY_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, CropmatronBlockEntity.SLOT_WEED_EX_INPUT, 0, 0, WEED_EX_INPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, CropmatronBlockEntity.SLOT_WEED_EX_OUTPUT, 0, 0, OUTPUT_ONLY_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, CropmatronBlockEntity.SLOT_DISCHARGING, 0, 0, DISCHARGING_SLOT_SPEC))
 
-        for ((i, slotIndex) in CropmatronBlockEntity.SLOT_FERTILIZER_INDICES.withIndex()) {
-            addSlot(PredicateSlot(blockInventory, slotIndex, 8 + i * SLOT_SIZE, 84, FERTILIZER_SLOT_SPEC))
+        for ((_, slotIndex) in CropmatronBlockEntity.SLOT_FERTILIZER_INDICES.withIndex()) {
+            addSlot(PredicateSlot(blockInventory, slotIndex, 0, 0, FERTILIZER_SLOT_SPEC))
         }
 
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
@@ -69,8 +69,8 @@ class CropmatronScreenHandler(
                 PredicateSlot(
                     blockInventory,
                     CropmatronBlockEntity.SLOT_UPGRADE_INDICES[i],
-                    UpgradeSlotLayout.SLOT_X,
-                    UpgradeSlotLayout.slotY(i),
+                    0,
+                    0,
                     upgradeSlotSpec
                 )
             )
@@ -78,11 +78,11 @@ class CropmatronScreenHandler(
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, 8 + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -138,8 +138,6 @@ class CropmatronScreenHandler(
 
     companion object {
         const val SLOT_SIZE = 18
-        const val PLAYER_INV_Y = 108
-        const val HOTBAR_Y = 166
 
         const val SLOT_WATER_INPUT_INDEX = 0
         const val SLOT_WATER_OUTPUT_INDEX = 1

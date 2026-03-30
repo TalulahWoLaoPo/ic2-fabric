@@ -69,15 +69,13 @@ class MinerScreenHandler(
         checkSize(blockInventory, BaseMinerBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
 
-        addSlot(PredicateSlot(blockInventory, BaseMinerBlockEntity.SLOT_SCANNER, 20, 20, scannerSlotSpec))
-        addSlot(PredicateSlot(blockInventory, BaseMinerBlockEntity.SLOT_DRILL, 20, 42, drillSlotSpec))
-        addSlot(PredicateSlot(blockInventory, BaseMinerBlockEntity.SLOT_DISCHARGING, 20, 64, batterySlotSpec))
+        addSlot(PredicateSlot(blockInventory, BaseMinerBlockEntity.SLOT_SCANNER, 0, 0, scannerSlotSpec))
+        addSlot(PredicateSlot(blockInventory, BaseMinerBlockEntity.SLOT_DRILL, 0, 0, drillSlotSpec))
+        addSlot(PredicateSlot(blockInventory, BaseMinerBlockEntity.SLOT_DISCHARGING, 0, 0, batterySlotSpec))
 
         var idx = BaseMinerBlockEntity.SLOT_FILTER_START
-        for (row in 0 until 3) {
-            for (col in 0 until 5) {
-                addSlot(PredicateSlot(blockInventory, idx++, 56 + col * 18, 20 + row * 18, filterSlotSpec))
-            }
+        repeat(BaseMinerBlockEntity.FILTER_SLOT_COUNT) {
+            addSlot(PredicateSlot(blockInventory, idx++, 0, 0, filterSlotSpec))
         }
 
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
@@ -85,8 +83,8 @@ class MinerScreenHandler(
                 PredicateSlot(
                     blockInventory,
                     BaseMinerBlockEntity.SLOT_UPGRADE_INDICES[i],
-                    UpgradeSlotLayout.SLOT_X,
-                    UpgradeSlotLayout.slotY(i),
+                    0,
+                    0,
                     upgradeSlotSpec
                 )
             )
@@ -94,11 +92,11 @@ class MinerScreenHandler(
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, 8 + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -163,9 +161,6 @@ class MinerScreenHandler(
         }, true)
 
     companion object {
-        const val PLAYER_INV_Y = 108
-        const val HOTBAR_Y = 166
-
         const val SLOT_SCANNER_INDEX = 0
         const val SLOT_DRILL_INDEX = 1
         const val SLOT_BATTERY_INDEX = 2

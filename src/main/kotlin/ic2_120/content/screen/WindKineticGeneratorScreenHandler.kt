@@ -35,15 +35,15 @@ class WindKineticGeneratorScreenHandler(
         checkSize(blockInventory, 1)
         addProperties(propertyDelegate)
 
-        addSlot(PredicateSlot(blockInventory, WindKineticGeneratorBlockEntity.ROTOR_SLOT, ROTOR_SLOT_X, BLOCK_SLOTS_Y, ROTOR_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, WindKineticGeneratorBlockEntity.ROTOR_SLOT, 0, 0, ROTOR_SLOT_SPEC))
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, 8 + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -82,10 +82,7 @@ class WindKineticGeneratorScreenHandler(
         }, true)
 
     companion object {
-        const val ROTOR_SLOT_X = 80
-        const val BLOCK_SLOTS_Y = 54
-        const val PLAYER_INV_Y = 84
-        const val HOTBAR_Y = 142
+        const val PLAYER_INV_START = 1
         const val SLOT_SIZE = 18
 
         private val ALLOWED_ROTORS = setOf("wooden_rotor", "iron_rotor", "steel_rotor", "carbon_rotor")

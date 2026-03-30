@@ -50,19 +50,17 @@ class ElectricHeatGeneratorScreenHandler(
         checkSize(blockInventory, ElectricHeatGeneratorBlockEntity.SLOT_COUNT)
         addProperties(propertyDelegate)
 
-        for (i in 0 until ElectricHeatGeneratorBlockEntity.SLOT_COUNT) {
-            val col = i % 5
-            val row = i / 5
-            addSlot(PredicateSlot(blockInventory, i, COIL_START_X + col * 18, COIL_START_Y + row * 18, COIL_SLOT_SPEC))
+        repeat(ElectricHeatGeneratorBlockEntity.SLOT_COUNT) { i ->
+            addSlot(PredicateSlot(blockInventory, i, 0, 0, COIL_SLOT_SPEC))
         }
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, 8 + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -104,10 +102,6 @@ class ElectricHeatGeneratorScreenHandler(
         }, true)
 
     companion object {
-        const val COIL_START_X = 43
-        const val COIL_START_Y = 35
-        const val PLAYER_INV_Y = 84
-        const val HOTBAR_Y = 142
         const val SLOT_SIZE = 18
 
         const val PLAYER_INV_START = ElectricHeatGeneratorBlockEntity.SLOT_COUNT

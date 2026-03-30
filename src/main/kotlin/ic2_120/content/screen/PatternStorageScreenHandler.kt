@@ -34,15 +34,17 @@ class PatternStorageScreenHandler(
 
     init {
         checkSize(blockInventory, PatternStorageBlockEntity.INVENTORY_SIZE)
-        addSlot(PredicateSlot(blockInventory, PatternStorageBlockEntity.SLOT_CRYSTAL, CRYSTAL_SLOT_X, CRYSTAL_SLOT_Y, CRYSTAL_SLOT_SPEC))
+
+        // All slot coordinates are anchored by the client screen at render time.
+        addSlot(PredicateSlot(blockInventory, PatternStorageBlockEntity.SLOT_CRYSTAL, 0, 0, CRYSTAL_SLOT_SPEC))
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, PLAYER_INV_X + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, PLAYER_INV_X + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -101,12 +103,6 @@ class PatternStorageScreenHandler(
             maxItemCount = 1,
             canInsert = { stack -> !stack.isEmpty && Registries.ITEM.getId(stack.item) == CRYSTAL_MEMORY_ID }
         )
-
-        const val CRYSTAL_SLOT_X = 8
-        const val CRYSTAL_SLOT_Y = 20
-        const val PLAYER_INV_X = 8
-        const val PLAYER_INV_Y = 108
-        const val HOTBAR_Y = 166
 
         const val SLOT_CRYSTAL_INDEX = 0
         const val PLAYER_INV_START = 1

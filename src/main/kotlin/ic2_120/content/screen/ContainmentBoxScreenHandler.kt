@@ -29,46 +29,20 @@ class ContainmentBoxScreenHandler(
     private val noNestedBoxSpec = SlotSpec(canInsert = { it.item !is ContainmentBoxItem })
 
     init {
-        val slotSize = StandardGuiLayout.SLOT_SIZE
         val boxCols = 4
-        val slotStartX = StandardGuiLayout.centeredSlotGridStartX(boxCols)
-        val slotStartY = StandardGuiLayout.FIRST_MACHINE_ROW_Y
-        // 12 格：3 行 × 4 列，在标准内容宽内居中
         for (row in 0 until 3) {
             for (col in 0 until boxCols) {
                 val index = row * boxCols + col
-                addSlot(
-                    PredicateSlot(
-                        boxInventory,
-                        index,
-                        slotStartX + col * slotSize,
-                        slotStartY + row * slotSize,
-                        noNestedBoxSpec
-                    )
-                )
+                addSlot(PredicateSlot(boxInventory, index, 0, 0, noNestedBoxSpec))
             }
         }
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(
-                    Slot(
-                        playerInventory,
-                        col + row * 9 + 9,
-                        StandardGuiLayout.PLAYER_INV_X + col * slotSize,
-                        StandardGuiLayout.PLAYER_INV_Y + row * slotSize
-                    )
-                )
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(
-                Slot(
-                    playerInventory,
-                    col,
-                    StandardGuiLayout.PLAYER_INV_X + col * slotSize,
-                    StandardGuiLayout.HOTBAR_Y
-                )
-            )
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -98,6 +72,8 @@ class ContainmentBoxScreenHandler(
     }
 
     companion object {
+        const val PLAYER_INV_START = ContainmentBoxInventory.SIZE
+
         @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): ContainmentBoxScreenHandler {
             val hand = buf.readEnumConstant(Hand::class.java)

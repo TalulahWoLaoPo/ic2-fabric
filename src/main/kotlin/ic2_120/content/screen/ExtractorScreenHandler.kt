@@ -57,8 +57,8 @@ class ExtractorScreenHandler(
             PredicateSlot(
                 blockInventory,
                 ExtractorBlockEntity.SLOT_INPUT,
-                COMPOSE_PLACEHOLDER_X,
-                COMPOSE_PLACEHOLDER_Y,
+                0,
+                0,
                 inputSlotSpec
             )
         )
@@ -66,8 +66,8 @@ class ExtractorScreenHandler(
             PredicateSlot(
                 blockInventory,
                 ExtractorBlockEntity.SLOT_OUTPUT,
-                COMPOSE_PLACEHOLDER_X,
-                COMPOSE_PLACEHOLDER_Y,
+                0,
+                0,
                 outputSlotSpec
             )
         )
@@ -75,8 +75,8 @@ class ExtractorScreenHandler(
             PredicateSlot(
                 blockInventory,
                 ExtractorBlockEntity.SLOT_DISCHARGING,
-                COMPOSE_PLACEHOLDER_X,
-                COMPOSE_PLACEHOLDER_Y,
+                0,
+                0,
                 dischargingSlotSpec
             )
         )
@@ -85,8 +85,8 @@ class ExtractorScreenHandler(
                 PredicateSlot(
                     blockInventory,
                     ExtractorBlockEntity.SLOT_UPGRADE_INDICES[i],
-                    COMPOSE_PLACEHOLDER_X,
-                    COMPOSE_PLACEHOLDER_Y,
+                    0,
+                    0,
                     upgradeSlotSpec
                 )
             )
@@ -94,11 +94,11 @@ class ExtractorScreenHandler(
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, PLAYER_INV_X + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, PLAYER_INV_X + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -150,14 +150,7 @@ class ExtractorScreenHandler(
         }, true)
 
     companion object {
-        private const val COMPOSE_PLACEHOLDER_X = 0
-        private const val COMPOSE_PLACEHOLDER_Y = 0
-
         const val SLOT_SIZE = 18
-        const val PLAYER_INV_X = 8
-        const val PLAYER_INV_Y = 108
-        const val HOTBAR_Y = 166
-
         const val SLOT_INPUT_INDEX = 0
         const val SLOT_OUTPUT_INDEX = 1
         const val SLOT_DISCHARGING_INDEX = 2

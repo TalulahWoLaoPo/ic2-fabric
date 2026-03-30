@@ -48,18 +48,17 @@ class ElectricFurnaceScreenHandler(
         checkSize(blockInventory, ElectricFurnaceBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
         // 输入槽（左侧）、输出槽（右侧），同一行，留出上方给标题与能量条
-        addSlot(PredicateSlot(blockInventory, ElectricFurnaceBlockEntity.SLOT_INPUT, INPUT_SLOT_X, BLOCK_SLOTS_Y, inputSlotSpec))
-        addSlot(PredicateSlot(blockInventory, ElectricFurnaceBlockEntity.SLOT_OUTPUT, OUTPUT_SLOT_X, BLOCK_SLOTS_Y, outputSlotSpec))
-        // 放电槽（第二行左侧）
-        addSlot(PredicateSlot(blockInventory, ElectricFurnaceBlockEntity.SLOT_DISCHARGING, INPUT_SLOT_X, BLOCK_SLOTS_Y + SLOT_SIZE, dischargingSlotSpec))
+        addSlot(PredicateSlot(blockInventory, ElectricFurnaceBlockEntity.SLOT_INPUT, 0, 0, inputSlotSpec))
+        addSlot(PredicateSlot(blockInventory, ElectricFurnaceBlockEntity.SLOT_OUTPUT, 0, 0, outputSlotSpec))
+        addSlot(PredicateSlot(blockInventory, ElectricFurnaceBlockEntity.SLOT_DISCHARGING, 0, 0, dischargingSlotSpec))
         // 玩家背包
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, 8 + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -106,17 +105,6 @@ class ElectricFurnaceScreenHandler(
         }, true)
 
     companion object {
-        /** 输入槽 X（与 MC 熔炉一致） */
-        const val INPUT_SLOT_X = 56
-        /** 输出槽 X */
-        const val OUTPUT_SLOT_X = 116
-        /** 机器槽（输入/输出）Y，同一行，置于标题与能量条下方避免重叠 */
-        const val BLOCK_SLOTS_Y = 54
-        /** 玩家背包 3 行起始 Y */
-        const val PLAYER_INV_Y = 84
-        /** 快捷栏 Y */
-        const val HOTBAR_Y = 142
-        /** 槽尺寸（用于客户端绘制边框等） */
         const val SLOT_SIZE = 18
 
         const val SLOT_INPUT_INDEX = 0

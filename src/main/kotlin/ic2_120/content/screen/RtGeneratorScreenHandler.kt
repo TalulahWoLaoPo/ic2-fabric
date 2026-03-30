@@ -43,24 +43,18 @@ class RtGeneratorScreenHandler(
         checkSize(blockInventory, 7)
         addProperties(propertyDelegate)
 
-        // 6 个燃料槽（2x3 网格）靠左，能量信息靠右避免遮挡
-        val fuelSlotPositions = listOf(
-            8 to 36, 26 to 36, 44 to 36,   // 第一行
-            8 to 54, 26 to 54, 44 to 54    // 第二行
-        )
-        fuelSlotPositions.forEachIndexed { index, (x, y) ->
-            addSlot(PredicateSlot(blockInventory, index, x, y, FUEL_SLOT_SPEC))
+        repeat(6) { index ->
+            addSlot(PredicateSlot(blockInventory, index, 0, 0, FUEL_SLOT_SPEC))
         }
-        // 电池槽（右侧，能量信息下方）
-        addSlot(PredicateSlot(blockInventory, RtGeneratorBlockEntity.BATTERY_SLOT, 116, 54, BATTERY_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, RtGeneratorBlockEntity.BATTERY_SLOT, 0, 0, BATTERY_SLOT_SPEC))
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, 8 + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -101,13 +95,7 @@ class RtGeneratorScreenHandler(
         }, true)
 
     companion object {
-        const val FUEL_GRID_X = 8
-        const val FUEL_GRID_Y_ROW0 = 36
-        const val FUEL_GRID_Y_ROW1 = 54
-        const val BATTERY_SLOT_X = 116
-        const val BLOCK_SLOTS_Y = 54
-        const val PLAYER_INV_Y = 84
-        const val HOTBAR_Y = 142
+        const val PLAYER_INV_START = 7
         const val SLOT_SIZE = 18
 
         private val FUEL_SLOT_SPEC = SlotSpec(

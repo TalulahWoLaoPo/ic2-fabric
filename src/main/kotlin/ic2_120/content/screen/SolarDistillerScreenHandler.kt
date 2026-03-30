@@ -50,18 +50,18 @@ class SolarDistillerScreenHandler(
         checkSize(blockInventory, SolarDistillerBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
 
-        addSlot(PredicateSlot(blockInventory, SolarDistillerBlockEntity.SLOT_INPUT_WATER, INPUT_WATER_X, TOP_Y, INPUT_WATER_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, SolarDistillerBlockEntity.SLOT_OUTPUT_EMPTY, INPUT_WATER_X, TOP_Y + SLOT_SIZE, OUTPUT_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, SolarDistillerBlockEntity.SLOT_INPUT_CELL, OUTPUT_CELL_X, TOP_Y, INPUT_CELL_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, SolarDistillerBlockEntity.SLOT_OUTPUT_CELL, OUTPUT_CELL_X, TOP_Y + SLOT_SIZE, OUTPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, SolarDistillerBlockEntity.SLOT_INPUT_WATER, 0, 0, INPUT_WATER_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, SolarDistillerBlockEntity.SLOT_OUTPUT_EMPTY, 0, 0, OUTPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, SolarDistillerBlockEntity.SLOT_INPUT_CELL, 0, 0, INPUT_CELL_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, SolarDistillerBlockEntity.SLOT_OUTPUT_CELL, 0, 0, OUTPUT_SLOT_SPEC))
 
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
             addSlot(
                 PredicateSlot(
                     blockInventory,
                     SolarDistillerBlockEntity.SLOT_UPGRADE_INDICES[i],
-                    UpgradeSlotLayout.SLOT_X,
-                    UpgradeSlotLayout.slotY(i),
+                    0,
+                    0,
                     upgradeSlotSpec
                 )
             )
@@ -69,11 +69,11 @@ class SolarDistillerScreenHandler(
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, 8 + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -119,11 +119,6 @@ class SolarDistillerScreenHandler(
 
     companion object {
         const val SLOT_SIZE = 18
-        const val INPUT_WATER_X = 26
-        const val OUTPUT_CELL_X = 122
-        const val TOP_Y = 35
-        const val PLAYER_INV_Y = 108
-        const val HOTBAR_Y = 166
 
         const val SLOT_INPUT_WATER_INDEX = 0
         const val SLOT_OUTPUT_EMPTY_INDEX = 1

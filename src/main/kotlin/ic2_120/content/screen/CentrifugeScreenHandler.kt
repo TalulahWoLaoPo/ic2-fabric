@@ -44,22 +44,11 @@ class CentrifugeScreenHandler(
         checkSize(blockInventory, CentrifugeBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
 
-        // 输入槽
-        addSlot(PredicateSlot(blockInventory, CentrifugeBlockEntity.SLOT_INPUT, INPUT_SLOT_X, INPUT_SLOT_Y, INPUT_SLOT_SPEC))
-
-        // 3 个输出槽（垂直排列）
-        addSlot(PredicateSlot(blockInventory, CentrifugeBlockEntity.SLOT_OUTPUT_1, OUTPUT_SLOT_X, OUTPUT_SLOT_Y_1, OUTPUT_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, CentrifugeBlockEntity.SLOT_OUTPUT_2, OUTPUT_SLOT_X, OUTPUT_SLOT_Y_2, OUTPUT_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, CentrifugeBlockEntity.SLOT_OUTPUT_3, OUTPUT_SLOT_X, OUTPUT_SLOT_Y_3, OUTPUT_SLOT_SPEC))
-
-        // 放电槽
-        addSlot(PredicateSlot(
-            blockInventory,
-            CentrifugeBlockEntity.SLOT_DISCHARGING,
-            DISCHARGING_SLOT_X,
-            DISCHARGING_SLOT_Y,
-            DISCHARGING_SLOT_SPEC
-        ))
+        addSlot(PredicateSlot(blockInventory, CentrifugeBlockEntity.SLOT_INPUT, 0, 0, INPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, CentrifugeBlockEntity.SLOT_OUTPUT_1, 0, 0, OUTPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, CentrifugeBlockEntity.SLOT_OUTPUT_2, 0, 0, OUTPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, CentrifugeBlockEntity.SLOT_OUTPUT_3, 0, 0, OUTPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, CentrifugeBlockEntity.SLOT_DISCHARGING, 0, 0, DISCHARGING_SLOT_SPEC))
 
         // 4 个升级槽
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
@@ -67,8 +56,8 @@ class CentrifugeScreenHandler(
                 PredicateSlot(
                     blockInventory,
                     CentrifugeBlockEntity.SLOT_UPGRADE_INDICES[i],
-                    UpgradeSlotLayout.SLOT_X,
-                    UpgradeSlotLayout.slotY(i),
+                    0,
+                    0,
                     upgradeSlotSpec
                 )
             )
@@ -77,11 +66,11 @@ class CentrifugeScreenHandler(
         // 玩家物品栏
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, PLAYER_INV_X + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, PLAYER_INV_X + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -138,19 +127,7 @@ class CentrifugeScreenHandler(
         }, true)
 
     companion object {
-        const val INPUT_SLOT_X = 56
-        const val INPUT_SLOT_Y = 35
-        const val DISCHARGING_SLOT_X = 56
-        const val DISCHARGING_SLOT_Y = 53
-        const val OUTPUT_SLOT_X = 116
-        const val OUTPUT_SLOT_Y_1 = 17
-        const val OUTPUT_SLOT_Y_2 = 35
-        const val OUTPUT_SLOT_Y_3 = 53
         const val SLOT_SIZE = 18
-
-        const val PLAYER_INV_X = 8
-        const val PLAYER_INV_Y = 108
-        const val HOTBAR_Y = 166
 
         private val INPUT_SLOT_SPEC = SlotSpec(canInsert = { stack -> stack.item !is IBatteryItem })
         private val DISCHARGING_SLOT_SPEC = SlotSpec(

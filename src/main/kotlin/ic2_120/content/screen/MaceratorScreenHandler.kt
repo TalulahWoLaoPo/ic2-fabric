@@ -50,8 +50,8 @@ class MaceratorScreenHandler(
             PredicateSlot(
                 blockInventory,
                 MaceratorBlockEntity.SLOT_INPUT,
-                COMPOSE_PLACEHOLDER_X,
-                COMPOSE_PLACEHOLDER_Y,
+                0,
+                0,
                 INPUT_SLOT_SPEC
             )
         )
@@ -59,8 +59,8 @@ class MaceratorScreenHandler(
             PredicateSlot(
                 blockInventory,
                 MaceratorBlockEntity.SLOT_DISCHARGING,
-                COMPOSE_PLACEHOLDER_X,
-                COMPOSE_PLACEHOLDER_Y,
+                0,
+                0,
                 DISCHARGING_SLOT_SPEC
             )
         )
@@ -68,8 +68,8 @@ class MaceratorScreenHandler(
             PredicateSlot(
                 blockInventory,
                 MaceratorBlockEntity.SLOT_OUTPUT,
-                COMPOSE_PLACEHOLDER_X,
-                COMPOSE_PLACEHOLDER_Y,
+                0,
+                0,
                 OUTPUT_SLOT_SPEC
             )
         )
@@ -78,8 +78,8 @@ class MaceratorScreenHandler(
                 PredicateSlot(
                     blockInventory,
                     MaceratorBlockEntity.SLOT_UPGRADE_INDICES[i],
-                    COMPOSE_PLACEHOLDER_X,
-                    COMPOSE_PLACEHOLDER_Y,
+                    0,
+                    0,
                     upgradeSlotSpec
                 )
             )
@@ -88,11 +88,11 @@ class MaceratorScreenHandler(
         // 玩家物品栏
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, PLAYER_INV_X + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, PLAYER_INV_X + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -155,9 +155,6 @@ class MaceratorScreenHandler(
         }, true)
 
     companion object {
-        private const val COMPOSE_PLACEHOLDER_X = 0
-        private const val COMPOSE_PLACEHOLDER_Y = 0
-
         const val SLOT_SIZE = 18
         private val INPUT_SLOT_SPEC = SlotSpec(
             // 避免电池被误放入加工输入槽，优先进入放电槽。
@@ -171,11 +168,6 @@ class MaceratorScreenHandler(
             canInsert = { false },
             canTake = { true }
         )
-
-        // 玩家物品栏位置
-        const val PLAYER_INV_X = 8
-        const val PLAYER_INV_Y = 108
-        const val HOTBAR_Y = 166
 
         // 槽位索引常量
         const val SLOT_INPUT_INDEX = 0

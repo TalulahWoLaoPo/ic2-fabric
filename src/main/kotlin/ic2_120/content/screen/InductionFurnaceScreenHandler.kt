@@ -50,23 +50,21 @@ class InductionFurnaceScreenHandler(
         checkSize(blockInventory, InductionFurnaceBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
 
-        // 机器槽位：左侧输入，右侧输出
-        addSlot(PredicateSlot(blockInventory, InductionFurnaceBlockEntity.SLOT_INPUT_0, INPUT_SLOT_0_X, SLOT_ROW_0_Y, inputSlotSpec0))
-        addSlot(PredicateSlot(blockInventory, InductionFurnaceBlockEntity.SLOT_INPUT_1, INPUT_SLOT_1_X, SLOT_ROW_1_Y, inputSlotSpec1))
-        addSlot(PredicateSlot(blockInventory, InductionFurnaceBlockEntity.SLOT_OUTPUT_0, OUTPUT_SLOT_0_X, SLOT_ROW_0_Y, outputSlotSpec0))
-        addSlot(PredicateSlot(blockInventory, InductionFurnaceBlockEntity.SLOT_OUTPUT_1, OUTPUT_SLOT_1_X, SLOT_ROW_1_Y, outputSlotSpec1))
-        // 放电槽（电池）
-        addSlot(PredicateSlot(blockInventory, InductionFurnaceBlockEntity.SLOT_DISCHARGING, DISCHARGING_SLOT_X, DISCHARGING_SLOT_Y, dischargingSlotSpec))
+        addSlot(PredicateSlot(blockInventory, InductionFurnaceBlockEntity.SLOT_INPUT_0, 0, 0, inputSlotSpec0))
+        addSlot(PredicateSlot(blockInventory, InductionFurnaceBlockEntity.SLOT_INPUT_1, 0, 0, inputSlotSpec1))
+        addSlot(PredicateSlot(blockInventory, InductionFurnaceBlockEntity.SLOT_OUTPUT_0, 0, 0, outputSlotSpec0))
+        addSlot(PredicateSlot(blockInventory, InductionFurnaceBlockEntity.SLOT_OUTPUT_1, 0, 0, outputSlotSpec1))
+        addSlot(PredicateSlot(blockInventory, InductionFurnaceBlockEntity.SLOT_DISCHARGING, 0, 0, dischargingSlotSpec))
 
         // 玩家物品栏
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, PLAYER_INV_X + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         // 快捷栏
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, PLAYER_INV_X + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -122,21 +120,7 @@ class InductionFurnaceScreenHandler(
         }, true)
 
     companion object {
-        // 机器槽位位置
-        const val INPUT_SLOT_0_X = 56
-        const val INPUT_SLOT_1_X = 56
-        const val OUTPUT_SLOT_0_X = 116
-        const val OUTPUT_SLOT_1_X = 116
-        const val SLOT_ROW_0_Y = 35
-        const val SLOT_ROW_1_Y = 53
-        const val DISCHARGING_SLOT_X = 56
-        const val DISCHARGING_SLOT_Y = 71
         const val SLOT_SIZE = 18
-
-        // 玩家物品栏位置
-        const val PLAYER_INV_X = 8
-        const val PLAYER_INV_Y = 108
-        const val HOTBAR_Y = 166
 
         // 槽位索引
         const val SLOT_INPUT_0_INDEX = 0

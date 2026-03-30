@@ -26,7 +26,7 @@ class PumpAttachmentScreenHandler(
         this(syncId, playerInventory, be, ScreenHandlerContext.create(playerInventory.player.world, be.pos))
 
     init {
-        addSlot(object : Slot(object : net.minecraft.inventory.SimpleInventory(1) {}, 0, FILTER_SLOT_X, FILTER_SLOT_Y) {
+        addSlot(object : Slot(object : net.minecraft.inventory.SimpleInventory(1) {}, 0, 0, 0) {
             override fun canInsert(stack: ItemStack): Boolean = false
             override fun canTakeItems(playerEntity: PlayerEntity): Boolean = false
             override fun getStack(): ItemStack = blockEntity?.pumpFilterGhostStack() ?: ItemStack.EMPTY
@@ -35,11 +35,11 @@ class PumpAttachmentScreenHandler(
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, 8 + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -67,10 +67,7 @@ class PumpAttachmentScreenHandler(
         }, true)
 
     companion object {
-        private const val FILTER_SLOT_X = 80
-        private const val FILTER_SLOT_Y = 22
-        private const val PLAYER_INV_Y = 58
-        private const val HOTBAR_Y = 116
+        const val PLAYER_INV_START = 1
 
         @ScreenFactory
         fun fromBuffer(syncId: Int, playerInventory: PlayerInventory, buf: PacketByteBuf): PumpAttachmentScreenHandler {

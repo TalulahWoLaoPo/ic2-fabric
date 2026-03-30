@@ -47,22 +47,17 @@ class RtHeatGeneratorScreenHandler(
         checkSize(blockInventory, RtHeatGeneratorBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
 
-        // 6 个燃料槽（2x3 网格）
-        val fuelSlotPositions = listOf(
-            8 to 36, 26 to 36, 44 to 36,   // 第一行
-            8 to 54, 26 to 54, 44 to 54    // 第二行
-        )
-        fuelSlotPositions.forEachIndexed { index, (x, y) ->
-            addSlot(PredicateSlot(blockInventory, index, x, y, FUEL_SLOT_SPEC))
+        repeat(RtHeatGeneratorBlockEntity.INVENTORY_SIZE) { index ->
+            addSlot(PredicateSlot(blockInventory, index, 0, 0, FUEL_SLOT_SPEC))
         }
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, 8 + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -102,8 +97,6 @@ class RtHeatGeneratorScreenHandler(
         }, true)
 
     companion object {
-        const val PLAYER_INV_Y = 84
-        const val HOTBAR_Y = 142
         const val PLAYER_INV_START = 6
         const val HOTBAR_END = 38
 

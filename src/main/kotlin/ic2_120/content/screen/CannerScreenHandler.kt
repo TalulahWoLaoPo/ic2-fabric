@@ -86,27 +86,18 @@ class CannerScreenHandler(
         checkSize(blockInventory, CannerBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
 
-        addSlot(PredicateSlot(blockInventory, CannerBlockEntity.SLOT_CONTAINER,
-            CONTAINER_SLOT_X, CONTAINER_SLOT_Y, containerSlotSpec))
-        addSlot(PredicateSlot(blockInventory, CannerBlockEntity.SLOT_MATERIAL,
-            MATERIAL_SLOT_X, MATERIAL_SLOT_Y, materialSlotSpec))
-        addSlot(PredicateSlot(blockInventory, CannerBlockEntity.SLOT_OUTPUT,
-            OUTPUT_SLOT_X, OUTPUT_SLOT_Y, outputSlotSpec))
-        addSlot(PredicateSlot(
-            blockInventory,
-            CannerBlockEntity.SLOT_DISCHARGING,
-            POWER_SLOT_X,
-            POWER_SLOT_Y,
-            dischargingSlotSpec
-        ))
+        addSlot(PredicateSlot(blockInventory, CannerBlockEntity.SLOT_CONTAINER, 0, 0, containerSlotSpec))
+        addSlot(PredicateSlot(blockInventory, CannerBlockEntity.SLOT_MATERIAL, 0, 0, materialSlotSpec))
+        addSlot(PredicateSlot(blockInventory, CannerBlockEntity.SLOT_OUTPUT, 0, 0, outputSlotSpec))
+        addSlot(PredicateSlot(blockInventory, CannerBlockEntity.SLOT_DISCHARGING, 0, 0, dischargingSlotSpec))
 
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
             addSlot(
                 PredicateSlot(
                     blockInventory,
                     CannerBlockEntity.SLOT_UPGRADE_INDICES[i],
-                    UpgradeSlotLayout.SLOT_X,
-                    UpgradeSlotLayout.slotY(i),
+                    0,
+                    0,
                     upgradeSlotSpec
                 )
             )
@@ -114,11 +105,11 @@ class CannerScreenHandler(
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, PLAYER_INV_X + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, PLAYER_INV_X + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -206,30 +197,7 @@ class CannerScreenHandler(
         }, true)
 
     companion object {
-        // 对称中轴布局（可用主区宽 170，组件总宽 104，左侧留白 33）
-        const val POWER_SLOT_X = 33
-        const val POWER_SLOT_Y = 56
-        const val LEFT_TANK_X = 55
-        const val LEFT_TANK_Y = 40
-        const val CONTAINER_SLOT_X = 69
-        const val CONTAINER_SLOT_Y = 56
-        const val MATERIAL_SLOT_X = 87
-        const val MATERIAL_SLOT_Y = 56
-        const val OUTPUT_SLOT_X = 105
-        const val OUTPUT_SLOT_Y = 56
-        const val RIGHT_TANK_X = 131
-        const val RIGHT_TANK_Y = 40
-        const val PROGRESS_BAR_X = 69
-        const val PROGRESS_BAR_Y = 84
-        const val PROGRESS_BAR_W = 54
-        const val PROGRESS_BAR_H = 8
-        const val FLUID_BAR_W = 12
-        const val FLUID_BAR_H = 52
         const val SLOT_SIZE = 18
-
-        const val PLAYER_INV_X = 8
-        const val PLAYER_INV_Y = 138    // 机器区与物品栏大幅拉开
-        const val HOTBAR_Y = 196
 
         const val SLOT_CONTAINER_INDEX = 0
         const val SLOT_MATERIAL_INDEX = 1

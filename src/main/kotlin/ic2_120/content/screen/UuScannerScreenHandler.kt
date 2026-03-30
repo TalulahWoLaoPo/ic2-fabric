@@ -48,16 +48,15 @@ class UuScannerScreenHandler(
         checkSize(blockInventory, UuScannerBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
 
-        addSlot(PredicateSlot(blockInventory, UuScannerBlockEntity.SLOT_INPUT, 26, 42, INPUT_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, UuScannerBlockEntity.SLOT_DISCHARGING, 26, 64, BATTERY_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, UuScannerBlockEntity.SLOT_INPUT, 0, 0, INPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, UuScannerBlockEntity.SLOT_DISCHARGING, 0, 0, BATTERY_SLOT_SPEC))
 
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
             addSlot(
                 PredicateSlot(
                     blockInventory,
                     UuScannerBlockEntity.SLOT_UPGRADE_INDICES[i],
-                    UpgradeSlotLayout.SLOT_X,
-                    UpgradeSlotLayout.slotY(i),
+                    0, 0,
                     upgradeSlotSpec
                 )
             )
@@ -65,11 +64,11 @@ class UuScannerScreenHandler(
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, 8 + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -111,6 +110,9 @@ class UuScannerScreenHandler(
         }, true)
 
     companion object {
+        /** 此 Handler 使用的 GUI 尺寸 */
+        private val GUI_SIZE = GuiSize.STANDARD_UPGRADE
+
         private val INPUT_SLOT_SPEC = SlotSpec(
             maxItemCount = 1,
             canInsert = { stack -> !stack.isEmpty && stack.item !is IBatteryItem }
@@ -119,9 +121,6 @@ class UuScannerScreenHandler(
             maxItemCount = 1,
             canInsert = { stack -> stack.item is IBatteryItem }
         )
-
-        const val PLAYER_INV_Y = 108
-        const val HOTBAR_Y = 166
 
         const val SLOT_INPUT_INDEX = 0
         const val SLOT_BATTERY_INDEX = 1

@@ -49,18 +49,17 @@ class MatterGeneratorScreenHandler(
         checkSize(blockInventory, MatterGeneratorBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
 
-        addSlot(PredicateSlot(blockInventory, MatterGeneratorBlockEntity.SLOT_SCRAP, SCRAP_SLOT_X, SCRAP_SLOT_Y, SCRAP_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, MatterGeneratorBlockEntity.SLOT_CONTAINER_INPUT, CONTAINER_INPUT_X, CONTAINER_INPUT_Y, CONTAINER_INPUT_SPEC))
-        addSlot(PredicateSlot(blockInventory, MatterGeneratorBlockEntity.SLOT_CONTAINER_OUTPUT, CONTAINER_OUTPUT_X, CONTAINER_OUTPUT_Y, CONTAINER_OUTPUT_SPEC))
-        addSlot(PredicateSlot(blockInventory, MatterGeneratorBlockEntity.SLOT_DISCHARGING, DISCHARGING_SLOT_X, DISCHARGING_SLOT_Y, DISCHARGING_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, MatterGeneratorBlockEntity.SLOT_SCRAP, 0, 0, SCRAP_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, MatterGeneratorBlockEntity.SLOT_CONTAINER_INPUT, 0, 0, CONTAINER_INPUT_SPEC))
+        addSlot(PredicateSlot(blockInventory, MatterGeneratorBlockEntity.SLOT_CONTAINER_OUTPUT, 0, 0, CONTAINER_OUTPUT_SPEC))
+        addSlot(PredicateSlot(blockInventory, MatterGeneratorBlockEntity.SLOT_DISCHARGING, 0, 0, DISCHARGING_SLOT_SPEC))
 
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
             addSlot(
                 PredicateSlot(
                     blockInventory,
                     MatterGeneratorBlockEntity.SLOT_UPGRADE_INDICES[i],
-                    UpgradeSlotLayout.SLOT_X,
-                    UpgradeSlotLayout.slotY(i),
+                    0, 0,
                     upgradeSlotSpec
                 )
             )
@@ -68,11 +67,11 @@ class MatterGeneratorScreenHandler(
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, PLAYER_INV_X + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, PLAYER_INV_X + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -125,19 +124,10 @@ class MatterGeneratorScreenHandler(
         }, true)
 
     companion object {
-        const val SCRAP_SLOT_X = 56
-        const val SCRAP_SLOT_Y = 26
-        const val CONTAINER_INPUT_X = 56
-        const val CONTAINER_INPUT_Y = 44
-        const val CONTAINER_OUTPUT_X = 116
-        const val CONTAINER_OUTPUT_Y = 35
-        const val DISCHARGING_SLOT_X = 56
-        const val DISCHARGING_SLOT_Y = 62
-        const val SLOT_SIZE = 18
+        /** 此 Handler 使用的 GUI 尺寸 */
+        private val GUI_SIZE = GuiSize.STANDARD_UPGRADE
 
-        const val PLAYER_INV_X = 8
-        const val PLAYER_INV_Y = 108
-        const val HOTBAR_Y = 166
+        const val SLOT_SIZE = 18
 
         private val SCRAP_ITEM_ID = Identifier(Ic2_120.MOD_ID, "scrap")
         private val EMPTY_CELL_ID = Identifier(Ic2_120.MOD_ID, "empty_cell")

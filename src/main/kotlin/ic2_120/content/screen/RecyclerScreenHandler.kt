@@ -44,23 +44,9 @@ class RecyclerScreenHandler(
         checkSize(blockInventory, RecyclerBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
 
-        // 机器槽位
-        // 左上：输入槽
-        addSlot(PredicateSlot(blockInventory, RecyclerBlockEntity.SLOT_INPUT, INPUT_SLOT_X, INPUT_SLOT_Y, INPUT_SLOT_SPEC))
-
-        // 左下：放电槽（放置电池）
-        addSlot(
-            PredicateSlot(
-                blockInventory,
-                RecyclerBlockEntity.SLOT_DISCHARGING,
-                DISCHARGING_SLOT_X,
-                DISCHARGING_SLOT_Y,
-                DISCHARGING_SLOT_SPEC
-            )
-        )
-
-        // 右侧：输出槽
-        addSlot(PredicateSlot(blockInventory, RecyclerBlockEntity.SLOT_OUTPUT, OUTPUT_SLOT_X, OUTPUT_SLOT_Y, OUTPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, RecyclerBlockEntity.SLOT_INPUT, 0, 0, INPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, RecyclerBlockEntity.SLOT_DISCHARGING, 0, 0, DISCHARGING_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, RecyclerBlockEntity.SLOT_OUTPUT, 0, 0, OUTPUT_SLOT_SPEC))
 
         // 最右侧：4 个升级槽
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
@@ -68,8 +54,8 @@ class RecyclerScreenHandler(
                 PredicateSlot(
                     blockInventory,
                     RecyclerBlockEntity.SLOT_UPGRADE_INDICES[i],
-                    UpgradeSlotLayout.SLOT_X,
-                    UpgradeSlotLayout.slotY(i),
+                    0,
+                    0,
                     upgradeSlotSpec
                 )
             )
@@ -78,13 +64,13 @@ class RecyclerScreenHandler(
         // 玩家物品栏
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, PLAYER_INV_X + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
 
         // 快捷栏
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, PLAYER_INV_X + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -145,16 +131,6 @@ class RecyclerScreenHandler(
         }, true)
 
     companion object {
-        // 机器槽位位置
-        const val INPUT_SLOT_X = 56
-        const val INPUT_SLOT_Y = 35
-
-        const val DISCHARGING_SLOT_X = 56
-        const val DISCHARGING_SLOT_Y = 59
-
-        const val OUTPUT_SLOT_X = 116
-        const val OUTPUT_SLOT_Y = 47
-
         const val SLOT_SIZE = 18
 
         private val INPUT_SLOT_SPEC = SlotSpec(
@@ -168,11 +144,6 @@ class RecyclerScreenHandler(
             canInsert = { false },
             canTake = { true }
         )
-
-        // 玩家物品栏位置
-        const val PLAYER_INV_X = 8
-        const val PLAYER_INV_Y = 108
-        const val HOTBAR_Y = 166
 
         // 槽位索引
         const val SLOT_INPUT_INDEX = 0

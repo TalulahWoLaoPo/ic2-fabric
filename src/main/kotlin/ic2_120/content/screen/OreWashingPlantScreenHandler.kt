@@ -47,34 +47,13 @@ class OreWashingPlantScreenHandler(
         checkSize(blockInventory, OreWashingPlantBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
 
-        // 矿石输入槽
-        addSlot(PredicateSlot(blockInventory, OreWashingPlantBlockEntity.SLOT_INPUT_ORE,
-            INPUT_ORE_SLOT_X, INPUT_ORE_SLOT_Y, INPUT_ORE_SLOT_SPEC))
-
-        // 水输入槽
-        addSlot(PredicateSlot(blockInventory, OreWashingPlantBlockEntity.SLOT_INPUT_WATER,
-            INPUT_WATER_SLOT_X, INPUT_WATER_SLOT_Y, INPUT_WATER_SLOT_SPEC))
-
-        // 三个输出槽（垂直排列）
-        addSlot(PredicateSlot(blockInventory, OreWashingPlantBlockEntity.SLOT_OUTPUT_1,
-            OUTPUT_SLOT_X, OUTPUT_SLOT_Y_1, OUTPUT_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, OreWashingPlantBlockEntity.SLOT_OUTPUT_2,
-            OUTPUT_SLOT_X, OUTPUT_SLOT_Y_2, OUTPUT_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, OreWashingPlantBlockEntity.SLOT_OUTPUT_3,
-            OUTPUT_SLOT_X, OUTPUT_SLOT_Y_3, OUTPUT_SLOT_SPEC))
-
-        // 空容器输出槽
-        addSlot(PredicateSlot(blockInventory, OreWashingPlantBlockEntity.SLOT_OUTPUT_EMPTY,
-            EMPTY_OUTPUT_SLOT_X, EMPTY_OUTPUT_SLOT_Y, EMPTY_OUTPUT_SLOT_SPEC))
-
-        // 放电槽（电池）
-        addSlot(PredicateSlot(
-            blockInventory,
-            OreWashingPlantBlockEntity.SLOT_DISCHARGING,
-            DISCHARGING_SLOT_X,
-            DISCHARGING_SLOT_Y,
-            DISCHARGING_SLOT_SPEC
-        ))
+        addSlot(PredicateSlot(blockInventory, OreWashingPlantBlockEntity.SLOT_INPUT_ORE, 0, 0, INPUT_ORE_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, OreWashingPlantBlockEntity.SLOT_INPUT_WATER, 0, 0, INPUT_WATER_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, OreWashingPlantBlockEntity.SLOT_OUTPUT_1, 0, 0, OUTPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, OreWashingPlantBlockEntity.SLOT_OUTPUT_2, 0, 0, OUTPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, OreWashingPlantBlockEntity.SLOT_OUTPUT_3, 0, 0, OUTPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, OreWashingPlantBlockEntity.SLOT_OUTPUT_EMPTY, 0, 0, EMPTY_OUTPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, OreWashingPlantBlockEntity.SLOT_DISCHARGING, 0, 0, DISCHARGING_SLOT_SPEC))
 
         // 4 个升级槽
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
@@ -82,8 +61,8 @@ class OreWashingPlantScreenHandler(
                 PredicateSlot(
                     blockInventory,
                     OreWashingPlantBlockEntity.SLOT_UPGRADE_INDICES[i],
-                    UpgradeSlotLayout.SLOT_X,
-                    UpgradeSlotLayout.slotY(i),
+                    0,
+                    0,
                     upgradeSlotSpec
                 )
             )
@@ -92,13 +71,13 @@ class OreWashingPlantScreenHandler(
         // 玩家物品栏
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, PLAYER_INV_X + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
 
         // 快捷栏
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, PLAYER_INV_X + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -156,25 +135,7 @@ class OreWashingPlantScreenHandler(
         }, true)
 
     companion object {
-        // 槽位位置
-        const val INPUT_ORE_SLOT_X = 56
-        const val INPUT_ORE_SLOT_Y = 35
-        const val INPUT_WATER_SLOT_X = 56
-        const val INPUT_WATER_SLOT_Y = 53
-        const val OUTPUT_SLOT_X = 116
-        const val OUTPUT_SLOT_Y_1 = 17   // 纯净的粉碎矿石
-        const val OUTPUT_SLOT_Y_2 = 35   // 石粉
-        const val OUTPUT_SLOT_Y_3 = 53   // 小撮金属粉
-        const val EMPTY_OUTPUT_SLOT_X = 56
-        const val EMPTY_OUTPUT_SLOT_Y = 71
-        const val DISCHARGING_SLOT_X = 116
-        const val DISCHARGING_SLOT_Y = 71
         const val SLOT_SIZE = 18
-
-        // 玩家物品栏
-        const val PLAYER_INV_X = 8
-        const val PLAYER_INV_Y = 108
-        const val HOTBAR_Y = 166
 
         // 槽位规则
         private val INPUT_ORE_SLOT_SPEC = SlotSpec(

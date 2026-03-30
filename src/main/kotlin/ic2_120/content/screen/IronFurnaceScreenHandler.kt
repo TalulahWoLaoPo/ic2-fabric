@@ -40,19 +40,18 @@ class IronFurnaceScreenHandler(
         checkSize(blockInventory, 3)
         addProperties(propertyDelegate)
 
-        // 机器槽位
-        addSlot(PredicateSlot(blockInventory, IronFurnaceBlockEntity.SLOT_INPUT, INPUT_SLOT_X, INPUT_SLOT_Y, INPUT_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, IronFurnaceBlockEntity.SLOT_FUEL, FUEL_SLOT_X, FUEL_SLOT_Y, FUEL_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, IronFurnaceBlockEntity.SLOT_OUTPUT, OUTPUT_SLOT_X, OUTPUT_SLOT_Y, OUTPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, IronFurnaceBlockEntity.SLOT_INPUT, 0, 0, INPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, IronFurnaceBlockEntity.SLOT_FUEL, 0, 0, FUEL_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, IronFurnaceBlockEntity.SLOT_OUTPUT, 0, 0, OUTPUT_SLOT_SPEC))
 
         // 玩家物品栏
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, 8 + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -111,14 +110,7 @@ class IronFurnaceScreenHandler(
         }, true)
 
     companion object {
-        const val INPUT_SLOT_X = 56
-        const val INPUT_SLOT_Y = 17
-        const val FUEL_SLOT_X = 56
-        const val FUEL_SLOT_Y = 53
-        const val OUTPUT_SLOT_X = 116
-        const val OUTPUT_SLOT_Y = 35
-        const val PLAYER_INV_Y = 84
-        const val HOTBAR_Y = 142
+        const val PLAYER_INV_START = 3
         const val SLOT_SIZE = 18
 
         private val INPUT_SLOT_SPEC = SlotSpec(

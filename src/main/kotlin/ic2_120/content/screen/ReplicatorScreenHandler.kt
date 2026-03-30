@@ -55,18 +55,18 @@ class ReplicatorScreenHandler(
         checkSize(blockInventory, ReplicatorBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
 
-        addSlot(PredicateSlot(blockInventory, ReplicatorBlockEntity.SLOT_OUTPUT, 26, 42, OUTPUT_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, ReplicatorBlockEntity.SLOT_CONTAINER_INPUT, 56, 26, CONTAINER_INPUT_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, ReplicatorBlockEntity.SLOT_CONTAINER_OUTPUT, 116, 26, CONTAINER_OUTPUT_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, ReplicatorBlockEntity.SLOT_DISCHARGING, 26, 64, BATTERY_SLOT_SPEC))
+        // All slot coordinates are anchored by the client screen at render time.
+        addSlot(PredicateSlot(blockInventory, ReplicatorBlockEntity.SLOT_OUTPUT, 0, 0, OUTPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, ReplicatorBlockEntity.SLOT_CONTAINER_INPUT, 0, 0, CONTAINER_INPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, ReplicatorBlockEntity.SLOT_CONTAINER_OUTPUT, 0, 0, CONTAINER_OUTPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, ReplicatorBlockEntity.SLOT_DISCHARGING, 0, 0, BATTERY_SLOT_SPEC))
 
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
             addSlot(
                 PredicateSlot(
                     blockInventory,
                     ReplicatorBlockEntity.SLOT_UPGRADE_INDICES[i],
-                    UpgradeSlotLayout.SLOT_X,
-                    UpgradeSlotLayout.slotY(i),
+                    0, 0,
                     upgradeSlotSpec
                 )
             )
@@ -74,11 +74,11 @@ class ReplicatorScreenHandler(
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, 8 + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -150,9 +150,6 @@ class ReplicatorScreenHandler(
             canInsert = { false },
             canTake = { true }
         )
-
-        const val PLAYER_INV_Y = 108
-        const val HOTBAR_Y = 166
 
         const val SLOT_OUTPUT_INDEX = 0
         const val SLOT_CONTAINER_INPUT_INDEX = 1

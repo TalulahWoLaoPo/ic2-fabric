@@ -49,9 +49,9 @@ class WaterGeneratorScreenHandler(
         checkSize(blockInventory, WaterGeneratorBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
 
-        addSlot(PredicateSlot(blockInventory, WaterGeneratorBlockEntity.FUEL_SLOT, FUEL_SLOT_X, BLOCK_SLOTS_Y, FUEL_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, WaterGeneratorBlockEntity.EMPTY_CONTAINER_SLOT, EMPTY_CONTAINER_SLOT_X, BLOCK_SLOTS_Y, EMPTY_CONTAINER_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, WaterGeneratorBlockEntity.BATTERY_SLOT, BATTERY_SLOT_X, BLOCK_SLOTS_Y, BATTERY_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, WaterGeneratorBlockEntity.FUEL_SLOT, 0, 0, FUEL_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, WaterGeneratorBlockEntity.EMPTY_CONTAINER_SLOT, 0, 0, EMPTY_CONTAINER_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, WaterGeneratorBlockEntity.BATTERY_SLOT, 0, 0, BATTERY_SLOT_SPEC))
 
         // 4 个升级槽
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
@@ -59,8 +59,8 @@ class WaterGeneratorScreenHandler(
                 PredicateSlot(
                     blockInventory,
                     WaterGeneratorBlockEntity.SLOT_UPGRADE_INDICES[i],
-                    UpgradeSlotLayout.SLOT_X,
-                    UpgradeSlotLayout.slotY(i),
+                    0,
+                    0,
                     upgradeSlotSpec
                 )
             )
@@ -68,11 +68,11 @@ class WaterGeneratorScreenHandler(
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, 8 + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -121,12 +121,6 @@ class WaterGeneratorScreenHandler(
         }, true)
 
     companion object {
-        const val FUEL_SLOT_X = 56
-        const val EMPTY_CONTAINER_SLOT_X = 86
-        const val BATTERY_SLOT_X = 116
-        const val BLOCK_SLOTS_Y = 54
-        const val PLAYER_INV_Y = 108
-        const val HOTBAR_Y = 166
         const val SLOT_SIZE = 18
         private val FUEL_SLOT_SPEC = SlotSpec(
             maxItemCount = 64,

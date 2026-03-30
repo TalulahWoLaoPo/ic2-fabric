@@ -49,27 +49,18 @@ class FluidBottlerScreenHandler(
         checkSize(blockInventory, FluidBottlerBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
 
-        addSlot(PredicateSlot(blockInventory, FluidBottlerBlockEntity.SLOT_INPUT_FILLED,
-            INPUT_FILLED_SLOT_X, INPUT_FILLED_SLOT_Y, INPUT_FILLED_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, FluidBottlerBlockEntity.SLOT_INPUT_EMPTY,
-            INPUT_EMPTY_SLOT_X, INPUT_EMPTY_SLOT_Y, INPUT_EMPTY_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, FluidBottlerBlockEntity.SLOT_OUTPUT,
-            OUTPUT_SLOT_X, OUTPUT_SLOT_Y, OUTPUT_SLOT_SPEC))
-        addSlot(PredicateSlot(
-            blockInventory,
-            FluidBottlerBlockEntity.SLOT_DISCHARGING,
-            DISCHARGING_SLOT_X,
-            DISCHARGING_SLOT_Y,
-            DISCHARGING_SLOT_SPEC
-        ))
+        addSlot(PredicateSlot(blockInventory, FluidBottlerBlockEntity.SLOT_INPUT_FILLED, 0, 0, INPUT_FILLED_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, FluidBottlerBlockEntity.SLOT_INPUT_EMPTY, 0, 0, INPUT_EMPTY_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, FluidBottlerBlockEntity.SLOT_OUTPUT, 0, 0, OUTPUT_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, FluidBottlerBlockEntity.SLOT_DISCHARGING, 0, 0, DISCHARGING_SLOT_SPEC))
 
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
             addSlot(
                 PredicateSlot(
                     blockInventory,
                     FluidBottlerBlockEntity.SLOT_UPGRADE_INDICES[i],
-                    UpgradeSlotLayout.SLOT_X,
-                    UpgradeSlotLayout.slotY(i),
+                    0,
+                    0,
                     upgradeSlotSpec
                 )
             )
@@ -77,11 +68,11 @@ class FluidBottlerScreenHandler(
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, PLAYER_INV_X + col * 18, PLAYER_INV_Y + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, PLAYER_INV_X + col * 18, HOTBAR_Y))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -139,19 +130,7 @@ class FluidBottlerScreenHandler(
         }, true)
 
     companion object {
-        const val INPUT_FILLED_SLOT_X = 56
-        const val INPUT_FILLED_SLOT_Y = 26
-        const val INPUT_EMPTY_SLOT_X = 56
-        const val INPUT_EMPTY_SLOT_Y = 44
-        const val OUTPUT_SLOT_X = 116
-        const val OUTPUT_SLOT_Y = 35
-        const val DISCHARGING_SLOT_X = 56
-        const val DISCHARGING_SLOT_Y = 62
         const val SLOT_SIZE = 18
-
-        const val PLAYER_INV_X = 8
-        const val PLAYER_INV_Y = 108
-        const val HOTBAR_Y = 166
 
         private val INPUT_FILLED_SLOT_SPEC = SlotSpec(
             canInsert = { stack ->

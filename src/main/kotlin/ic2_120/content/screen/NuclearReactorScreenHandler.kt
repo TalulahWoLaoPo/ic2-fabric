@@ -35,6 +35,8 @@ import ic2_120.registry.annotation.ScreenFactory
  * 核反应堆 ScreenHandler。
  * 槽位数量根据打开时的容量动态确定（27–81），竖排：3 列→9 列，每列 9 行。
  * 若在打开界面时添加/移除反应仓，需关闭重开以刷新槽位数量。
+ *
+ * 玩家栏纵坐标由格网与 [GRID_ROWS] 推导（[playerInvY] / [hotbarY]），不套用 [GuiSize] 固定分档。
  */
 @ModScreenHandler(block = NuclearReactorBlock::class)
 class NuclearReactorScreenHandler(
@@ -85,18 +87,22 @@ class NuclearReactorScreenHandler(
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, PLAYER_INV_X + col * 18, playerInvY + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, PLAYER_INV_X + col * 18, hotbarY))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
     /** 流体槽起始索引（仅热模式时有） */
     private val fluidSlotStart: Int get() = reactorSlotCount
     private val fluidSlotEnd: Int get() = if (isThermalMode) reactorSlotCount + 4 else reactorSlotCount
-    private val playerInvStart: Int get() = fluidSlotEnd
+
+    /** 玩家主背包首槽在 [slots] 中的索引（客户端 Compose 锚点与 quickMove 共用） */
+    val playerInventorySlotStart: Int get() = fluidSlotEnd
+
+    private val playerInvStart: Int get() = playerInventorySlotStart
 
     override fun quickMove(player: PlayerEntity, index: Int): ItemStack {
         var stack = ItemStack.EMPTY

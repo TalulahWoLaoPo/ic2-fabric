@@ -45,15 +45,15 @@ class SolidHeatGeneratorScreenHandler(
     init {
         checkSize(blockInventory, 1)
         addProperties(propertyDelegate)
-        addSlot(PredicateSlot(blockInventory, 0, 80, 54, FUEL_SLOT_SPEC))
+        addSlot(PredicateSlot(blockInventory, 0, 0, 0, FUEL_SLOT_SPEC))
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 84 + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, 8 + col * 18, 142))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
@@ -84,6 +84,7 @@ class SolidHeatGeneratorScreenHandler(
         }, true)
 
     companion object {
+        const val PLAYER_INV_START = 1
         private val FUEL_SLOT_SPEC = SlotSpec(canInsert = { stack ->
             !stack.isEmpty && (FuelRegistry.INSTANCE.get(stack.item) ?: 0) > 0
         })

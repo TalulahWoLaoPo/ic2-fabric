@@ -45,14 +45,14 @@ class ChunkLoaderScreenHandler(
     init {
         checkSize(blockInventory, ChunkLoaderBlockEntity.INVENTORY_SIZE)
         addProperties(propertyDelegate)
-        addSlot(PredicateSlot(blockInventory, ChunkLoaderBlockEntity.SLOT_DISCHARGING, 80, 35, dischargingSlotSpec))
+        addSlot(PredicateSlot(blockInventory, ChunkLoaderBlockEntity.SLOT_DISCHARGING, 0, 0, dischargingSlotSpec))
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 84 + row * 18))
+                addSlot(Slot(playerInventory, col + row * 9 + 9, 0, 0))
             }
         }
         for (col in 0 until 9) {
-            addSlot(Slot(playerInventory, col, 8 + col * 18, 142))
+            addSlot(Slot(playerInventory, col, 0, 0))
         }
     }
 
