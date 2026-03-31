@@ -47,6 +47,7 @@ import net.fabricmc.api.Environment
 import net.minecraft.client.item.TooltipContext
 import net.minecraft.util.Formatting
 import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
+import net.minecraft.data.server.recipe.ShapelessRecipeJsonBuilder
 import net.minecraft.data.server.recipe.RecipeJsonProvider
 import net.minecraft.recipe.book.RecipeCategory
 import java.util.function.Consumer
@@ -55,6 +56,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditio
 import ic2_120.registry.annotation.RecipeProvider
 import ic2_120.registry.instance
 import ic2_120.registry.id
+import ic2_120.registry.recipeId
 import org.slf4j.LoggerFactory
 
 /** 通用流体单元 NBT 键：存储 FluidVariant */
@@ -244,6 +246,18 @@ class FluidCellItem : Item(FabricItemSettings()), FluidModificationItem {
             return Text.translatable("item.ic2_120.fluid_cell.filled", Text.translatable(fluidName))
         }
         return super.getName(stack)
+    }
+
+    override fun appendTooltip(
+        stack: ItemStack,
+        world: World?,
+        tooltip: MutableList<Text>,
+        context: TooltipContext
+    ) {
+        super.appendTooltip(stack, world, tooltip, context)
+        if (stack.isFluidCellEmpty()) {
+            tooltip.add(Text.translatable("tooltip.ic2_120.fluid_cell.empty_hint").formatted(Formatting.GRAY))
+        }
     }
 }
 
@@ -448,6 +462,31 @@ abstract class ModFluidCell(settings: FabricItemSettings) : Item(settings), Flui
 
 @ModItem(name = "empty_cell", tab = CreativeTab.IC2_MATERIALS, group = "cells")
 class EmptyCell : EmptyCellItem(FabricItemSettings()) {
+    companion object {
+        @RecipeProvider
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val tin = TinCasing::class.instance()
+            if (tin != Items.AIR) {
+                ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, EmptyCell::class.instance(), 1)
+                    .pattern(" T ")
+                    .pattern("TGT")
+                    .pattern(" T ")
+                    .input('T', tin)
+                    .input('G', Items.GLASS_PANE)
+                    .criterion(hasItem(tin), conditionsFromItem(tin))
+                    .offerTo(exporter, EmptyCell::class.id())
+            }
+
+            val fluidCell = FluidCellItem::class.instance()
+            if (fluidCell != Items.AIR) {
+                ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, EmptyCell::class.instance(), 1)
+                    .input(fluidCell)
+                    .criterion(hasItem(fluidCell), conditionsFromItem(fluidCell))
+                    .offerTo(exporter, EmptyCell::class.recipeId("from_fluid_cell"))
+            }
+        }
+    }
+
     override fun mapBucketToFilledCell(bucketStack: ItemStack): ItemStack? {
         // 优先映射到本模组流体单元
         return when (bucketStack.item) {
@@ -587,7 +626,8 @@ class CfPowder : Item(FabricItemSettings()){
     }
 }
 
-@ModItem(name = "pellet", tab = CreativeTab.IC2_MATERIALS, group = "construction_foam")
+//todo 暂时不注册
+// @ModItem(name = "pellet", tab = CreativeTab.IC2_MATERIALS, group = "construction_foam")
 class Pellet : Item(FabricItemSettings())
 
 /**

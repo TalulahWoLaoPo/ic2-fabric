@@ -1,23 +1,36 @@
 package ic2_120.content.item.armor
 
 import ic2_120.Ic2_120
+import ic2_120.content.block.ReinforcedGlassBlock
+import ic2_120.content.item.AdvancedCircuit
+import ic2_120.content.item.HazmatHelmet
+import ic2_120.content.item.IridiumPlate
 import ic2_120.content.item.ModArmorMaterials
+import ic2_120.content.item.energy.LapotronCrystalItem
+import ic2_120.content.recipes.crafting.BatteryEnergyShapedRecipeDatagen
 import ic2_120.registry.CreativeTab
-import ic2_120.registry.type
 import ic2_120.registry.annotation.ModItem
+import ic2_120.registry.annotation.RecipeProvider
+import ic2_120.registry.id
+import ic2_120.registry.instance
+import ic2_120.registry.item
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.data.server.recipe.RecipeJsonProvider
 import net.minecraft.item.ArmorItem
+import net.minecraft.item.Item
+import net.minecraft.item.Items
 import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.minecraft.world.World
+import java.util.function.Consumer
 
 /**
  * 量子头盔 (Quantum Helmet)
@@ -61,6 +74,32 @@ class QuantumHelmet : QuantumArmorItem(ModArmorMaterials.QUANTUM_ARMOR, ArmorIte
             val enabled = !nbt.getBoolean(NIGHT_VISION_KEY)
             nbt.putBoolean(NIGHT_VISION_KEY, enabled)
             return enabled
+        }
+
+        @RecipeProvider
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val glass = ReinforcedGlassBlock::class.item()
+            val nano = NanoHelmet::class.instance()
+            val adv = AdvancedCircuit::class.instance()
+            val lapotron = LapotronCrystalItem::class.instance()
+            val iridium = IridiumPlate::class.instance()
+            val hazmat = HazmatHelmet::class.instance()
+            if (glass == Items.AIR || nano == Items.AIR || adv == Items.AIR || lapotron == Items.AIR || iridium == Items.AIR || hazmat == Items.AIR) return
+            BatteryEnergyShapedRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = QuantumHelmet::class.id(),
+                result = QuantumHelmet::class.instance(),
+                pattern = listOf("GNG", "RLR", "AHA"),
+                keys = mapOf<Char, Item>(
+                    'G' to glass,
+                    'N' to nano,
+                    'R' to adv,
+                    'L' to lapotron,
+                    'A' to iridium,
+                    'H' to hazmat
+                ),
+                category = "equipment"
+            )
         }
     }
 

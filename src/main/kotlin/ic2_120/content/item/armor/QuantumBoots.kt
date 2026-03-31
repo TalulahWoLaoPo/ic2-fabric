@@ -1,15 +1,25 @@
 package ic2_120.content.item.armor
 
+import ic2_120.content.item.IridiumPlate
 import ic2_120.content.item.ModArmorMaterials
+import ic2_120.content.item.RubberBoots
+import ic2_120.content.item.energy.LapotronCrystalItem
+import ic2_120.content.recipes.crafting.BatteryEnergyShapedRecipeDatagen
 import ic2_120.registry.CreativeTab
-import ic2_120.registry.type
 import ic2_120.registry.annotation.ModItem
+import ic2_120.registry.annotation.RecipeProvider
+import ic2_120.registry.id
+import ic2_120.registry.instance
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
+import net.minecraft.data.server.recipe.RecipeJsonProvider
 import net.minecraft.item.ArmorItem
+import net.minecraft.item.Item
+import net.minecraft.item.Items
 import net.minecraft.item.ItemStack
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import java.util.function.Consumer
 
 /**
  * 量子靴子 (Quantum Boots)
@@ -33,6 +43,30 @@ import net.minecraft.util.Formatting
  */
 @ModItem(name = "quantum_boots", tab = CreativeTab.IC2_MATERIALS, group = "quantum_armor")
 class QuantumBoots : QuantumArmorItem(ModArmorMaterials.QUANTUM_ARMOR, ArmorItem.Type.BOOTS, FabricItemSettings().maxCount(1)) {
+
+    companion object {
+        @RecipeProvider
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val iridium = IridiumPlate::class.instance()
+            val nano = NanoBoots::class.instance()
+            val rubber = RubberBoots::class.instance()
+            val lapotron = LapotronCrystalItem::class.instance()
+            if (iridium == Items.AIR || nano == Items.AIR || rubber == Items.AIR || lapotron == Items.AIR) return
+            BatteryEnergyShapedRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = QuantumBoots::class.id(),
+                result = QuantumBoots::class.instance(),
+                pattern = listOf("   ", "INI", "RLR"),
+                keys = mapOf<Char, Item>(
+                    'I' to iridium,
+                    'N' to nano,
+                    'R' to rubber,
+                    'L' to lapotron
+                ),
+                category = "equipment"
+            )
+        }
+    }
 
     override fun appendTooltip(stack: ItemStack, world: net.minecraft.world.World?, tooltip: MutableList<Text>, context: net.minecraft.client.item.TooltipContext) {
         super.appendTooltip(stack, world, tooltip, context)

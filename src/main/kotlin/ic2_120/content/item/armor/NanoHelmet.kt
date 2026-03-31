@@ -1,21 +1,31 @@
 package ic2_120.content.item.armor
 
 import ic2_120.Ic2_120
+import ic2_120.content.item.CarbonPlate
 import ic2_120.content.item.ModArmorMaterials
+import ic2_120.content.item.NightVisionGoggles
+import ic2_120.content.item.energy.EnergyCrystalItem
+import ic2_120.content.recipes.crafting.BatteryEnergyShapedRecipeDatagen
 import ic2_120.registry.CreativeTab
-import ic2_120.registry.type
 import ic2_120.registry.annotation.ModItem
+import ic2_120.registry.annotation.RecipeProvider
+import ic2_120.registry.id
+import ic2_120.registry.instance
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.data.server.recipe.RecipeJsonProvider
 import net.minecraft.item.ArmorItem
+import net.minecraft.item.Item
+import net.minecraft.item.Items
 import net.minecraft.item.ItemStack
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.world.World
+import java.util.function.Consumer
 
 /**
  * 纳米头盔 (Nano Helmet)
@@ -53,6 +63,26 @@ class NanoHelmet : NanoArmorItem(ModArmorMaterials.NANO_ARMOR, ArmorItem.Type.HE
             val enabled = !nbt.getBoolean(NIGHT_VISION_KEY)
             nbt.putBoolean(NIGHT_VISION_KEY, enabled)
             return enabled
+        }
+
+        @RecipeProvider
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val plate = CarbonPlate::class.instance()
+            val crystal = EnergyCrystalItem::class.instance()
+            val goggles = NightVisionGoggles::class.instance()
+            if (plate == Items.AIR || crystal == Items.AIR || goggles == Items.AIR) return
+            BatteryEnergyShapedRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = NanoHelmet::class.id(),
+                result = NanoHelmet::class.instance(),
+                pattern = listOf("CEC", "CNC", "   "),
+                keys = mapOf<Char, Item>(
+                    'C' to plate,
+                    'E' to crystal,
+                    'N' to goggles
+                ),
+                category = "equipment"
+            )
         }
     }
 

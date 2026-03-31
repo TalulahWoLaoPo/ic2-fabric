@@ -187,8 +187,9 @@ class SteelIngot : Item(FabricItemSettings()) {
     }
 }
 
+//已删除
 /** 精炼铁锭 */
-@ModItem(name = "refined_iron_ingot", tab = CreativeTab.IC2_MATERIALS, group = "ingots", materialTags = ["ingots/refined_iron"])
+// @ModItem(name = "refined_iron_ingot", tab = CreativeTab.IC2_MATERIALS, group = "ingots", materialTags = ["ingots/refined_iron"])
 class RefinedIronIngot : Item(FabricItemSettings())
 
 /** 铀锭 */
@@ -240,16 +241,17 @@ class UraniumIngot : Item(FabricItemSettings()) {
 
 // ========== 粗金属（raw，冶炼粗矿得） ==========
 
+//todo 暂时不注册
 /** 粗铅 */
-@ModItem(name = "raw_lead", tab = CreativeTab.IC2_MATERIALS, group = "raw_metals", materialTags = ["raw_materials/lead"])
+// @ModItem(name = "raw_lead", tab = CreativeTab.IC2_MATERIALS, group = "raw_metals", materialTags = ["raw_materials/lead"])
 class RawLead : Item(FabricItemSettings())
 
 /** 粗锡 */
-@ModItem(name = "raw_tin", tab = CreativeTab.IC2_MATERIALS, group = "raw_metals", materialTags = ["raw_materials/tin"])
+// @ModItem(name = "raw_tin", tab = CreativeTab.IC2_MATERIALS, group = "raw_metals", materialTags = ["raw_materials/tin"])
 class RawTin : Item(FabricItemSettings())
 
 /** 粗铀 */
-@ModItem(name = "raw_uranium", tab = CreativeTab.IC2_MATERIALS, group = "raw_metals", materialTags = ["raw_materials/uranium"])
+// @ModItem(name = "raw_uranium", tab = CreativeTab.IC2_MATERIALS, group = "raw_metals", materialTags = ["raw_materials/uranium"])
 class RawUranium : Item(FabricItemSettings())
 
 // ========== 粉碎矿石（打粉机产物） ==========

@@ -1,15 +1,26 @@
 package ic2_120.content.item.armor
 
+import ic2_120.content.item.Alloy
+import ic2_120.content.item.ElectricJetpack
+import ic2_120.content.item.IridiumPlate
 import ic2_120.content.item.ModArmorMaterials
+import ic2_120.content.item.energy.LapotronCrystalItem
+import ic2_120.content.recipes.crafting.BatteryEnergyShapedRecipeDatagen
 import ic2_120.registry.CreativeTab
-import ic2_120.registry.type
 import ic2_120.registry.annotation.ModItem
+import ic2_120.registry.annotation.RecipeProvider
+import ic2_120.registry.id
+import ic2_120.registry.instance
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
+import net.minecraft.data.server.recipe.RecipeJsonProvider
 import net.minecraft.item.ArmorItem
+import net.minecraft.item.Item
+import net.minecraft.item.Items
 import net.minecraft.item.ItemStack
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import java.util.function.Consumer
 
 /**
  * 量子胸甲 (Quantum Chestplate)
@@ -49,6 +60,30 @@ class QuantumChestplate : QuantumArmorItem(ModArmorMaterials.QUANTUM_ARMOR, Armo
 
         fun isFlightEnabled(stack: ItemStack): Boolean =
             stack.orCreateNbt.getBoolean(FLIGHT_KEY)
+
+        @RecipeProvider
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val alloy = Alloy::class.instance()
+            val nano = NanoChestplate::class.instance()
+            val iridium = IridiumPlate::class.instance()
+            val lapotron = LapotronCrystalItem::class.instance()
+            val jetpack = ElectricJetpack::class.instance()
+            if (alloy == Items.AIR || nano == Items.AIR || iridium == Items.AIR || lapotron == Items.AIR || jetpack == Items.AIR) return
+            BatteryEnergyShapedRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = QuantumChestplate::class.id(),
+                result = QuantumChestplate::class.instance(),
+                pattern = listOf("ANA", "ILI", "IJI"),
+                keys = mapOf<Char, Item>(
+                    'A' to alloy,
+                    'N' to nano,
+                    'I' to iridium,
+                    'L' to lapotron,
+                    'J' to jetpack
+                ),
+                category = "equipment"
+            )
+        }
     }
 
     override fun appendTooltip(stack: ItemStack, world: net.minecraft.world.World?, tooltip: MutableList<Text>, context: net.minecraft.client.item.TooltipContext) {

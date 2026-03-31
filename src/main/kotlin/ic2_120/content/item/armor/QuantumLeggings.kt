@@ -1,15 +1,26 @@
 package ic2_120.content.item.armor
 
+import ic2_120.content.block.MachineCasingBlock
+import ic2_120.content.item.IridiumPlate
 import ic2_120.content.item.ModArmorMaterials
+import ic2_120.content.item.energy.LapotronCrystalItem
+import ic2_120.content.recipes.crafting.BatteryEnergyShapedRecipeDatagen
 import ic2_120.registry.CreativeTab
-import ic2_120.registry.type
 import ic2_120.registry.annotation.ModItem
+import ic2_120.registry.annotation.RecipeProvider
+import ic2_120.registry.id
+import ic2_120.registry.instance
+import ic2_120.registry.item
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
+import net.minecraft.data.server.recipe.RecipeJsonProvider
 import net.minecraft.item.ArmorItem
+import net.minecraft.item.Item
+import net.minecraft.item.Items
 import net.minecraft.item.ItemStack
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import java.util.function.Consumer
 
 /**
  * 量子护腿 (Quantum Leggings)
@@ -34,6 +45,31 @@ import net.minecraft.util.Formatting
  */
 @ModItem(name = "quantum_leggings", tab = CreativeTab.IC2_MATERIALS, group = "quantum_armor")
 class QuantumLeggings : QuantumArmorItem(ModArmorMaterials.QUANTUM_ARMOR, ArmorItem.Type.LEGGINGS, FabricItemSettings().maxCount(1)) {
+
+    companion object {
+        @RecipeProvider
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val casing = MachineCasingBlock::class.item()
+            val lapotron = LapotronCrystalItem::class.instance()
+            val iridium = IridiumPlate::class.instance()
+            val nano = NanoLeggings::class.instance()
+            if (casing == Items.AIR || lapotron == Items.AIR || iridium == Items.AIR || nano == Items.AIR) return
+            BatteryEnergyShapedRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = QuantumLeggings::class.id(),
+                result = QuantumLeggings::class.instance(),
+                pattern = listOf("MLM", "INI", "G G"),
+                keys = mapOf<Char, Item>(
+                    'M' to casing,
+                    'L' to lapotron,
+                    'I' to iridium,
+                    'N' to nano,
+                    'G' to Items.GLOWSTONE_DUST
+                ),
+                category = "equipment"
+            )
+        }
+    }
 
     override fun appendTooltip(stack: ItemStack, world: net.minecraft.world.World?, tooltip: MutableList<Text>, context: net.minecraft.client.item.TooltipContext) {
         super.appendTooltip(stack, world, tooltip, context)

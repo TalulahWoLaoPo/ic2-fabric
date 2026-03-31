@@ -258,7 +258,27 @@ class ReactorHeatPlatingItem : AbstractReactorComponent(FabricItemSettings()) {
 }
 
 @ModItem(name = "containment_reactor_plating", tab = CreativeTab.IC2_MATERIALS, group = "reactor")
-class ContainmentReactorPlatingItem : Item(FabricItemSettings())
+class ContainmentReactorPlatingItem : Item(FabricItemSettings()) {
+    companion object {
+        @RecipeProvider
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val plating = ReactorPlatingItem::class.instance()
+            val alloy = Alloy::class.instance()
+            if (plating == Items.AIR || alloy == Items.AIR) return
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, ContainmentReactorPlatingItem::class.instance(), 1)
+                .pattern("   ")
+                .pattern("   ")
+                .pattern("PAA")
+                .input('P', plating)
+                .input('A', alloy)
+                .criterion(
+                    FabricRecipeProvider.hasItem(plating),
+                    FabricRecipeProvider.conditionsFromItem(plating)
+                )
+                .offerTo(exporter)
+        }
+    }
+}
 
 @ModItem(name = "neutron_reflector", tab = CreativeTab.IC2_MATERIALS, group = "reactor")
 class NeutronReflectorItem : AbstractFiniteNeutronReflectorItem(FabricItemSettings(), 30_000) {
@@ -422,5 +442,6 @@ class LithiumFuelRodItem : Item(FabricItemSettings())
 @ModItem(name = "depleted_isotope_fuel_rod", tab = CreativeTab.IC2_MATERIALS, group = "reactor")
 class DepletedIsotopeFuelRodItem : Item(FabricItemSettings())
 
-@ModItem(name = "heatpack", tab = CreativeTab.IC2_MATERIALS, group = "reactor")
+//已删除
+// @ModItem(name = "heatpack", tab = CreativeTab.IC2_MATERIALS, group = "reactor")
 class HeatpackItem : Item(FabricItemSettings())

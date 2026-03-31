@@ -48,6 +48,7 @@ import net.minecraft.item.ShovelItem
 import net.minecraft.item.SwordItem
 import net.minecraft.item.ToolMaterial
 import net.minecraft.recipe.Ingredient
+import net.minecraft.registry.tag.ItemTags
 import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
@@ -262,17 +263,32 @@ class WeedingSpade : Item(FabricItemSettings().maxDamage(120)) {
 @ModItem(name = "debug_item", tab = CreativeTab.IC2_TOOLS, group = "tools")
 class DebugItem : Item(FabricItemSettings().maxCount(1))
 
+//已删除
 /** 工具箱 - 存储工具 */
-@ModItem(name = "tool_box", tab = CreativeTab.IC2_TOOLS, group = "tools")
+// @ModItem(name = "tool_box", tab = CreativeTab.IC2_TOOLS, group = "tools")
 class ToolBox : Item(FabricItemSettings().maxCount(1))
 
+//已删除
 /** EU 电表 - 测量导线/机器 EU 流量 */
-@ModItem(name = "meter", tab = CreativeTab.IC2_TOOLS, group = "tools")
+// @ModItem(name = "meter", tab = CreativeTab.IC2_TOOLS, group = "tools")
 class Meter : Item(FabricItemSettings().maxCount(1))
 
 /** 木龙头 - 从橡胶树原木湿面提取粘性树脂，寿命 10 次 */
 @ModItem(name = "treetap", tab = CreativeTab.IC2_TOOLS, group = "tools")
 class Treetap : Item(FabricItemSettings().maxDamage(10)) {
+    companion object {
+        @RecipeProvider
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.TOOLS, Treetap::class.instance(), 1)
+                .pattern(" P ")
+                .pattern("PPP")
+                .pattern("P  ")
+                .input('P', ItemTags.PLANKS)
+                .criterion(hasItem(Items.OAK_PLANKS), conditionsFromItem(Items.OAK_PLANKS))
+                .offerTo(exporter, Treetap::class.id())
+        }
+    }
+
     override fun getRecipeRemainder(stack: ItemStack): ItemStack {
         val result = stack.copy()
         if (result.damage < result.maxDamage - 1) {
@@ -286,6 +302,20 @@ class Treetap : Item(FabricItemSettings().maxDamage(10)) {
 /** 扳手 - 拆卸机器、旋转方块 */
 @ModItem(name = "wrench", tab = CreativeTab.IC2_TOOLS, group = "tools")
 class Wrench : Item(FabricItemSettings().maxDamage(120)) {
+    companion object {
+        @RecipeProvider
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val bronze = Ingredient.fromTag(ModTags.Compat.Items.INGOTS_BRONZE)
+            ShapedRecipeJsonBuilder.create(RecipeCategory.TOOLS, Wrench::class.instance(), 1)
+                .pattern("B B")
+                .pattern("BBB")
+                .pattern(" B ")
+                .input('B', bronze)
+                .criterion(hasItem(BronzeIngot::class.instance()), conditionsFromItem(BronzeIngot::class.instance()))
+                .offerTo(exporter, Wrench::class.id())
+        }
+    }
+
     override fun getRecipeRemainder(stack: ItemStack): ItemStack {
         val result = stack.copy()
         if (result.damage < result.maxDamage - 1) {
@@ -552,6 +582,25 @@ class Drill : ElectricMiningDrillItem(
 /** 电动树脂提取器 - 从橡胶木提取树脂（等级 1，10k EU） */
 @ModItem(name = "electric_treetap", tab = CreativeTab.IC2_TOOLS, group = "electric_tools")
 class ElectricTreetap : Item(FabricItemSettings().maxCount(1)), IElectricTool {
+    companion object {
+        @RecipeProvider
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val treetap = Treetap::class.instance()
+            val smallPower = SmallPowerUnitItem::class.instance()
+            BatteryEnergyShapedRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = ElectricTreetap::class.id(),
+                result = ElectricTreetap::class.instance(),
+                pattern = listOf("   ", " T ", " P "),
+                keys = mapOf<Char, Item>(
+                    'T' to treetap,
+                    'P' to smallPower
+                ),
+                category = "equipment"
+            )
+        }
+    }
+
     override val tier = 1
     override val maxCapacity = 10_000L
     override fun getEnergy(stack: ItemStack) = IElectricTool.getEnergy(stack)
@@ -568,6 +617,25 @@ class ElectricTreetap : Item(FabricItemSettings().maxCount(1)), IElectricTool {
 /** 电动扳手 - 拆卸机器、旋转方块（等级 1，10k EU） */
 @ModItem(name = "electric_wrench", tab = CreativeTab.IC2_TOOLS, group = "electric_tools")
 class ElectricWrench : Item(FabricItemSettings().maxCount(1)), IElectricTool {
+    companion object {
+        @RecipeProvider
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val wrench = Wrench::class.instance()
+            val smallPower = SmallPowerUnitItem::class.instance()
+            BatteryEnergyShapedRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = ElectricWrench::class.id(),
+                result = ElectricWrench::class.instance(),
+                pattern = listOf(" W ", " P ", "   "),
+                keys = mapOf<Char, Item>(
+                    'W' to wrench,
+                    'P' to smallPower
+                ),
+                category = "equipment"
+            )
+        }
+    }
+
     override val tier = 1
     override val maxCapacity = 10_000L
     override fun getEnergy(stack: ItemStack) = IElectricTool.getEnergy(stack)

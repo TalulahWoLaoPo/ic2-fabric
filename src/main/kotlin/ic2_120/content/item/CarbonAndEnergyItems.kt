@@ -485,7 +485,8 @@ class PlantBall : Item(FabricItemSettings()) {
     }
 }
 
-@ModItem(name = "compressed_plants", tab = CreativeTab.IC2_MATERIALS, group = "energy_balls")
+//已删除
+// @ModItem(name = "compressed_plants", tab = CreativeTab.IC2_MATERIALS, group = "energy_balls")
 class CompressedPlants : Item(FabricItemSettings())
 
 @ModItem(name = "bio_chaff", tab = CreativeTab.IC2_MATERIALS, group = "energy_balls")

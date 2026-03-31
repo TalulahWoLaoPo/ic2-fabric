@@ -6,6 +6,8 @@ import ic2_120.content.block.ReinforcedFoamBlock
 import ic2_120.content.fluid.ModFluids
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.annotation.ModItem
+import ic2_120.registry.annotation.RecipeProvider
+import ic2_120.registry.id
 import ic2_120.registry.instance
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants
@@ -23,6 +25,13 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.ItemUsageContext
+import net.minecraft.item.Items
+import net.minecraft.data.server.recipe.RecipeJsonProvider
+import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
+import net.minecraft.recipe.book.RecipeCategory
+import java.util.function.Consumer
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
 import net.minecraft.util.ActionResult
@@ -196,6 +205,22 @@ class FoamSprayerItem : Item(FabricItemSettings().maxCount(1)) {
                 candidates[j] = t
             }
             return candidates
+        }
+
+        @RecipeProvider
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val iron = IronCasing::class.instance()
+            val fluidCell = FluidCellItem::class.instance()
+            if (iron != Items.AIR && fluidCell != Items.AIR) {
+                ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, FoamSprayerItem::class.instance(), 1)
+                    .pattern("I  ")
+                    .pattern(" I ")
+                    .pattern(" FI")
+                    .input('I', iron)
+                    .input('F', fluidCell)
+                    .criterion(hasItem(iron), conditionsFromItem(iron))
+                    .offerTo(exporter, FoamSprayerItem::class.id())
+            }
         }
     }
 }
