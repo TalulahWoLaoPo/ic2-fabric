@@ -10,6 +10,7 @@ import net.minecraft.block.Blocks
 import net.minecraft.item.Item
 import net.minecraft.item.Items
 import net.minecraft.recipe.Ingredient
+import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
 import net.minecraft.data.server.recipe.ShapelessRecipeJsonBuilder
 import net.minecraft.data.server.recipe.RecipeJsonProvider
 import net.minecraft.recipe.book.RecipeCategory
@@ -122,10 +123,34 @@ class IronCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : Bas
 /**
  * 玻璃纤维导线。超高压传输，8192 EU/t，损耗仅 0.025 EU/格。最高绝缘，绝不漏电。
  */
-@ModBlock(name = "glass_fibre_cable", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "cables", renderLayer = "cutout_mipped")
+@ModBlock(
+    name = "glass_fibre_cable",
+    registerItem = true,
+    tab = CreativeTab.IC2_MATERIALS,
+    group = "cables",
+    renderLayer = "cutout_mipped"
+)
 class GlassFibreCableBlock(
     settings: AbstractBlock.Settings = AbstractBlock.Settings.copy(Blocks.GLASS).strength(0.5f).noCollision()
 ) : BaseCableBlock(settings), IInsulatedCable, ITiered {
+
+    companion object {
+        @RecipeProvider
+        fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, GlassFibreCableBlock::class.item(), 6)
+                .pattern("GGG")
+                .pattern("ESE")
+                .pattern("GGG")
+                .input('G', Items.GLASS)
+                .input('E', EnergiumDust::class.instance())
+                .input('S', SilverDust::class.instance())
+                .criterion(
+                    hasItem(EnergiumDust::class.instance()),
+                    conditionsFromItem(EnergiumDust::class.instance())
+                )
+                .offerTo(exporter, GlassFibreCableBlock::class.id())
+        }
+    }
 
     override val tier: Int = 5
     override fun getTransferRate(): Long = nominalEuPerTick()
@@ -139,7 +164,8 @@ class GlassFibreCableBlock(
  * 绝缘铜质导线。128 EU/t，损耗 0.2 EU/格。1 倍绝缘（≤128）。
  */
 @ModBlock(name = "insulated_copper_cable", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "cables")
-class InsulatedCopperCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : BaseCableBlock(settings), IInsulatedCable, ITiered {
+class InsulatedCopperCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : BaseCableBlock(settings),
+    IInsulatedCable, ITiered {
 
     override val tier: Int = 2
     override fun getTransferRate(): Long = nominalEuPerTick()
@@ -162,7 +188,8 @@ class InsulatedCopperCableBlock(settings: AbstractBlock.Settings = defaultSettin
  * 绝缘锡质导线。32 EU/t，损耗 0.2 EU/格。1 倍绝缘（≤128）。
  */
 @ModBlock(name = "insulated_tin_cable", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "cables")
-class InsulatedTinCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : BaseCableBlock(settings), IInsulatedCable, ITiered {
+class InsulatedTinCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : BaseCableBlock(settings),
+    IInsulatedCable, ITiered {
 
     override val tier: Int = 1
     override fun getTransferRate(): Long = nominalEuPerTick()
@@ -185,7 +212,8 @@ class InsulatedTinCableBlock(settings: AbstractBlock.Settings = defaultSettings(
  * 绝缘金质导线。512 EU/t，损耗 0.4 EU/格。1 倍绝缘（≤128）。
  */
 @ModBlock(name = "insulated_gold_cable", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "cables")
-class InsulatedGoldCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : BaseCableBlock(settings), IInsulatedCable, ITiered {
+class InsulatedGoldCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : BaseCableBlock(settings),
+    IInsulatedCable, ITiered {
 
     override val tier: Int = 3
     override fun getTransferRate(): Long = nominalEuPerTick()
@@ -211,7 +239,8 @@ class InsulatedGoldCableBlock(settings: AbstractBlock.Settings = defaultSettings
  * 2x绝缘金质导线。512 EU/t，损耗 0.4 EU/格。2 倍绝缘（≤512）。
  */
 @ModBlock(name = "double_insulated_gold_cable", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "cables")
-class DoubleInsulatedGoldCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : BaseCableBlock(settings), IInsulatedCable, ITiered {
+class DoubleInsulatedGoldCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : BaseCableBlock(settings),
+    IInsulatedCable, ITiered {
 
     override val tier: Int = 3
     override fun getTransferRate(): Long = nominalEuPerTick()
@@ -238,7 +267,8 @@ class DoubleInsulatedGoldCableBlock(settings: AbstractBlock.Settings = defaultSe
  * 绝缘高压导线。2048 EU/t，损耗 0.8 EU/格。1 倍绝缘（≤128）。
  */
 @ModBlock(name = "insulated_iron_cable", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "cables")
-class InsulatedIronCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : BaseCableBlock(settings), IInsulatedCable, ITiered {
+class InsulatedIronCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : BaseCableBlock(settings),
+    IInsulatedCable, ITiered {
 
     override val tier: Int = 4
     override fun getTransferRate(): Long = nominalEuPerTick()
@@ -264,7 +294,8 @@ class InsulatedIronCableBlock(settings: AbstractBlock.Settings = defaultSettings
  * 2x绝缘高压导线。2048 EU/t，损耗 0.8 EU/格。2 倍绝缘（≤512）。
  */
 @ModBlock(name = "double_insulated_iron_cable", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "cables")
-class DoubleInsulatedIronCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : BaseCableBlock(settings), IInsulatedCable, ITiered {
+class DoubleInsulatedIronCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : BaseCableBlock(settings),
+    IInsulatedCable, ITiered {
 
     override val tier: Int = 4
     override fun getTransferRate(): Long = nominalEuPerTick()
@@ -291,7 +322,8 @@ class DoubleInsulatedIronCableBlock(settings: AbstractBlock.Settings = defaultSe
  * 3x绝缘高压导线。2048 EU/t，损耗 0.8 EU/格。3 倍绝缘（≤2048）。
  */
 @ModBlock(name = "triple_insulated_iron_cable", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "cables")
-class TripleInsulatedIronCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : BaseCableBlock(settings), IInsulatedCable, ITiered {
+class TripleInsulatedIronCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : BaseCableBlock(settings),
+    IInsulatedCable, ITiered {
 
     override val tier: Int = 4
     override fun getTransferRate(): Long = nominalEuPerTick()

@@ -4,6 +4,7 @@ import ic2_120.registry.CreativeTab
 import ic2_120.registry.type
 import ic2_120.content.item.IronPlate
 import ic2_120.content.item.Resin
+import ic2_120.content.item.RubberItem
 import ic2_120.content.item.Treetap
 import ic2_120.registry.annotation.ModBlock
 import net.minecraft.block.AbstractBlock
@@ -26,6 +27,7 @@ import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.random.Random
+import net.minecraft.registry.tag.ItemTags
 import net.minecraft.world.World
 import net.minecraft.data.server.recipe.RecipeJsonProvider
 import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
@@ -242,10 +244,44 @@ class RubberSheetBlock : Block(
     override fun onLandedUpon(world: World, state: net.minecraft.block.BlockState, pos: BlockPos, entity: Entity, fallDistance: Float) {
         entity.handleFallDamage(fallDistance, 0.2f, world.damageSources.fall())
     }
+
+    companion object {
+        @RecipeProvider
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val rubber = RubberItem::class.instance()
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, RubberSheetBlock::class.item(), 3)
+                .pattern("xxx")
+                .pattern("xxx")
+                .input('x', rubber)
+                .criterion(hasItem(rubber), conditionsFromItem(rubber))
+                .offerTo(exporter, RubberSheetBlock::class.id())
+        }
+    }
 }
 
 @ModBlock(name = "wool_sheet", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "building")
-class WoolSheetBlock : Block(AbstractBlock.Settings.copy(Blocks.WHITE_CARPET).strength(0.5f))
+class WoolSheetBlock : Block(
+    AbstractBlock.Settings.copy(Blocks.WHITE_CARPET)
+        .strength(0.5f)
+        .velocityMultiplier(0.4f)
+        .jumpVelocityMultiplier(0.0f)
+) {
+    override fun onLandedUpon(world: World, state: net.minecraft.block.BlockState, pos: BlockPos, entity: Entity, fallDistance: Float) {
+        entity.handleFallDamage(fallDistance, 0.2f, world.damageSources.fall())
+    }
+
+    companion object {
+        @RecipeProvider
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, WoolSheetBlock::class.item(), 3)
+                .pattern("xxx")
+                .pattern("xxx")
+                .input('x', ItemTags.WOOL)
+                .criterion(hasItem(Items.WHITE_WOOL), conditionsFromItem(Items.WHITE_WOOL))
+                .offerTo(exporter, WoolSheetBlock::class.id())
+        }
+    }
+}
 
 @ModBlock(name = "mining_pipe", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "building")
 class MiningPipeBlock : PillarBlock(AbstractBlock.Settings.copy(Blocks.IRON_BLOCK).strength(3.0f)) {
@@ -266,7 +302,8 @@ class MiningPipeBlock : PillarBlock(AbstractBlock.Settings.copy(Blocks.IRON_BLOC
     }
 }
 
-@ModBlock(name = "itnt", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "building")
+// @ModBlock(name = "itnt", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "building")
+//todo 暂时不注册
 class ItntBlock : Block(AbstractBlock.Settings.copy(Blocks.TNT).strength(0.0f))
 
 // ========== 建筑泡沫墙（16 色） ==========

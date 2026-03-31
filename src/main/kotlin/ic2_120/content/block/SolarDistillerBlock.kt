@@ -1,9 +1,13 @@
 package ic2_120.content.block
 
 import ic2_120.content.block.machines.SolarDistillerBlockEntity
+import ic2_120.content.item.EmptyCell
 import ic2_120.registry.CreativeTab
-import ic2_120.registry.type
 import ic2_120.registry.annotation.ModBlock
+import ic2_120.registry.annotation.RecipeProvider
+import ic2_120.registry.id
+import ic2_120.registry.instance
+import ic2_120.registry.item
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorageUtil
@@ -20,6 +24,13 @@ import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.conditionsFromItem
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider.hasItem
+import net.minecraft.data.server.recipe.RecipeJsonProvider
+import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
+import net.minecraft.item.Items
+import net.minecraft.recipe.book.RecipeCategory
+import java.util.function.Consumer
 
 @ModBlock(name = "solar_distiller", registerItem = true, tab = CreativeTab.IC2_MACHINES, group = "heat")
 class SolarDistillerBlock : MachineBlock() {
@@ -73,6 +84,23 @@ class SolarDistillerBlock : MachineBlock() {
 
     companion object {
         val ACTIVE: BooleanProperty = BooleanProperty.of("active")
+
+        @RecipeProvider
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val emptyCell = EmptyCell::class.instance()
+            val casing = MachineCasingBlock::class.instance()
+            if (emptyCell != Items.AIR && casing != Items.AIR) {
+                ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, SolarDistillerBlock::class.item(), 1)
+                    .pattern("GGG")
+                    .pattern("G G")
+                    .pattern("ECE")
+                    .input('G', Items.GLASS)
+                    .input('E', emptyCell)
+                    .input('C', casing)
+                    .criterion(hasItem(casing), conditionsFromItem(casing))
+                    .offerTo(exporter, SolarDistillerBlock::class.id())
+            }
+        }
     }
 }
 
