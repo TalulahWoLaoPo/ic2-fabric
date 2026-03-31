@@ -118,11 +118,9 @@ open class TickLimitedSidedEnergyContainer(
      */
     open fun getMaxInsert(side: Direction?): Long {
         normalizeTickBudget()
-//        println("a:${getSideMaxInsert(side)}")
-        val sideLimit = getSideMaxInsert(side).coerceAtLeast(0L)/*.coerceAtMost(maxInsertPerTick)*/
-//        println("b:${sideLimit}")
-        val remainingThisTick = (getSideMaxInsert(side) - insertedThisTick).coerceAtLeast(0L)
-//        println("remainingThisTick:$remainingThisTick")
+        val sideRaw = getSideMaxInsert(side)
+        val sideLimit = sideRaw.coerceAtLeast(0L)
+        val remainingThisTick = (sideRaw - insertedThisTick).coerceAtLeast(0L)
         return minOf(sideLimit, remainingThisTick)
     }
 
