@@ -8,7 +8,6 @@ import ic2_120.content.fluid.ModFluids
 import ic2_120.content.item.energy.canBeCharged
 import ic2_120.content.item.getFluidCellVariant
 import ic2_120.content.item.IUpgradeItem
-import ic2_120.content.item.isSemifluidFuel
 import ic2_120.content.storage.ItemInsertRoute
 import ic2_120.content.storage.RoutedItemStorage
 import ic2_120.content.screen.SemifluidGeneratorScreenHandler
@@ -87,8 +86,10 @@ class SemifluidGeneratorBlockEntity(
         const val INVENTORY_SIZE = 7
 
         val FUEL_PROFILES: Map<net.minecraft.fluid.Fluid, FuelProfile> = mapOf(
-            ModFluids.BIOFUEL_STILL to FuelProfile(euPerBucket = 32_000L, euPerTick = 32L),
-            ModFluids.BIOFUEL_FLOWING to FuelProfile(euPerBucket = 32_000L, euPerTick = 32L)
+            ModFluids.BIOFUEL_STILL to FuelProfile(euPerBucket = 32_000L, euPerTick = 16L),
+            ModFluids.BIOFUEL_FLOWING to FuelProfile(euPerBucket = 32_000L, euPerTick = 16L),
+            ModFluids.CREOSOTE_STILL to FuelProfile(euPerBucket = 3_200L, euPerTick = 8L),
+            ModFluids.CREOSOTE_FLOWING to FuelProfile(euPerBucket = 3_200L, euPerTick = 8L)
         )
 
         @Volatile
@@ -317,6 +318,17 @@ class SemifluidGeneratorBlockEntity(
                 val emptyBucket = ItemStack(Items.BUCKET)
                 if (canInsertEmptyContainer(emptyBucket)) {
                     val inserted = fuelTankInternal.tryInsertFuel(ModFluids.BIOFUEL_STILL, FluidConstants.BUCKET)
+                    if (inserted >= FluidConstants.BUCKET && tryInsertEmptyContainer(emptyBucket)) {
+                        fuelStack.decrement(1)
+                        if (fuelStack.isEmpty) setStack(FUEL_SLOT, ItemStack.EMPTY)
+                        markDirty()
+                    }
+                }
+            }
+            fuelStack.item == ModFluids.CREOSOTE_BUCKET -> {
+                val emptyBucket = ItemStack(Items.BUCKET)
+                if (canInsertEmptyContainer(emptyBucket)) {
+                    val inserted = fuelTankInternal.tryInsertFuel(ModFluids.CREOSOTE_STILL, FluidConstants.BUCKET)
                     if (inserted >= FluidConstants.BUCKET && tryInsertEmptyContainer(emptyBucket)) {
                         fuelStack.decrement(1)
                         if (fuelStack.isEmpty) setStack(FUEL_SLOT, ItemStack.EMPTY)
