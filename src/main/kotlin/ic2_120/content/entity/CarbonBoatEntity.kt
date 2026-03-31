@@ -7,4 +7,8 @@ import net.minecraft.world.World
 class CarbonBoatEntity(
     entityType: EntityType<out CarbonBoatEntity>,
     world: World
-) : Ic2BoatEntity(entityType, world)
+) : Ic2BoatEntity(entityType, world) {
+    override val maxHorizontalSpeed: Double = 0.50
+    override val waterDragMultiplier: Double = 0.99
+    override val damageTakenMultiplier: Float = 1.15f
+}
