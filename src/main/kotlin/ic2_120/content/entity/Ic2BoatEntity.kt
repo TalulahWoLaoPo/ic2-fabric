@@ -8,7 +8,7 @@ import net.minecraft.world.World
 import kotlin.math.sqrt
 
 /**
- * IC2 船实体基类，用于破损橡胶船与碳纤维船。
+ * IC2 船实体基类，用于破损橡皮艇与碳纤维轻艇。
  * 行为与原版船一致，渲染由客户端根据实体类型区分贴图。
  */
 abstract class Ic2BoatEntity(
