@@ -21,6 +21,8 @@ import ic2_120.integration.jei.MetalFormerRollingJeiRecipe
 import ic2_120.integration.jei.MetalFormerRollingRecipeCategory
 import ic2_120.integration.jei.OreWashingJeiRecipe
 import ic2_120.integration.jei.OreWashingRecipeCategory
+import ic2_120.integration.jei.RecyclerJeiRecipe
+import ic2_120.integration.jei.RecyclerRecipeCategory
 import ic2_120.integration.jei.SolidCannerJeiRecipe
 import ic2_120.integration.jei.SolidCannerRecipeCategory
 import ic2_120.content.block.storage.EnergyStorageBlock
@@ -39,6 +41,7 @@ import mezz.jei.api.registration.IRecipeRegistration
 import mezz.jei.api.registration.ISubtypeRegistration
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
+import net.minecraft.item.Items
 import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
 
@@ -171,7 +174,8 @@ class Ic2JeiPlugin : IModPlugin {
             MetalFormerRollingRecipeCategory(registration.jeiHelpers.guiHelper),
             MetalFormerCuttingRecipeCategory(registration.jeiHelpers.guiHelper),
             MetalFormerExtrudingRecipeCategory(registration.jeiHelpers.guiHelper),
-            SolidCannerRecipeCategory(registration.jeiHelpers.guiHelper)
+            SolidCannerRecipeCategory(registration.jeiHelpers.guiHelper),
+            RecyclerRecipeCategory(registration.jeiHelpers.guiHelper)
         )
     }
 
@@ -288,6 +292,17 @@ class Ic2JeiPlugin : IModPlugin {
                 )
             }
         registration.addRecipes(Ic2JeiRecipeTypes.SOLID_CANNER, solidCannerRecipes)
+
+        val recyclerScrap = Registries.ITEM.get(Identifier("ic2_120", "scrap"))
+        registration.addRecipes(
+            Ic2JeiRecipeTypes.RECYCLER,
+            listOf(
+                RecyclerJeiRecipe(
+                    ItemStack(Items.COBBLESTONE, 1),
+                    ItemStack(recyclerScrap, 1)
+                )
+            )
+        )
     }
 
     override fun registerRecipeCatalysts(registration: IRecipeCatalystRegistration) {
@@ -343,6 +358,11 @@ class Ic2JeiPlugin : IModPlugin {
         registration.addRecipeCatalyst(
             ItemStack(Registries.ITEM.get(Identifier("ic2_120", "solid_canner"))),
             Ic2JeiRecipeTypes.SOLID_CANNER
+        )
+
+        registration.addRecipeCatalyst(
+            ItemStack(Registries.ITEM.get(Identifier("ic2_120", "recycler"))),
+            Ic2JeiRecipeTypes.RECYCLER
         )
     }
 

@@ -81,5 +81,11 @@ object Ic2JeiRecipeTypes {
         "solid_canning",
         SolidCannerJeiRecipe::class.java
     )
+
+    val RECYCLER: RecipeType<RecyclerJeiRecipe> = RecipeType.create(
+        "ic2_120",
+        "recycling",
+        RecyclerJeiRecipe::class.java
+    )
 }
 

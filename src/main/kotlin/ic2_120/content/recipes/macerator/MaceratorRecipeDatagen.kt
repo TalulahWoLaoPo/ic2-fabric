@@ -8,16 +8,35 @@ import ic2_120.content.block.DeepslateUraniumOreBlock
 import ic2_120.content.block.LeadOreBlock
 import ic2_120.content.block.TinOreBlock
 import ic2_120.content.block.UraniumOreBlock
+import ic2_120.content.item.BronzeDust
+import ic2_120.content.item.BronzeIngot
+import ic2_120.content.item.BronzePlate
+import ic2_120.content.item.CopperDust
+import ic2_120.content.item.CopperPlate
 import ic2_120.content.item.CrushedCopper
 import ic2_120.content.item.CrushedGold
 import ic2_120.content.item.CrushedIron
 import ic2_120.content.item.CrushedLead
 import ic2_120.content.item.CrushedTin
 import ic2_120.content.item.CrushedUranium
+import ic2_120.content.item.GoldDust
+import ic2_120.content.item.GoldPlate
+import ic2_120.content.item.IronDust
+import ic2_120.content.item.IronPlate
+import ic2_120.content.item.LapisDust
+import ic2_120.content.item.LapisPlate
+import ic2_120.content.item.LeadDust
+import ic2_120.content.item.LeadIngot
+import ic2_120.content.item.LeadPlate
 import ic2_120.content.item.NetherrackDust
 import ic2_120.content.item.ObsidianDust
 import ic2_120.content.item.ObsidianPlate
+import ic2_120.content.item.SilverDust
+import ic2_120.content.item.SilverIngot
 import ic2_120.content.item.SmallObsidianDust
+import ic2_120.content.item.TinDust
+import ic2_120.content.item.TinIngot
+import ic2_120.content.item.TinPlate
 import ic2_120.content.item.PlantBall
 import ic2_120.content.item.BioChaff
 import ic2_120.content.item.Weed
@@ -86,7 +105,23 @@ object MaceratorRecipeDatagen {
         Entry("oak_leaves_to_bio_chaff", Items.OAK_LEAVES, BioChaff::class.instance(), 1, 8),
         Entry("dead_bush_to_bio_chaff", Items.DEAD_BUSH, BioChaff::class.instance(), 1, 8),
         Entry("weed_to_bio_chaff", Weed::class.instance(), BioChaff::class.instance(), 1, 32),
-        Entry("diamond_to_diamond_dust", Items.DIAMOND, DiamondDust::class.instance(), 1)
+        Entry("diamond_to_diamond_dust", Items.DIAMOND, DiamondDust::class.instance(), 1),
+        // 金属锭 / 板 → 粉
+        Entry("copper_ingot_to_copper_dust", Items.COPPER_INGOT, CopperDust::class.instance(), 1),
+        Entry("tin_ingot_to_tin_dust", TinIngot::class.instance(), TinDust::class.instance(), 1),
+        Entry("bronze_ingot_to_bronze_dust", BronzeIngot::class.instance(), BronzeDust::class.instance(), 1),
+        Entry("gold_ingot_to_gold_dust", Items.GOLD_INGOT, GoldDust::class.instance(), 1),
+        Entry("iron_ingot_to_iron_dust", Items.IRON_INGOT, IronDust::class.instance(), 1),
+        Entry("lead_ingot_to_lead_dust", LeadIngot::class.instance(), LeadDust::class.instance(), 1),
+        Entry("silver_ingot_to_silver_dust", SilverIngot::class.instance(), SilverDust::class.instance(), 1),
+        Entry("lapis_to_lapis_dust", Items.LAPIS_LAZULI, LapisDust::class.instance(), 1),
+        Entry("copper_plate_to_copper_dust", CopperPlate::class.instance(), CopperDust::class.instance(), 1),
+        Entry("tin_plate_to_tin_dust", TinPlate::class.instance(), TinDust::class.instance(), 1),
+        Entry("bronze_plate_to_bronze_dust", BronzePlate::class.instance(), BronzeDust::class.instance(), 1),
+        Entry("gold_plate_to_gold_dust", GoldPlate::class.instance(), GoldDust::class.instance(), 1),
+        Entry("iron_plate_to_iron_dust", IronPlate::class.instance(), IronDust::class.instance(), 1),
+        Entry("lead_plate_to_lead_dust", LeadPlate::class.instance(), LeadDust::class.instance(), 1),
+        Entry("lapis_plate_to_lapis_dust", LapisPlate::class.instance(), LapisDust::class.instance(), 1)
     )
 
     fun allEntries(): List<Entry> = entries
