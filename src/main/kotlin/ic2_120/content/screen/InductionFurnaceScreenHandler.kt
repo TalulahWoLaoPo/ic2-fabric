@@ -91,9 +91,19 @@ class InductionFurnaceScreenHandler(
                     if (!insertItem(stackInSlot, SLOT_INPUT_0_INDEX, SLOT_INPUT_0_INDEX + 1, false)) {
                         if (!insertItem(stackInSlot, SLOT_INPUT_1_INDEX, SLOT_INPUT_1_INDEX + 1, false)) {
                             if (stackInSlot.item is IBatteryItem) {
-                                if (!insertItem(stackInSlot, SLOT_DISCHARGING_INDEX, SLOT_DISCHARGING_INDEX + 1, false)) {
-                                    if (!insertItem(stackInSlot, PLAYER_INV_START, HOTBAR_END, false)) return ItemStack.EMPTY
+                                // 电池只能放入放电槽，且只能放1个
+                                // 手动处理以避免 insertItem 修改堆叠引用导致计数错误
+                                val dischargingSlot = slots[SLOT_DISCHARGING_INDEX]
+                                if (!dischargingSlot.hasStack()) {
+                                    // 放电槽为空，放入1个电池
+                                    val singleBattery = stackInSlot.copy()
+                                    singleBattery.count = 1
+                                    dischargingSlot.stack = singleBattery
+                                    stackInSlot.decrement(1)
+                                    slot.markDirty()
+                                    dischargingSlot.markDirty()
                                 }
+                                // 如果放电槽已有电池，不做任何操作（电池保留在原位）
                             } else {
                                 if (!insertItem(stackInSlot, PLAYER_INV_START, HOTBAR_END, false)) return ItemStack.EMPTY
                             }

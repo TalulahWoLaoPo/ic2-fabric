@@ -80,8 +80,18 @@ class ElectricFurnaceScreenHandler(
                 index in PLAYER_INV_START until HOTBAR_END -> {
                     // 优先移动到输入槽，其次移动到放电槽
                     if (!insertItem(stackInSlot, SLOT_INPUT_INDEX, SLOT_INPUT_INDEX + 1, false)) {
-                        if (stackInSlot.item is IBatteryItem && !insertItem(stackInSlot, SLOT_DISCHARGING_INDEX, SLOT_DISCHARGING_INDEX + 1, false)) {
-                            if (!insertItem(stackInSlot, PLAYER_INV_START, HOTBAR_END, false)) return ItemStack.EMPTY
+                        if (stackInSlot.item is IBatteryItem) {
+                            // 手动处理电池槽以避免insertItem修改堆叠引用导致计数错误
+                            val dischargingSlot = slots[SLOT_DISCHARGING_INDEX]
+                            if (!dischargingSlot.hasStack()) {
+                                val singleBattery = stackInSlot.copy()
+                                singleBattery.count = 1
+                                dischargingSlot.stack = singleBattery
+                                stackInSlot.decrement(1)
+                                slot.markDirty()
+                                dischargingSlot.markDirty()
+                            }
+                            // 如果放电槽已有电池，不做任何操作
                         }
                     }
                 }

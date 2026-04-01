@@ -68,9 +68,21 @@ class ChunkLoaderScreenHandler(
                     slot.onQuickTransfer(stackInSlot, stack)
                 }
                 index in PLAYER_INV_START until HOTBAR_END -> {
-                    if (stackInSlot.item is IBatteryItem && !insertItem(stackInSlot, SLOT_DISCHARGING_INDEX, SLOT_DISCHARGING_INDEX + 1, false)) {
+                    if (stackInSlot.item is IBatteryItem) {
+                        // 手动处理电池槽以避免insertItem修改堆叠引用导致计数错误
+                        val dischargingSlot = slots[SLOT_DISCHARGING_INDEX]
+                        if (!dischargingSlot.hasStack()) {
+                            val singleBattery = stackInSlot.copy()
+                            singleBattery.count = 1
+                            dischargingSlot.stack = singleBattery
+                            stackInSlot.decrement(1)
+                            slot.markDirty()
+                            dischargingSlot.markDirty()
+                        }
+                        // 如果放电槽已有电池，不做任何操作
+                    } else {
                         if (!insertItem(stackInSlot, PLAYER_INV_START, HOTBAR_END, false)) return ItemStack.EMPTY
-                    } else if (!insertItem(stackInSlot, PLAYER_INV_START, HOTBAR_END, false)) return ItemStack.EMPTY
+                    }
                 }
                 else -> if (!insertItem(stackInSlot, PLAYER_INV_START, HOTBAR_END, false)) return ItemStack.EMPTY
             }
