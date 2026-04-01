@@ -10,7 +10,6 @@ import net.minecraft.util.Identifier
 import net.minecraft.world.biome.Biome
 import net.minecraft.world.gen.GenerationStep
 import org.slf4j.LoggerFactory
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * 橡胶树世界生成。
@@ -44,28 +43,6 @@ object RubberTreeGeneration {
             return
         }
 
-        if (REGISTER_LOG_COUNTER.getAndIncrement() < REGISTER_LOG_LIMIT) {
-            logger.info(
-                "Registering rubber tree worldgen: placedKey={}, biomes={}, countPerChunk={}, rarityChance={}, maxWaterDepth={}, baseHeight={}, heightRandA={}, heightRandB={}, foliageRadius={}, foliageOffset={}, foliageHeight={}, ignoreVines={}, forceDirt={}",
-                RUBBER_TREE_PLACED_KEY.value,
-                biomeKeys.joinToString { it.value.toString() },
-                config.countPerChunk,
-                config.rarityChance,
-                config.maxWaterDepth,
-                config.baseHeight,
-                config.heightRandA,
-                config.heightRandB,
-                config.foliageRadius,
-                config.foliageOffset,
-                config.foliageHeight,
-                config.zeroHoleWeight,
-                config.singleHoleWeight,
-                config.doubleHoleWeight,
-                config.ignoreVines,
-                config.forceDirt
-            )
-        }
-
         BiomeModifications.addFeature(
             BiomeSelectors.includeByKey(*biomeKeys.toTypedArray()),
             GenerationStep.Feature.VEGETAL_DECORATION,
@@ -81,7 +58,4 @@ object RubberTreeGeneration {
         }
         return RegistryKey.of(RegistryKeys.BIOME, biomeId)
     }
-
-    private const val REGISTER_LOG_LIMIT = 1
-    private val REGISTER_LOG_COUNTER = AtomicInteger()
 }

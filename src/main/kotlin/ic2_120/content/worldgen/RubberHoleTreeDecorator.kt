@@ -8,8 +8,6 @@ import net.minecraft.state.property.Properties
 import net.minecraft.util.math.Direction
 import net.minecraft.world.gen.treedecorator.TreeDecorator
 import net.minecraft.world.gen.treedecorator.TreeDecoratorType
-import org.slf4j.LoggerFactory
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * 在树特性生成阶段直接初始化橡胶孔，避免依赖 onBlockAdded 或 BlockEntity tick。
@@ -33,12 +31,7 @@ class RubberHoleTreeDecorator : TreeDecorator() {
                 pos.toImmutable() to RubberLogBlock.initializeNaturalState(baseState, generator.random)
             }
 
-        if (initializedLogs.isEmpty()) {
-            if (EMPTY_LOG_COUNTER.getAndIncrement() < DECORATOR_LOG_LIMIT) {
-                logger.info("Rubber hole decorator found no surviving rubber logs in tree; originalLogPositions={}", generator.logPositions.size)
-            }
-            return
-        }
+        if (initializedLogs.isEmpty()) return
 
         val finalLogs =
             if (initializedLogs.any { (_, state) -> hasWetRubberFace(state) }) {
@@ -56,31 +49,12 @@ class RubberHoleTreeDecorator : TreeDecorator() {
                 }
             }
 
-        val wetHoleCount = finalLogs.sumOf { (_, state) ->
-            listOf(Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST)
-                .count { face -> state.get(RubberLogBlock.propFor(face)) == RubberFaceState.WET }
-        }
-
-        if (DECORATOR_RESULT_LOG_COUNTER.getAndIncrement() < DECORATOR_LOG_LIMIT) {
-            logger.info(
-                "Rubber hole decorator applied: survivingLogs={}, wetHoleCount={}, originalLogPositions={}",
-                finalLogs.size,
-                wetHoleCount,
-                generator.logPositions.size
-            )
-        }
-
         finalLogs.forEach { (pos, state) ->
             generator.replace(pos, state)
         }
     }
 
     companion object {
-        private val logger = LoggerFactory.getLogger("ic2_120.rubber_tree.decorator")
-        private const val DECORATOR_LOG_LIMIT = 64
-        private val EMPTY_LOG_COUNTER = AtomicInteger()
-        private val DECORATOR_RESULT_LOG_COUNTER = AtomicInteger()
-
         val CODEC: Codec<RubberHoleTreeDecorator> = Codec.unit(::RubberHoleTreeDecorator)
 
         private fun hasWetRubberFace(state: net.minecraft.block.BlockState): Boolean =

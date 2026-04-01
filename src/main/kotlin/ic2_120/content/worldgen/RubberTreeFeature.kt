@@ -13,9 +13,7 @@ import net.minecraft.world.gen.feature.TreeFeature
 import net.minecraft.world.gen.feature.TreeFeatureConfig
 import net.minecraft.world.gen.feature.util.FeatureContext
 import net.minecraft.world.gen.trunk.StraightTrunkPlacer
-import org.slf4j.LoggerFactory
 import java.util.ArrayDeque
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * 橡胶树生成前额外检查周围是否已有其他树的树干/树叶，避免与现有树冠重叠。
@@ -35,11 +33,7 @@ class RubberTreeFeature : Feature<TreeFeatureConfig>(TreeFeatureConfig.CODEC) {
 
         // 树苗生长保持原版行为，避免为了世界生成避让逻辑把玩家种下的树“挪位”或删掉周围树木。
         if (isSaplingGrowth(runtimeContext)) {
-            val saplingResult = Feature.TREE.generate(runtimeContext)
-            if (SAPLING_LOG_COUNTER.getAndIncrement() < FEATURE_LOG_LIMIT) {
-                logger.info("Rubber tree sapling growth at origin={} result={}", runtimeContext.origin, saplingResult)
-            }
-            return saplingResult
+            return Feature.TREE.generate(runtimeContext)
         }
 
         val origin = runtimeContext.origin
@@ -52,24 +46,10 @@ class RubberTreeFeature : Feature<TreeFeatureConfig>(TreeFeatureConfig.CODEC) {
         }
 
         if (!Feature.TREE.generate(runtimeContext)) {
-            if (FEATURE_FAILURE_LOG_COUNTER.getAndIncrement() < FEATURE_LOG_LIMIT) {
-                logger.info(
-                    "Rubber tree feature generation failed at origin={} after clearing {} overlapping tree blocks",
-                    origin,
-                    overlappingTreeBlocks.size
-                )
-            }
             return false
         }
 
         cleanupOrphanLeaves(runtimeContext, origin)
-        if (FEATURE_SUCCESS_LOG_COUNTER.getAndIncrement() < FEATURE_LOG_LIMIT) {
-            logger.info(
-                "Rubber tree feature generation succeeded at origin={} clearedOverlaps={}",
-                origin,
-                overlappingTreeBlocks.size
-            )
-        }
         return true
     }
 
@@ -98,14 +78,6 @@ class RubberTreeFeature : Feature<TreeFeatureConfig>(TreeFeatureConfig.CODEC) {
                         continue
                     }
                     if (!TreeFeature.canReplace(world, pos)) {
-                        if (CLEARANCE_BLOCK_LOG_COUNTER.getAndIncrement() < FEATURE_LOG_LIMIT) {
-                            logger.info(
-                                "Rubber tree feature blocked at origin={} by non-replaceable state={} at pos={}",
-                                origin,
-                                state,
-                                pos
-                            )
-                        }
                         return null
                     }
                 }
@@ -195,18 +167,12 @@ class RubberTreeFeature : Feature<TreeFeatureConfig>(TreeFeatureConfig.CODEC) {
     }
 
     companion object {
-        private val logger = LoggerFactory.getLogger("ic2_120.rubber_tree.feature")
         // 当前橡胶树树冠半径为 2，这里额外留 1 格缓冲，避免与其他树冠/树干贴脸生成。
-        private const val FEATURE_LOG_LIMIT = 64
         private const val CLEARANCE_RADIUS = 3
         private const val CLEARANCE_HEIGHT = 12
         private const val LEAF_SUPPORT_DISTANCE = 6
         private const val LEAF_CLEANUP_RADIUS = CLEARANCE_RADIUS + LEAF_SUPPORT_DISTANCE
         private const val LEAF_CLEANUP_MIN_Y = -2
         private const val LEAF_CLEANUP_MAX_Y = CLEARANCE_HEIGHT + 4
-        private val SAPLING_LOG_COUNTER = AtomicInteger()
-        private val CLEARANCE_BLOCK_LOG_COUNTER = AtomicInteger()
-        private val FEATURE_FAILURE_LOG_COUNTER = AtomicInteger()
-        private val FEATURE_SUCCESS_LOG_COUNTER = AtomicInteger()
     }
 }
