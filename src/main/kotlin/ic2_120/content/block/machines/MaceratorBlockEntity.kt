@@ -226,6 +226,7 @@ class MaceratorBlockEntity(
             if (outputSlot.isEmpty()) setStack(SLOT_OUTPUT, result)
             else outputSlot.increment(result.count)
             sync.progress = 0
+            setActiveState(world, pos, state, false)
             markDirty()
             sync.syncCurrentTickFlow()
             return
