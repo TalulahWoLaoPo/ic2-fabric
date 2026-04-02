@@ -3,6 +3,7 @@ package ic2_120.content.block
 import ic2_120.content.block.machines.ExtractorBlockEntity
 import ic2_120.content.item.Circuit
 import ic2_120.content.item.Treetap
+import ic2_120.content.recipes.crafting.ConsumeTreetapShapedRecipeDatagen
 import ic2_120.content.recipes.extractor.ExtractorRecipeDatagen
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.instance
@@ -14,7 +15,6 @@ import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityTicker
 import net.minecraft.block.entity.BlockEntityType
-import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
 import net.minecraft.data.server.recipe.RecipeJsonProvider
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemPlacementContext
@@ -89,11 +89,13 @@ class ExtractorBlock : MachineBlock() {
             val circuit = Circuit::class.instance()
             val treetap = Treetap::class.instance()
             if (machine != Items.AIR && circuit != Items.AIR && treetap != Items.AIR) {
-                ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, ExtractorBlock::class.item(), 1)
-                    .pattern("   ").pattern("TMT").pattern("TCT")
-                    .input('T', treetap).input('M', machine).input('C', circuit)
-                    .criterion(hasItem(machine), conditionsFromItem(machine))
-                    .offerTo(exporter, ExtractorBlock::class.id())
+                ConsumeTreetapShapedRecipeDatagen.offer(
+                    exporter = exporter,
+                    recipeId = ExtractorBlock::class.id(),
+                    result = ExtractorBlock::class.item(),
+                    pattern = listOf("   ", "TMT", "TCT"),
+                    keys = mapOf('T' to treetap, 'M' to machine, 'C' to circuit)
+                )
             }
 
             // 机器配方

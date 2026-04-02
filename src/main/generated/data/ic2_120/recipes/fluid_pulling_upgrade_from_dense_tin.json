@@ -1,5 +1,5 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "ic2_120:consume_treetap_shaped",
   "category": "misc",
   "key": {
     "M": {

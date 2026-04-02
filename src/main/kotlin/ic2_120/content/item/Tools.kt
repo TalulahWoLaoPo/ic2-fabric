@@ -16,6 +16,7 @@ import ic2_120.content.block.CropStickBlock
 import ic2_120.content.block.TeleporterBlock
 import ic2_120.content.block.machines.TeleporterBlockEntity
 import ic2_120.content.crop.CropType
+import ic2_120.content.recipes.crafting.ConsumeTreetapShapedRecipeDatagen
 import com.google.common.collect.ImmutableMultimap
 import com.google.common.collect.Multimap
 import net.minecraft.block.Block
@@ -767,7 +768,7 @@ class ElectricTreetap : Item(FabricItemSettings().maxCount(1)), IElectricTool {
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val treetap = Treetap::class.instance()
             val smallPower = SmallPowerUnitItem::class.instance()
-            BatteryEnergyShapedRecipeDatagen.offer(
+            ConsumeTreetapShapedRecipeDatagen.offer(
                 exporter = exporter,
                 recipeId = ElectricTreetap::class.id(),
                 result = ElectricTreetap::class.instance(),
@@ -775,8 +776,7 @@ class ElectricTreetap : Item(FabricItemSettings().maxCount(1)), IElectricTool {
                 keys = mapOf<Char, Item>(
                     'T' to treetap,
                     'P' to smallPower
-                ),
-                category = "equipment"
+                )
             )
         }
     }

@@ -6,6 +6,7 @@ import ic2_120.content.item.IronPlate
 import ic2_120.content.item.Resin
 import ic2_120.content.item.RubberItem
 import ic2_120.content.item.Treetap
+import ic2_120.content.recipes.crafting.ConsumeTreetapShapedRecipeDatagen
 import ic2_120.registry.annotation.ModBlock
 import net.minecraft.block.AbstractBlock
 import net.minecraft.block.Block
@@ -290,14 +291,13 @@ class MiningPipeBlock : PillarBlock(AbstractBlock.Settings.copy(Blocks.IRON_BLOC
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val ironPlate = IronPlate::class.instance()
             val treetap = Treetap::class.instance()
-            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, MiningPipeBlock::class.item(), 1)
-                .pattern("x x")
-                .pattern("x x")
-                .pattern("xyx")
-                .input('x', ironPlate)
-                .input('y', treetap)
-                .criterion(hasItem(ironPlate), conditionsFromItem(ironPlate))
-                .offerTo(exporter, MiningPipeBlock::class.id())
+            ConsumeTreetapShapedRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = MiningPipeBlock::class.id(),
+                result = MiningPipeBlock::class.item(),
+                pattern = listOf("x x", "x x", "xyx"),
+                keys = mapOf('x' to ironPlate, 'y' to treetap)
+            )
         }
     }
 }

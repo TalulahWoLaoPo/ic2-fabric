@@ -3,6 +3,7 @@ package ic2_120.content.block
 import ic2_120.Ic2_120
 import ic2_120.content.block.MachineCasingBlock
 import ic2_120.content.block.machines.PumpBlockEntity
+import ic2_120.content.recipes.crafting.ConsumeTreetapShapedRecipeDatagen
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.instance
 import ic2_120.registry.item
@@ -97,11 +98,13 @@ class PumpBlock : MachineBlock() {
             val miningPipe = MiningPipeBlock::class.item()
             val treetap = ic2_120.content.item.Treetap::class.instance()
             if (machine != Items.AIR && emptyCell != Items.AIR && miningPipe != Items.AIR && treetap != Items.AIR && circuit != Items.AIR) {
-                ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, PumpBlock::class.item(), 1)
-                    .pattern("ECE").pattern("EME").pattern("PTP")
-                    .input('E', emptyCell).input('C', circuit).input('M', machine).input('P', miningPipe).input('T', treetap)
-                    .criterion(hasItem(machine), conditionsFromItem(machine))
-                    .offerTo(exporter, PumpBlock::class.id())
+                ConsumeTreetapShapedRecipeDatagen.offer(
+                    exporter = exporter,
+                    recipeId = PumpBlock::class.id(),
+                    result = PumpBlock::class.item(),
+                    pattern = listOf("ECE", "EME", "PTP"),
+                    keys = mapOf('E' to emptyCell, 'C' to circuit, 'M' to machine, 'P' to miningPipe, 'T' to treetap)
+                )
             }
         }
     }

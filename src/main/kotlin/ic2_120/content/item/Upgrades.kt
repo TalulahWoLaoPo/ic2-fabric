@@ -4,11 +4,13 @@ import ic2_120.content.block.MvTransformerBlock
 import ic2_120.content.block.cables.DoubleInsulatedGoldCableBlock
 import ic2_120.content.block.cables.InsulatedCopperCableBlock
 import ic2_120.content.item.energy.ReBatteryItem
+import ic2_120.content.recipes.crafting.ConsumeTreetapShapedRecipeDatagen
 import ic2_120.content.upgrade.EjectorUpgradeComponent
 import ic2_120.content.upgrade.FluidPipeUpgradeComponent
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.annotation.ModItem
 import ic2_120.registry.annotation.RecipeProvider
+import ic2_120.registry.id
 import ic2_120.registry.instance
 import ic2_120.registry.item
 import ic2_120.registry.recipeId
@@ -343,24 +345,21 @@ class FluidPullingUpgrade : FluidFilterUpgradeItem() {
             val dense = DenseTinPlate::class.instance()
             val tap = Treetap::class.instance()
             val motor = ElectricMotor::class.instance()
-            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, FluidPullingUpgrade::class.instance(), 1)
-                .pattern("TWT")
-                .pattern(" M ")
-                .pattern("T T")
-                .input('T', tin)
-                .input('W', tap)
-                .input('M', motor)
-                .criterion(hasItem(motor), conditionsFromItem(motor))
-                .offerTo(exporter)
-            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, FluidPullingUpgrade::class.instance(), 9)
-                .pattern("TWT")
-                .pattern(" M ")
-                .pattern("T T")
-                .input('T', dense)
-                .input('W', tap)
-                .input('M', motor)
-                .criterion(hasItem(dense), conditionsFromItem(dense))
-                .offerTo(exporter, FluidPullingUpgrade::class.recipeId("from_dense_tin"))
+            ConsumeTreetapShapedRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = FluidPullingUpgrade::class.id(),
+                result = FluidPullingUpgrade::class.instance(),
+                pattern = listOf("TWT", " M ", "T T"),
+                keys = mapOf('T' to tin, 'W' to tap, 'M' to motor)
+            )
+            ConsumeTreetapShapedRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = FluidPullingUpgrade::class.recipeId("from_dense_tin"),
+                result = FluidPullingUpgrade::class.instance(),
+                pattern = listOf("TWT", " M ", "T T"),
+                keys = mapOf('T' to dense, 'W' to tap, 'M' to motor),
+                count = 9
+            )
         }
     }
 }
