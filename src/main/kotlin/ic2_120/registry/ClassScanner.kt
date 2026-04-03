@@ -502,9 +502,6 @@ object ClassScanner {
                 // 创建 RegistryKey
                 val tabKey = RegistryKey.of(RegistryKeys.ITEM_GROUP, id)
 
-                // 解析图标物品ID
-                val iconId = Identifier(modId, annotation.iconItem)
-
                 // 获取这个物品栏对应的枚举值
                 val tabEnum = CreativeTab.values().find { it.id == name }
                     ?: run {
@@ -519,9 +516,33 @@ object ClassScanner {
 
                 logger.info("物品栏 {} 包含 {} 个物品: {}", name, entries.size, entries.map { it.itemId })
 
+                // 解析图标：根据 iconResource（优先）或 iconItem 创建图标
+                val iconStackSupplier: () -> ItemStack
+                when {
+                    annotation.iconResource.isNotEmpty() -> {
+                        // 直接使用资源文件路径创建图标
+                        val resourcePath = annotation.iconResource
+                        iconStackSupplier = { CreativeTabIconProvider.getIconStack(resourcePath) }
+                    }
+                    annotation.iconItem.isNotEmpty() -> {
+                        // 使用已注册的物品作为图标
+                        val iconId = Identifier(modId, annotation.iconItem)
+                        iconStackSupplier = { ItemStack(Registries.ITEM.get(iconId)) }
+                    }
+                    else -> {
+                        // 默认使用第一个物品
+                        val firstEntry = entries.firstOrNull()
+                        iconStackSupplier = if (firstEntry != null) {
+                            { ItemStack(Registries.ITEM.get(firstEntry.itemId)) }
+                        } else {
+                            { ItemStack(net.minecraft.item.Items.BARRIER) }
+                        }
+                    }
+                }
+
                 // 创建物品栏，使用 entries() 方法添加物品
                 val itemGroup = FabricItemGroup.builder()
-                    .icon { net.minecraft.item.ItemStack(Registries.ITEM.get(iconId)) }
+                    .icon(iconStackSupplier)
                     .displayName(Text.translatable("itemGroup.$modId.$name"))
                     .entries { _, collector ->
                         // 添加所有属于这个物品栏的物品（已按 group 排序）

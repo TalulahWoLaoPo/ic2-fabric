@@ -73,7 +73,7 @@ class RubberTreeFeature : Feature<TreeFeatureConfig>(TreeFeatureConfig.CODEC) {
                         continue
                     }
                     // 与原版 TreeFeature 的 getTopPosition 保持一致：
-                    // 配置里 ignore_vines=true 时，藤蔓不应阻止橡胶树生成。
+                    // 配置里 ignore_vines=true 时，藤蔓不应阻止橡胶树生成。    
                     if (context.config.ignoreVines && state.isOf(Blocks.VINE)) {
                         continue
                     }
