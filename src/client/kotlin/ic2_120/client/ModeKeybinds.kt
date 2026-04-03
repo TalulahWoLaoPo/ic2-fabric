@@ -17,15 +17,12 @@ import net.minecraft.network.PacketByteBuf
 import org.lwjgl.glfw.GLFW
 
 /**
- * 通用功能切换按键（默认 Alt+M）
+ * 通用功能切换键（默认 M，可在控制中改键）。
  *
- * 用于手持类设备的模式切换：
- * - 夜视仪：夜视开关
- * - 铱钻头：由专用逻辑处理（模式键 + 右键）
- * - 建筑泡沫喷枪：单格 / 多格喷涂切换
- * - 采矿镭射等：模式切换（预留）
+ * - 喷气背包 / 泡沫喷枪：按住 **Alt** 并**按下**此键（边沿触发）切换（见 [register] 内 ClientTickEvents）。
+ * - 采矿镭射枪：**按住**此键并**右键**切换模式（见 [MiningLaserModeHandler]）。
  *
- * 注：量子套夜视(Alt+N)、飞行(Alt+F) 使用 ArmorKeybinds，不共用 M。
+ * 注：量子套夜视(Alt+N)、飞行(Alt+F) 使用 ArmorKeybinds，不共用本键。
  */
 @Environment(EnvType.CLIENT)
 object ModeKeybinds {

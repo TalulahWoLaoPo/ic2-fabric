@@ -17,23 +17,26 @@ import net.minecraft.data.server.recipe.RecipeJsonProvider
 import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
 import net.minecraft.item.Items
 import net.minecraft.recipe.book.RecipeCategory
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import net.minecraft.client.item.TooltipContext
+import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.text.Text
 import net.minecraft.util.Hand
 import net.minecraft.util.TypedActionResult
-import net.minecraft.util.Formatting
 import net.minecraft.world.World
 
 /**
  * 采矿镭射枪：电动远程采矿工具，发射弹射体破坏方块。
  *
- * Alt + 模式键 + 右键切换模式，右键发射。
+ * 按住模式键（控制里的「功能切换键」，默认 M）并右键切换模式；仅右键发射。
  * 实现了 [IElectricTool]，使用 EU 电量系统。
  */
 @ModItem(name = "mining_laser", tab = CreativeTab.IC2_TOOLS)
@@ -43,6 +46,9 @@ class MiningLaserItem : Item(
 
     companion object {
         private const val MODE_KEY = "LaserMode"
+
+        /** 上一 tick 主手是否已是采矿镭射枪（用于切到主手时提示一次当前模式） */
+        private val hadMiningLaserInMainLastTick = ConcurrentHashMap<UUID, Boolean>()
 
         /** 从 ItemStack NBT 读取当前模式 */
         fun getMode(stack: ItemStack): LaserMode {
@@ -92,10 +98,38 @@ class MiningLaserItem : Item(
 
     override fun isDamageable() = false
 
+    override fun inventoryTick(stack: ItemStack, world: World, entity: Entity, slot: Int, selected: Boolean) {
+        super.inventoryTick(stack, world, entity, slot, selected)
+        if (world.isClient || entity !is ServerPlayerEntity) return
+        val player = entity
+        val uuid = player.uuid
+        if (player.mainHandStack.item !is MiningLaserItem) {
+            hadMiningLaserInMainLastTick[uuid] = false
+            return
+        }
+        if (stack !== player.mainHandStack) return
+
+        val hadBefore = hadMiningLaserInMainLastTick.getOrDefault(uuid, false)
+        if (!hadBefore) {
+            val mode = getMode(stack)
+            player.sendMessage(Text.translatable(mode.translationKey), true)
+        }
+        hadMiningLaserInMainLastTick[uuid] = true
+    }
+
     // ========== 使用逻辑 ==========
 
     override fun use(world: World, user: PlayerEntity, hand: Hand): TypedActionResult<ItemStack> {
         val stack = user.getStackInHand(hand)
+
+        // 客户端在按住模式键切模式时仍可能发来 use；与切模式包同 tick 的这一次不发射（见 [MiningLaserServerSuppress]）
+        if (!world.isClient) {
+            val sp = user as? ServerPlayerEntity
+            if (sp != null && MiningLaserServerSuppress.consumeSuppressNextFire(sp)) {
+                return TypedActionResult.success(stack, false)
+            }
+        }
+
         val mode = getMode(stack)
 
         // 电量不足
@@ -149,6 +183,7 @@ class MiningLaserItem : Item(
     }
 
     // ========== Tooltip ==========
+    // 模式、按键与说明由客户端 [ic2_120.client.MiningLaserTooltipHandler] 追加
 
     override fun appendTooltip(
         stack: ItemStack,

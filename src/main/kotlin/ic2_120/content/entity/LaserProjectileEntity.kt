@@ -120,10 +120,15 @@ class LaserProjectileEntity(
             return
         }
 
-        // 实体碰撞检测
-        val entityHit = ProjectileUtil.getCollision(this) { entity: Entity ->
-            entity.isAlive && entity.canHit() && !entity.isSpectator
-        }
+        // 实体碰撞：纯采矿类模式（无伤害、无爆炸）必须穿透生物，否则会先命中实体并被 discard，永远打不到后方方块
+        val entityHit =
+            if (mode.entityDamage <= 0f && mode.explosionPower <= 0f) {
+                null
+            } else {
+                ProjectileUtil.getCollision(this) { entity: Entity ->
+                    entity.isAlive && entity.canHit() && !entity.isSpectator
+                }
+            }
         if (entityHit != null && entityHit.type == HitResult.Type.ENTITY) {
             setPosition(entityHit.pos)
             onEntityHit(entityHit as EntityHitResult)
@@ -156,11 +161,11 @@ class LaserProjectileEntity(
         val state = world.getBlockState(pos)
         val currentMode = mode
 
-        // 爆破模式
+        // 爆破模式：与原版 TNT 一致传入「爆炸源实体」与命中点坐标（见 TntEntity.explode）
         if (currentMode.explosionPower > 0) {
             world.createExplosion(
-                null,
-                pos.x + 0.5, pos.y + 0.5, pos.z + 0.5,
+                this,
+                x, y, z,
                 currentMode.explosionPower,
                 World.ExplosionSourceType.TNT
             )
@@ -188,6 +193,20 @@ class LaserProjectileEntity(
             return
         }
 
+        // 采矿模式：按方块硬度消耗射程，可连续击穿多个方块（与 LaserMode 描述一致）
+        if (currentMode == LaserMode.MINING && canBreak(state)) {
+            val hardness = state.block.hardness.coerceAtLeast(0.1f)
+            remainingRange -= hardness.toDouble()
+            world.breakBlock(pos, true, owner)
+            world.playSound(null, pos, LASER_HIT_SOUND, SoundCategory.PLAYERS, 0.8f, 1.2f)
+            if (remainingRange > 0) {
+                nudgePastBlock(hitResult)
+                return
+            }
+            discard()
+            return
+        }
+
         // 其他模式：破坏方块
         if (canBreak(state)) {
             world.breakBlock(pos, true, owner)
@@ -195,6 +214,13 @@ class LaserProjectileEntity(
         }
 
         discard()
+    }
+
+    /** 击穿方块后沿飞行方向略微前移，避免同一 tick 再次命中同一格 */
+    private fun nudgePastBlock(hitResult: BlockHitResult) {
+        val dir = velocity.normalize()
+        val nudge = 0.05
+        setPosition(x + dir.x * nudge, y + dir.y * nudge, z + dir.z * nudge)
     }
 
     override fun onEntityHit(hitResult: EntityHitResult) {
@@ -213,11 +239,11 @@ class LaserProjectileEntity(
             }
         }
 
-        // 爆破模式在命中实体时也会爆炸
+        // 爆破模式在命中实体时也会爆炸（中心在弹体命中点，与方块命中一致）
         if (currentMode.explosionPower > 0) {
             world.createExplosion(
-                null,
-                hitResult.entity.x, hitResult.entity.y, hitResult.entity.z,
+                this,
+                x, y, z,
                 currentMode.explosionPower,
                 World.ExplosionSourceType.TNT
             )
@@ -246,7 +272,6 @@ class LaserProjectileEntity(
             val output = recipe.craft(inventory, serverWorld.registryManager)
             if (!output.isEmpty) {
                 world.breakBlock(pos, false)
-                net.minecraft.block.Block.dropStacks(state, serverWorld, pos)
                 net.minecraft.block.Block.dropStack(serverWorld, pos, output.copy())
                 world.playSound(null, pos, LASER_HIT_SOUND, SoundCategory.PLAYERS, 0.8f, 1.2f)
                 return
@@ -281,8 +306,6 @@ class LaserProjectileEntity(
         nbt.putInt("LifeTicks", lifeTicks)
         nbt.putString("Mode", mode.name)
     }
-
-    override fun canHit(): Boolean = mode.entityDamage > 0
 
     override fun isCollidable(): Boolean = false
     override fun canUsePortals(): Boolean = false

@@ -56,6 +56,7 @@ import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents
 import net.fabricmc.fabric.api.registry.FuelRegistry
 import ic2_120.content.item.FoamSprayerItem
 import ic2_120.content.item.armor.JetpackItem
+import ic2_120.content.item.CreativeTabIconItemsRegistration
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant
@@ -98,6 +99,9 @@ object Ic2_120 : ModInitializer {
         OreGeneration.register()
         // 奖励箱战利品追加注入（避免直接覆盖原版 loot table）
         ChestLootInjector.register()
+
+        // 创造栏图标占位物品（无 @ModItem，须在物品栏注册前完成）
+        CreativeTabIconItemsRegistration.register(MOD_ID)
 
         // 使用类级别注解的自动注册系统
         ClassScanner.scanAndRegister(

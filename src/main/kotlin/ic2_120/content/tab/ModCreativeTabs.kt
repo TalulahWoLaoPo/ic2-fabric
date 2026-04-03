@@ -20,8 +20,10 @@ class Ic2MachinesTab
 /**
  * IC2 工具物品栏。
  * 包含采矿镭射枪、扳手、钻头等工具。
+ *
+ * 图标使用 [ModCreativeTab.iconResource] 指向贴图路径，由占位物品渲染，避免用采矿镭射枪物品导致 EU 条。
  */
-@ModCreativeTab(name = "ic2_tools", iconItem = "mining_laser")
+@ModCreativeTab(name = "ic2_tools", iconResource = "ic2:item/tool/electric/mining_laser")
 class Ic2ToolsTab
 
 /**

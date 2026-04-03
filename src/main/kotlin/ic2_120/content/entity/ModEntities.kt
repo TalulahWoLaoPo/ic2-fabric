@@ -50,7 +50,7 @@ object ModEntities {
         Identifier(Ic2_120.MOD_ID, "laser_projectile"),
         EntityType.Builder.create<LaserProjectileEntity>({ type, world -> LaserProjectileEntity(type, world) }, SpawnGroup.MISC)
             .setDimensions(0.1f, 0.1f)
-            .maxTrackingRange(16)
+            .maxTrackingRange(64)
             .trackingTickInterval(1)
             .build("laser_projectile")
     )

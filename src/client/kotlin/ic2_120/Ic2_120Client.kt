@@ -5,6 +5,7 @@ import ic2_120.client.ArmorTooltipHandler
 import ic2_120.client.BandwidthHudKeybinds
 import ic2_120.client.DrillTooltipHandler
 import ic2_120.client.FoamSprayerTooltipHandler
+import ic2_120.client.MiningLaserTooltipHandler
 import ic2_120.client.ModeKeybinds
 import ic2_120.client.BatteryModelPredicates
 import ic2_120.client.ModItemTooltip
@@ -21,6 +22,7 @@ import ic2_120.client.ClientBlockEntityRenderers
 import ic2_120.client.JetpackSoundController
 import ic2_120.client.MachineLoopSoundController
 import ic2_120.client.IridiumDrillModeHandler
+import ic2_120.client.MiningLaserModeHandler
 import ic2_120.client.SodiumCompatibilityWarning
 import ic2_120.client.UpdateNotifier
 import ic2_120.client.network.NetworkManager
@@ -44,7 +46,9 @@ object Ic2_120Client : ClientModInitializer {
 		ArmorTooltipHandler.register()
 		DrillTooltipHandler.register()
 		IridiumDrillModeHandler.register()
+		MiningLaserModeHandler.register()
 		FoamSprayerTooltipHandler.register()
+		MiningLaserTooltipHandler.register()
 		UpdateNotifier.register()
 		SodiumCompatibilityWarning.register()
 		JetpackSoundController.register()

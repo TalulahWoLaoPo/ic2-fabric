@@ -4,6 +4,7 @@ import ic2_120.Ic2_120
 import ic2_120.content.item.FoamSprayerItem
 import ic2_120.content.item.IridiumDrill
 import ic2_120.content.item.MiningLaserItem
+import ic2_120.content.item.MiningLaserServerSuppress
 import ic2_120.content.item.NightVisionGoggles
 import ic2_120.content.item.ElectricJetpack
 import ic2_120.content.item.armor.JetpackItem
@@ -146,7 +147,9 @@ object NetworkManager {
                 for (hand in arrayOf(Hand.MAIN_HAND, Hand.OFF_HAND)) {
                     val stack = player.getStackInHand(hand)
                     if (stack.item is MiningLaserItem) {
+                        MiningLaserServerSuppress.onMiningLaserModeToggled(player)
                         val newMode = MiningLaserItem.cycleMode(stack)
+                        player.setStackInHand(hand, stack)
                         player.sendMessage(
                             Text.translatable(newMode.translationKey),
                             true
