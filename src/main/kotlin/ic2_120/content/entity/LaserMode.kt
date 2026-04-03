@@ -22,7 +22,7 @@ enum class LaserMode(
     val scatterCount: Int,
     /** 散射张角 (度) */
     val scatterSpread: Double,
-    /** 对实体伤害 (0 = 无伤害) */
+    /** 对实体伤害（与 [net.minecraft.entity.LivingEntity.damage] 数值一致，2.0 = 1 颗心） */
     val entityDamage: Float,
     /** 描述翻译键 */
     val descriptionKey: String
@@ -37,7 +37,7 @@ enum class LaserMode(
         color = 0xFF00BFFF.toInt(),
         scatterCount = 1,
         scatterSpread = 0.0,
-        entityDamage = 0f,
+        entityDamage = 4f,
         descriptionKey = "mining_laser.mode.mining.desc"
     ),
     /** 低聚焦模式: 近距离单发，节约用电，有几率点燃方块 */
@@ -50,10 +50,10 @@ enum class LaserMode(
         color = 0xFFFF8800.toInt(),
         scatterCount = 1,
         scatterSpread = 0.0,
-        entityDamage = 0f,
+        entityDamage = 2f,
         descriptionKey = "mining_laser.mode.low_focus.desc"
     ),
-    /** 远距模式: 超远射程，对实体伤害最高 19 点 */
+    /** 远距模式: 超远射程，对实体 3 颗心 */
     LONG_RANGE(
         translationKey = "mining_laser.mode.long_range",
         energyCost = 5_000L,
@@ -63,7 +63,7 @@ enum class LaserMode(
         color = 0xFF44FF44.toInt(),
         scatterCount = 1,
         scatterSpread = 0.0,
-        entityDamage = 19f,
+        entityDamage = 6f,
         descriptionKey = "mining_laser.mode.long_range.desc"
     ),
     /** 超级热线模式: 烧制方块，将矿石烧制成成品（对原木无效） */
@@ -76,7 +76,7 @@ enum class LaserMode(
         color = 0xFFFF4400.toInt(),
         scatterCount = 1,
         scatterSpread = 0.0,
-        entityDamage = 0f,
+        entityDamage = 8f,
         descriptionKey = "mining_laser.mode.super_heat.desc"
     ),
     /** 散射模式: 25 发采矿模式，3x3 范围 5x5 向前发射 */
@@ -89,7 +89,7 @@ enum class LaserMode(
         color = 0xFFFF44FF.toInt(),
         scatterCount = 25,
         scatterSpread = 50.0,
-        entityDamage = 0f,
+        entityDamage = 2f,
         descriptionKey = "mining_laser.mode.scatter.desc"
     ),
     /** 爆破模式: 约 TNT 当量，穿甲效果，爆炸中心 100 点伤害 */
@@ -115,7 +115,7 @@ enum class LaserMode(
         color = 0xFF00CCFF.toInt(),
         scatterCount = 9,
         scatterSpread = 18.0,
-        entityDamage = 0f,
+        entityDamage = 2f,
         descriptionKey = "mining_laser.mode.trench_3x3.desc"
     );
 

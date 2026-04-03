@@ -1,5 +1,6 @@
 package ic2_120.content.entity
 
+import net.minecraft.block.AbstractFireBlock
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.entity.Entity
@@ -19,13 +20,14 @@ import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvent
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Direction
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.hit.EntityHitResult
 import net.minecraft.util.hit.HitResult
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.RaycastContext
 import net.minecraft.world.World
-import net.minecraft.world.explosion.Explosion
 
 /**
  * 采矿镭射枪弹射实体。
@@ -50,6 +52,9 @@ class LaserProjectileEntity(
 
         /** 不会被镭射破坏的方块硬度阈值（黑曜石=50，防爆石等更高） */
         private const val MAX_HARDNESS = 40.0f
+
+        /** 方块被移除后，尝试在该格生成火的概率（与旧低聚焦「点燃」概率一致） */
+        private const val POST_BREAK_IGNITE_CHANCE = 0.3f
     }
 
     /** 当前模式 */
@@ -120,15 +125,9 @@ class LaserProjectileEntity(
             return
         }
 
-        // 实体碰撞：纯采矿类模式（无伤害、无爆炸）必须穿透生物，否则会先命中实体并被 discard，永远打不到后方方块
-        val entityHit =
-            if (mode.entityDamage <= 0f && mode.explosionPower <= 0f) {
-                null
-            } else {
-                ProjectileUtil.getCollision(this) { entity: Entity ->
-                    entity.isAlive && entity.canHit() && !entity.isSpectator
-                }
-            }
+        val entityHit = ProjectileUtil.getCollision(this) { entity: Entity ->
+            entity.isAlive && entity.canHit() && !entity.isSpectator
+        }
         if (entityHit != null && entityHit.type == HitResult.Type.ENTITY) {
             setPosition(entityHit.pos)
             onEntityHit(entityHit as EntityHitResult)
@@ -169,6 +168,7 @@ class LaserProjectileEntity(
                 currentMode.explosionPower,
                 World.ExplosionSourceType.TNT
             )
+            tryRandomIgniteAfterBreak(pos)
             discard()
             return
         }
@@ -180,13 +180,12 @@ class LaserProjectileEntity(
             return
         }
 
-        // 低聚焦模式：有几率点燃
+        // 低聚焦模式：易燃物先破坏再在空格上随机点火（不可先放火再破坏，否则火随方块一起没了）
         val isFlammable = state.isIn(BlockTags.LEAVES) || state.isIn(BlockTags.PLANKS) || state.isIn(BlockTags.WOOL)
         if (currentMode == LaserMode.LOW_FOCUS && isFlammable) {
-            if (world.random.nextFloat() < 0.3f) {
-                world.setBlockState(pos, Blocks.FIRE.defaultState)
-            } else if (canBreak(state)) {
+            if (canBreak(state)) {
                 world.breakBlock(pos, true, owner)
+                tryRandomIgniteAfterBreak(pos)
             }
             world.playSound(null, pos, LASER_HIT_SOUND, SoundCategory.PLAYERS, 0.8f, 1.2f)
             discard()
@@ -198,6 +197,7 @@ class LaserProjectileEntity(
             val hardness = state.block.hardness.coerceAtLeast(0.1f)
             remainingRange -= hardness.toDouble()
             world.breakBlock(pos, true, owner)
+            tryRandomIgniteAfterBreak(pos)
             world.playSound(null, pos, LASER_HIT_SOUND, SoundCategory.PLAYERS, 0.8f, 1.2f)
             if (remainingRange > 0) {
                 nudgePastBlock(hitResult)
@@ -210,10 +210,20 @@ class LaserProjectileEntity(
         // 其他模式：破坏方块
         if (canBreak(state)) {
             world.breakBlock(pos, true, owner)
+            tryRandomIgniteAfterBreak(pos)
             world.playSound(null, pos, LASER_HIT_SOUND, SoundCategory.PLAYERS, 0.8f, 1.2f)
         }
 
         discard()
+    }
+
+    /** 方块已移除后，在原位按概率尝试生成火（需满足原版放火条件）。 */
+    private fun tryRandomIgniteAfterBreak(pos: BlockPos) {
+        if (world.random.nextFloat() >= POST_BREAK_IGNITE_CHANCE) return
+        if (!world.isInBuildLimit(pos)) return
+        if (!AbstractFireBlock.canPlaceAt(world, pos, Direction.UP)) return
+        if (!world.getBlockState(pos).isReplaceable) return
+        world.setBlockState(pos, Blocks.FIRE.defaultState)
     }
 
     /** 击穿方块后沿飞行方向略微前移，避免同一 tick 再次命中同一格 */
@@ -247,6 +257,7 @@ class LaserProjectileEntity(
                 currentMode.explosionPower,
                 World.ExplosionSourceType.TNT
             )
+            tryRandomIgniteAfterBreak(BlockPos.ofFloored(x, y, z))
         }
 
         discard()
@@ -273,6 +284,7 @@ class LaserProjectileEntity(
             if (!output.isEmpty) {
                 world.breakBlock(pos, false)
                 net.minecraft.block.Block.dropStack(serverWorld, pos, output.copy())
+                tryRandomIgniteAfterBreak(pos)
                 world.playSound(null, pos, LASER_HIT_SOUND, SoundCategory.PLAYERS, 0.8f, 1.2f)
                 return
             }
@@ -280,6 +292,7 @@ class LaserProjectileEntity(
 
         // 没有熔炼配方的方块直接破坏
         world.breakBlock(pos, true, owner)
+        tryRandomIgniteAfterBreak(pos)
         world.playSound(null, pos, LASER_HIT_SOUND, SoundCategory.PLAYERS, 0.8f, 1.2f)
     }
 
