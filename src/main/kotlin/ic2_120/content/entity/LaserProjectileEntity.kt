@@ -251,12 +251,13 @@ class LaserProjectileEntity(
         if (currentMode.entityDamage > 0) {
             val target = hitResult.entity
             if (target is LivingEntity) {
-                // 穿甲效果：直接设置伤害而非调用 hurt（绕过护甲）
-                if (currentMode == LaserMode.EXPLOSIVE) {
-                    target.health -= currentMode.entityDamage
+                // 穿甲效果：爆炸模式使用爆炸伤害源，触发量子/纳米护甲减伤逻辑
+                val damageSource = if (currentMode == LaserMode.EXPLOSIVE) {
+                    world.damageSources.explosion(this, null)
                 } else {
-                    target.damage(world.damageSources.generic(), currentMode.entityDamage)
+                    world.damageSources.generic()
                 }
+                target.damage(damageSource, currentMode.entityDamage)
             }
         }
 
