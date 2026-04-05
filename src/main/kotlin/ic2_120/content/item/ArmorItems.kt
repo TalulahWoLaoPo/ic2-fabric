@@ -1085,47 +1085,41 @@ abstract class BatteryPackArmorItem(
         var available = getCurrentCharge(batpackStack)
         if (available <= 0L) return
 
-        val handled = mutableListOf<ItemStack>()
+        // 先收集所有需要处理的物品（避免遍历时修改背包）
+        val toCharge = mutableListOf<ItemStack>()
 
-        fun tryCharge(target: ItemStack) {
-            if (available <= 0L || target.isEmpty) return
-            if (handled.any { it === target }) return
-            handled += target
-
-            val chargeTarget = when {
-                target.count <= 1 -> target
-                else -> {
-                    val emptySlot = player.inventory.emptySlot
-                    if (emptySlot < 0) return
-                    val single = target.copy()
-                    single.count = 1
-                    target.decrement(1)
-                    player.inventory.setStack(emptySlot, single)
-                    single
-                }
-            }
-
-            val item = chargeTarget.item as? IElectricTool ?: return
+        fun collectItem(stack: ItemStack) {
+            if (stack.isEmpty) return
+            // 只处理单个物品或电动工具，跳过堆叠的普通物品
+            if (stack.count > 1) return
+            val item = stack.item as? IElectricTool ?: return
             if (item.tier > tier) return
-            if (item.isFullyCharged(chargeTarget)) return
-
-            val need = (item.maxCapacity - item.getEnergy(chargeTarget)).coerceAtLeast(0L)
-            if (need <= 0L) return
-
-            val transfer = minOf(need, available)
-            item.setEnergy(chargeTarget, item.getEnergy(chargeTarget) + transfer)
-            available -= transfer
-            setCurrentCharge(batpackStack, available)
+            if (item.isFullyCharged(stack)) return
+            toCharge += stack
         }
 
-        tryCharge(player.mainHandStack)
-        tryCharge(player.offHandStack)
+        collectItem(player.mainHandStack)
+        collectItem(player.offHandStack)
         for (armorStack in player.inventory.armor) {
             if (armorStack === batpackStack) continue
-            tryCharge(armorStack)
+            collectItem(armorStack)
         }
         for (i in 0 until player.inventory.main.size) {
-            tryCharge(player.inventory.getStack(i))
+            collectItem(player.inventory.getStack(i))
+        }
+
+        // 然后为收集到的物品充电
+        for (stack in toCharge) {
+            if (available <= 0L) break
+
+            val item = stack.item as? IElectricTool ?: continue
+            val need = (item.maxCapacity - item.getEnergy(stack)).coerceAtLeast(0L)
+            if (need <= 0L) continue
+
+            val transfer = minOf(need, available)
+            item.setEnergy(stack, item.getEnergy(stack) + transfer)
+            available -= transfer
+            setCurrentCharge(batpackStack, available)
         }
     }
 
