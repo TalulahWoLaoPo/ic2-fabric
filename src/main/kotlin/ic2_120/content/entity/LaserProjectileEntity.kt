@@ -125,13 +125,24 @@ class LaserProjectileEntity(
             return
         }
 
-        val entityHit = ProjectileUtil.getCollision(this) { entity: Entity ->
-            entity.isAlive && entity.canHit() && !entity.isSpectator
-        }
-        if (entityHit != null && entityHit.type == HitResult.Type.ENTITY) {
-            setPosition(entityHit.pos)
-            onEntityHit(entityHit as EntityHitResult)
-            return
+        // 实体碰撞：使用 AABB 碰撞检测飞行路径上的实体
+        // 纯采矿类模式（无伤害、无爆炸）跳过实体碰撞，避免先击中实体导致后方方块无法被挖
+        if (mode.entityDamage > 0f || mode.explosionPower > 0f) {
+            val expand = velocity.length() + 0.5
+            val searchBox = boundingBox.expand(expand, expand, expand)
+            val entities = world.getEntitiesByClass(
+                LivingEntity::class.java,
+                searchBox
+            ) { entity: Entity ->
+                entity.isAlive && entity.canHit() && !entity.isSpectator && entity != owner
+            }
+            if (entities.isNotEmpty()) {
+                val target = entities.minByOrNull { it.pos.distanceTo(pos) }!!
+                val hitPos = target.pos
+                setPosition(hitPos.x, hitPos.y + target.height * 0.5, hitPos.z)
+                onEntityHit(EntityHitResult(target, Vec3d(hitPos.x, hitPos.y + target.height * 0.5, hitPos.z)))
+                return
+            }
         }
 
         // 移动（直接设置位置，不走碰撞物理）
