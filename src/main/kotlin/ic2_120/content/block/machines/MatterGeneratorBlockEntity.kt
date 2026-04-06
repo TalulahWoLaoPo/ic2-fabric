@@ -99,7 +99,7 @@ class MatterGeneratorBlockEntity(
 
         private const val NBT_TANK_AMOUNT = "TankAmount"
         private const val NBT_PROGRESS = "Progress"
-        private const val NBT_USING_SCRAP = "UsingScrap"
+        private const val NBT_SCRAP_CONSUMED = "ScrapConsumed"
 
         @Volatile
         private var fluidLookupRegistered = false
@@ -228,7 +228,7 @@ class MatterGeneratorBlockEntity(
         canDischargeNow = { sync.amount < sync.getEffectiveCapacity() }
     )
 
-    private var usingScrapForCurrentCycle = false
+    private var scrapConsumedInCurrentCycle = 0
 
     constructor(pos: BlockPos, state: BlockState) : this(
         MatterGeneratorBlockEntity::class.type(),
@@ -302,7 +302,7 @@ class MatterGeneratorBlockEntity(
         sync.restoreEnergy(nbt.getLong(MatterGeneratorSync.NBT_ENERGY_STORED))
         sync.energyCapacity = sync.getEffectiveCapacity().toInt().coerceIn(0, Int.MAX_VALUE)
         sync.progress = nbt.getInt(NBT_PROGRESS).coerceIn(0, MatterGeneratorSync.PROGRESS_MAX)
-        usingScrapForCurrentCycle = nbt.getBoolean(NBT_USING_SCRAP)
+        scrapConsumedInCurrentCycle = nbt.getInt(NBT_SCRAP_CONSUMED).coerceIn(0, MatterGeneratorSync.SCRAP_PER_MB)
         tankInternal.setStoredAmount(nbt.getLong(NBT_TANK_AMOUNT))
         sync.fluidCapacityMb = MatterGeneratorSync.TANK_CAPACITY_MB
         sync.mode = resolveDisplayedMode()
@@ -315,7 +315,7 @@ class MatterGeneratorBlockEntity(
         nbt.putLong(MatterGeneratorSync.NBT_ENERGY_STORED, sync.amount)
         nbt.putLong(NBT_TANK_AMOUNT, tankInternal.getStoredAmount())
         nbt.putInt(NBT_PROGRESS, sync.progress)
-        nbt.putBoolean(NBT_USING_SCRAP, usingScrapForCurrentCycle)
+        nbt.putInt(NBT_SCRAP_CONSUMED, scrapConsumedInCurrentCycle)
     }
 
     fun tick(world: World, pos: BlockPos, state: BlockState) {
@@ -348,16 +348,18 @@ class MatterGeneratorBlockEntity(
             return
         }
 
-        if (sync.progress == 0 && !startNewCycleIfPossible()) {
-            setActiveState(world, pos, state, false)
+        if (sync.progress == 0) {
             sync.mode = resolveDisplayedMode()
-            sync.syncCurrentTickFlow()
-            return
         }
 
         val progressIncrement = speedMultiplier.toInt().coerceAtLeast(1)
         val nextProgress = (sync.progress + progressIncrement).coerceAtMost(MatterGeneratorSync.PROGRESS_MAX)
-        val need = computeEnergyForRange(sync.progress, nextProgress, usingScrapForCurrentCycle)
+
+        // 计算此进度段应该消耗的废料数并消耗
+        val scrapToConsume = calculateScrapToConsume(sync.progress, nextProgress)
+        consumeScrap(scrapToConsume)
+
+        val need = computeEnergyForRange(sync.progress, nextProgress)
         if (need <= 0L || sync.consumeEnergy(need) > 0L) {
             sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
             sync.progress = nextProgress
@@ -374,30 +376,35 @@ class MatterGeneratorBlockEntity(
         sync.syncCurrentTickFlow()
     }
 
-    private fun startNewCycleIfPossible(): Boolean {
-        usingScrapForCurrentCycle = consumeScrapForCycle()
-        sync.mode = resolveDisplayedMode()
-        return true
-    }
-
     private fun completeCycle() {
         tankInternal.insertInternal(outputPerCycle)
         sync.progress = 0
-        usingScrapForCurrentCycle = false
+        scrapConsumedInCurrentCycle = 0
         sync.mode = resolveDisplayedMode()
         markDirty()
     }
 
-    private fun consumeScrapForCycle(): Boolean {
+    // 计算从 fromProgress 到 nextProgress 需要消耗多少废料
+    // 34 个废料对应完整周期 (0-1954)
+    private fun calculateScrapToConsume(fromProgress: Int, nextProgress: Int): Int {
+        val scrapAtFrom = fromProgress * MatterGeneratorSync.SCRAP_PER_MB / MatterGeneratorSync.PROGRESS_MAX
+        val scrapAtNext = nextProgress * MatterGeneratorSync.SCRAP_PER_MB / MatterGeneratorSync.PROGRESS_MAX
+        return scrapAtNext - scrapAtFrom
+    }
+
+    private fun consumeScrap(count: Int) {
+        if (count <= 0) return
         val scrapStack = getStack(SLOT_SCRAP)
-        if (!isScrap(scrapStack) || scrapStack.count < MatterGeneratorSync.SCRAP_PER_MB) return false
-        scrapStack.decrement(MatterGeneratorSync.SCRAP_PER_MB)
+        if (!isScrap(scrapStack)) return
+        val actualCount = minOf(count, scrapStack.count)
+        if (actualCount <= 0) return
+        scrapStack.decrement(actualCount)
+        scrapConsumedInCurrentCycle += actualCount
         if (scrapStack.isEmpty) {
             setStack(SLOT_SCRAP, ItemStack.EMPTY)
         } else {
             markDirty()
         }
-        return true
     }
 
     private fun fillContainersFromTank() {
@@ -454,22 +461,42 @@ class MatterGeneratorBlockEntity(
         markDirty()
     }
 
-    private fun computeEnergyForRange(fromProgress: Int, toProgress: Int, scrapMode: Boolean): Long {
-        val total = if (scrapMode) MatterGeneratorSync.SCRAP_EU_PER_MB else MatterGeneratorSync.BASE_EU_PER_MB
-        val baseEnergy = cumulativeEnergy(total, toProgress) - cumulativeEnergy(total, fromProgress)
-        if (baseEnergy <= 0L) return 0L
-        return ceil(baseEnergy * energyMultiplier.toDouble()).toLong().coerceAtLeast(1L)
+    private fun computeEnergyForRange(fromProgress: Int, toProgress: Int): Long {
+        // 计算废料覆盖的进度上限
+        // 1 个废料 = 1/34 mb = PROGRESS_MAX / 34 进度
+        val coveredProgressLimit = scrapConsumedInCurrentCycle * MatterGeneratorSync.PROGRESS_MAX / MatterGeneratorSync.SCRAP_PER_MB
+
+        val totalEnergy = when {
+            toProgress <= coveredProgressLimit -> {
+                // 全部在废料覆盖范围内，使用 1/6 电耗
+                cumulativeEnergy(MatterGeneratorSync.SCRAP_EU_PER_MB, toProgress) -
+                        cumulativeEnergy(MatterGeneratorSync.SCRAP_EU_PER_MB, fromProgress)
+            }
+            fromProgress >= coveredProgressLimit -> {
+                // 全部不在废料覆盖范围内，使用 100% 电耗
+                cumulativeEnergy(MatterGeneratorSync.BASE_EU_PER_MB, toProgress) -
+                        cumulativeEnergy(MatterGeneratorSync.BASE_EU_PER_MB, fromProgress)
+            }
+            else -> {
+                // 跨越边界，分段计算
+                val coveredPart = cumulativeEnergy(MatterGeneratorSync.SCRAP_EU_PER_MB, coveredProgressLimit) -
+                        cumulativeEnergy(MatterGeneratorSync.SCRAP_EU_PER_MB, fromProgress)
+                val uncoveredPart = cumulativeEnergy(MatterGeneratorSync.BASE_EU_PER_MB, toProgress) -
+                        cumulativeEnergy(MatterGeneratorSync.BASE_EU_PER_MB, coveredProgressLimit)
+                coveredPart + uncoveredPart
+            }
+        }
+
+        if (totalEnergy <= 0L) return 0L
+        return ceil(totalEnergy * energyMultiplier.toDouble()).toLong().coerceAtLeast(1L)
     }
 
     private fun cumulativeEnergy(totalEnergy: Long, progress: Int): Long =
         totalEnergy * progress.coerceIn(0, MatterGeneratorSync.PROGRESS_MAX) / MatterGeneratorSync.PROGRESS_MAX
 
     private fun resolveDisplayedMode(): Int {
-        return when {
-            sync.progress > 0 && usingScrapForCurrentCycle -> 1
-            isScrap(getStack(SLOT_SCRAP)) && getStack(SLOT_SCRAP).count >= MatterGeneratorSync.SCRAP_PER_MB -> 1
-            else -> 0
-        }
+        val scrapCount = getStack(SLOT_SCRAP).count
+        return if (scrapCount > 0) 1 else 0
     }
 
     private fun canMergeIntoSlot(current: ItemStack, toInsert: ItemStack): Boolean {
