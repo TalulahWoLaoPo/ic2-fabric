@@ -87,6 +87,8 @@ fun chargePlayerInventoryPerItemLimit(
         when (item) {
             is IBatteryItem -> {
                 if (!item.canCharge || item.tier > machineTier || item.isFullyCharged(target)) return
+                // 堆叠的电池不能充电，避免 NBT 数据混乱
+                if (target.count > 1) return
                 val perItemLimit = EnergyTier.euPerTickFromTier(minOf(machineTier, item.tier))
                 val remaining = (item.maxCapacity - item.getCurrentCharge(target)).coerceAtLeast(0L)
                 val machineAvailable = machineEnergyProvider().coerceAtLeast(0L)
@@ -105,6 +107,8 @@ fun chargePlayerInventoryPerItemLimit(
 
             is IElectricTool -> {
                 if (item.tier > machineTier || item.isFullyCharged(target)) return
+                // 堆叠的工具不能充电，避免 NBT 数据混乱
+                if (target.count > 1) return
                 val perItemLimit = EnergyTier.euPerTickFromTier(minOf(machineTier, item.tier))
                 val current = item.getEnergy(target)
                 val remaining = (item.maxCapacity - current).coerceAtLeast(0L)

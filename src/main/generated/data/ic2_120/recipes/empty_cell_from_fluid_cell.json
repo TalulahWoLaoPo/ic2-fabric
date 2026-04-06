@@ -1,5 +1,5 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "ic2_120:empty_fluid_cell_to_empty_cell",
   "category": "misc",
   "ingredients": [
     {

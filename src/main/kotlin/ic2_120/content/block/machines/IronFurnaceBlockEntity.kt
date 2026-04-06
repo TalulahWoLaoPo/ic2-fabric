@@ -16,6 +16,7 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import ic2_120.content.storage.ItemInsertRoute
 import ic2_120.content.storage.RoutedItemStorage
 import net.minecraft.block.BlockState
+import net.minecraft.block.entity.BlockEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventories
@@ -26,6 +27,7 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.recipe.RecipeType
 import net.minecraft.screen.ScreenHandler
+import net.minecraft.sound.SoundCategory
 import net.minecraft.text.Text
 import net.minecraft.util.collection.DefaultedList
 import net.minecraft.util.math.BlockPos
@@ -45,20 +47,16 @@ class IronFurnaceBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : MachineBlockEntity(type, pos, state), Inventory, Storage<ItemVariant>, ExtendedScreenHandlerFactory {
+) : BlockEntity(type, pos, state), Inventory, Storage<ItemVariant>, ExtendedScreenHandlerFactory {
 
-    override val activeProperty: net.minecraft.state.property.BooleanProperty = IronFurnaceBlock.ACTIVE
+    private val activeProperty: net.minecraft.state.property.BooleanProperty = IronFurnaceBlock.ACTIVE
 
-    override val tier: Int = 1
-
-    override val soundConfig: MachineSoundConfig = MachineSoundConfig.operate(
+    private val soundConfig: MachineSoundConfig = MachineSoundConfig.operate(
         soundId = "machine.furnace.iron.operate",
         volume = 0.5f,
         pitch = 1.0f,
         intervalTicks = 20
     )
-
-    override fun getInventory(): net.minecraft.inventory.Inventory = this
 
     companion object {
         const val SLOT_INPUT = 0
@@ -106,9 +104,6 @@ class IronFurnaceBlockEntity(
     override fun removeStack(slot: Int): ItemStack = Inventories.removeStack(inventory, slot)
     override fun clear() = inventory.clear()
     override fun isEmpty(): Boolean = inventory.all { it.isEmpty }
-    override fun markDirty() {
-        super.markDirty()
-    }
     override fun canPlayerUse(player: PlayerEntity): Boolean =
         Inventory.canPlayerUse(this, player)
 
@@ -283,5 +278,33 @@ class IronFurnaceBlockEntity(
         val inv = SimpleInventory(stack.copyWithCount(1))
         return w.recipeManager.getFirstMatch(RecipeType.SMELTING, inv, w).isPresent
     }
-}
 
+    private fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {
+        val wasActive = state.get(activeProperty)
+        if (wasActive != active) {
+            world.setBlockState(pos, state.with(activeProperty, active))
+        }
+        if (world.isClient) return
+        if (soundConfig.soundType == ic2_120.content.sound.SoundType.NONE) return
+
+        when (soundConfig.soundType) {
+            ic2_120.content.sound.SoundType.START_STOP -> {
+                when {
+                    !wasActive && active -> {
+                        soundConfig.startSound?.let {
+                            world.playSound(null, pos, it, SoundCategory.BLOCKS, soundConfig.startVolume, soundConfig.startPitch)
+                        }
+                    }
+                    wasActive && !active -> {
+                        soundConfig.stopSound?.let {
+                            world.playSound(null, pos, it, SoundCategory.BLOCKS, soundConfig.stopVolume, soundConfig.stopPitch)
+                        }
+                    }
+                }
+            }
+            ic2_120.content.sound.SoundType.LOOP,
+            ic2_120.content.sound.SoundType.OPERATE,
+            ic2_120.content.sound.SoundType.NONE -> Unit
+        }
+    }
+}

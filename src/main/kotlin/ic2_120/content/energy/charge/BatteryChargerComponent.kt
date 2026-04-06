@@ -41,6 +41,8 @@ class BatteryChargerComponent(
         if (!battery.canCharge) return 0L
         if (battery.tier > machineTierProvider()) return 0L
         if (battery.isFullyCharged(stack)) return 0L
+        // 堆叠的电池不能充电，避免 NBT 数据混乱
+        if (stack.count > 1) return 0L
 
         val machineEnergy = machineEnergyProvider().coerceAtLeast(0L)
         val remaining = (battery.maxCapacity - battery.getCurrentCharge(stack)).coerceAtLeast(0L)

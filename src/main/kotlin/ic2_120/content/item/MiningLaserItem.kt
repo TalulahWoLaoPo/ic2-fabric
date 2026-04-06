@@ -165,6 +165,9 @@ class MiningLaserItem : Item(
 
             // 扣除电量
             setEnergy(stack, getEnergy(stack) - mode.energyCost)
+
+            // 设置使用冷却：5 tick（每秒最多 4 次）
+            user.itemCooldownManager.set(this, 5)
         }
 
         return TypedActionResult.success(stack, true)
