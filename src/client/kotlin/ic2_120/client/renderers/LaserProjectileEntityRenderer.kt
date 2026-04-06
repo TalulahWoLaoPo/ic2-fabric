@@ -60,7 +60,7 @@ class LaserProjectileEntityRenderer(
         val distSq = (renderX - cam.x) * (renderX - cam.x) +
                      (renderY - cam.y) * (renderY - cam.y) +
                      (renderZ - cam.z) * (renderZ - cam.z)
-        val minDist = LaserProjectileEntity.VISUAL_LENGTH + 0.5
+        val minDist = LaserProjectileEntity.VISUAL_LENGTH * 0.3f
         if (distSq < minDist * minDist) return
 
         val col = entity.color
