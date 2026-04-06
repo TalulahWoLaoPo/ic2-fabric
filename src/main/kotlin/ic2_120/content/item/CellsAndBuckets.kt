@@ -47,7 +47,6 @@ import net.fabricmc.api.Environment
 import net.minecraft.client.item.TooltipContext
 import net.minecraft.util.Formatting
 import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
-import net.minecraft.data.server.recipe.ShapelessRecipeJsonBuilder
 import net.minecraft.data.server.recipe.RecipeJsonProvider
 import net.minecraft.recipe.book.RecipeCategory
 import java.util.function.Consumer
@@ -57,6 +56,7 @@ import ic2_120.registry.annotation.RecipeProvider
 import ic2_120.registry.instance
 import ic2_120.registry.id
 import ic2_120.registry.recipeId
+import ic2_120.content.recipes.crafting.EmptyFluidCellToEmptyCellRecipeDatagen
 import org.slf4j.LoggerFactory
 
 /** 通用流体单元 NBT 键：存储 FluidVariant */
@@ -479,10 +479,13 @@ class EmptyCell : EmptyCellItem(FabricItemSettings()) {
 
             val fluidCell = FluidCellItem::class.instance()
             if (fluidCell != Items.AIR) {
-                ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, EmptyCell::class.instance(), 1)
-                    .input(fluidCell)
-                    .criterion(hasItem(fluidCell), conditionsFromItem(fluidCell))
-                    .offerTo(exporter, EmptyCell::class.recipeId("from_fluid_cell"))
+                EmptyFluidCellToEmptyCellRecipeDatagen.offer(
+                    exporter = exporter,
+                    recipeId = EmptyCell::class.recipeId("from_fluid_cell"),
+                    input = fluidCell,
+                    result = EmptyCell::class.instance(),
+                    category = "misc"
+                )
             }
         }
     }
