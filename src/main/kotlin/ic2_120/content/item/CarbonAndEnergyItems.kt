@@ -2,7 +2,7 @@ package ic2_120.content.item
 
 import ic2_120.Ic2_120
 import ic2_120.content.block.CompressedCoalBall
-import ic2_120.content.block.cables.InsulatedCopperCableBlock
+import ic2_120.content.block.cables.CopperCableBlock
 import ic2_120.content.uu.appendUuTemplateTooltip
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.id
@@ -311,7 +311,7 @@ class Coil : Item(FabricItemSettings()) {
     companion object {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            val cable = InsulatedCopperCableBlock::class.instance()
+            val cable = CopperCableBlock::class.instance()
             if (cable != Items.AIR) {
                 ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, Coil::class.instance(), 1)
                     .pattern("CCC")
