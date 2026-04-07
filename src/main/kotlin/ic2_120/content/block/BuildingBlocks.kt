@@ -296,7 +296,8 @@ class MiningPipeBlock : PillarBlock(AbstractBlock.Settings.copy(Blocks.IRON_BLOC
                 recipeId = MiningPipeBlock::class.id(),
                 result = MiningPipeBlock::class.item(),
                 pattern = listOf("x x", "x x", "xyx"),
-                keys = mapOf('x' to ironPlate, 'y' to treetap)
+                keys = mapOf('x' to ironPlate, 'y' to treetap),
+                count = 16
             )
         }
     }
