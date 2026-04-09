@@ -36,6 +36,16 @@ class BronzeDust : Item(FabricItemSettings()) {
                 .input(BronzeDust::class.instance())
                 .criterion(hasItem(BronzeDust::class.instance()), conditionsFromItem(BronzeDust::class.instance()))
                 .offerTo(exporter, SmallBronzeDust::class.recipeId("from_normal"))
+
+            CookingRecipeJsonBuilder.createSmelting(
+                Ingredient.ofItems(BronzeDust::class.instance()),
+                RecipeCategory.MISC,
+                BronzeIngot::class.instance(),
+                0.1f,
+                200
+            )
+                .criterion(hasItem(BronzeDust::class.instance()), conditionsFromItem(BronzeDust::class.instance()))
+                .offerTo(exporter, BronzeDust::class.recipeId("to_bronze_ingot_smelting"))
         }
     }
 }
@@ -97,6 +107,16 @@ class CopperDust : Item(FabricItemSettings()) {
                 .input(CopperDust::class.instance())
                 .criterion(hasItem(CopperDust::class.instance()), conditionsFromItem(CopperDust::class.instance()))
                 .offerTo(exporter, SmallCopperDust::class.recipeId("from_normal"))
+
+            CookingRecipeJsonBuilder.createSmelting(
+                Ingredient.ofItems(CopperDust::class.instance()),
+                RecipeCategory.MISC,
+                Items.COPPER_INGOT,
+                0.1f,
+                200
+            )
+                .criterion(hasItem(CopperDust::class.instance()), conditionsFromItem(CopperDust::class.instance()))
+                .offerTo(exporter, CopperDust::class.recipeId("to_copper_ingot_smelting"))
         }
     }
 }
@@ -141,6 +161,16 @@ class GoldDust : Item(FabricItemSettings()) {
                 .input(GoldDust::class.instance())
                 .criterion(hasItem(GoldDust::class.instance()), conditionsFromItem(GoldDust::class.instance()))
                 .offerTo(exporter, SmallGoldDust::class.recipeId("from_normal"))
+
+            CookingRecipeJsonBuilder.createSmelting(
+                Ingredient.ofItems(GoldDust::class.instance()),
+                RecipeCategory.MISC,
+                Items.GOLD_INGOT,
+                0.1f,
+                200
+            )
+                .criterion(hasItem(GoldDust::class.instance()), conditionsFromItem(GoldDust::class.instance()))
+                .offerTo(exporter, GoldDust::class.recipeId("to_gold_ingot_smelting"))
         }
     }
 }
@@ -160,6 +190,16 @@ class IronDust : Item(FabricItemSettings()) {
                 .input(IronDust::class.instance())
                 .criterion(hasItem(IronDust::class.instance()), conditionsFromItem(IronDust::class.instance()))
                 .offerTo(exporter, SmallIronDust::class.recipeId("from_normal"))
+
+            CookingRecipeJsonBuilder.createSmelting(
+                Ingredient.ofItems(IronDust::class.instance()),
+                RecipeCategory.MISC,
+                Items.IRON_INGOT,
+                0.1f,
+                200
+            )
+                .criterion(hasItem(IronDust::class.instance()), conditionsFromItem(IronDust::class.instance()))
+                .offerTo(exporter, IronDust::class.recipeId("to_iron_ingot_smelting"))
         }
     }
 }
@@ -198,6 +238,16 @@ class LeadDust : Item(FabricItemSettings()) {
                 .input(LeadDust::class.instance())
                 .criterion(hasItem(LeadDust::class.instance()), conditionsFromItem(LeadDust::class.instance()))
                 .offerTo(exporter, SmallLeadDust::class.recipeId("from_normal"))
+
+            CookingRecipeJsonBuilder.createSmelting(
+                Ingredient.ofItems(LeadDust::class.instance()),
+                RecipeCategory.MISC,
+                LeadIngot::class.instance(),
+                0.1f,
+                200
+            )
+                .criterion(hasItem(LeadDust::class.instance()), conditionsFromItem(LeadDust::class.instance()))
+                .offerTo(exporter, LeadDust::class.recipeId("to_lead_ingot_smelting"))
         }
     }
 }
@@ -260,6 +310,16 @@ class SilverDust : Item(FabricItemSettings()) {
                 .input(SilverDust::class.instance())
                 .criterion(hasItem(SilverDust::class.instance()), conditionsFromItem(SilverDust::class.instance()))
                 .offerTo(exporter, SmallSilverDust::class.recipeId("from_normal"))
+
+            CookingRecipeJsonBuilder.createSmelting(
+                Ingredient.ofItems(SilverDust::class.instance()),
+                RecipeCategory.MISC,
+                SilverIngot::class.instance(),
+                0.1f,
+                200
+            )
+                .criterion(hasItem(SilverDust::class.instance()), conditionsFromItem(SilverDust::class.instance()))
+                .offerTo(exporter, SilverDust::class.recipeId("to_silver_ingot_smelting"))
         }
     }
 }
@@ -302,6 +362,16 @@ class TinDust : Item(FabricItemSettings()) {
                 .input(TinDust::class.instance())
                 .criterion(hasItem(TinDust::class.instance()), conditionsFromItem(TinDust::class.instance()))
                 .offerTo(exporter, SmallTinDust::class.recipeId("from_normal"))
+
+            CookingRecipeJsonBuilder.createSmelting(
+                Ingredient.ofItems(TinDust::class.instance()),
+                RecipeCategory.MISC,
+                TinIngot::class.instance(),
+                0.1f,
+                200
+            )
+                .criterion(hasItem(TinDust::class.instance()), conditionsFromItem(TinDust::class.instance()))
+                .offerTo(exporter, TinDust::class.recipeId("to_tin_ingot_smelting"))
         }
     }
 }

@@ -9,6 +9,7 @@ import ic2_120.content.block.BronzeBlock
 import ic2_120.content.block.DeepslateTinOreBlock
 import ic2_120.content.block.TinBlock
 import ic2_120.content.block.TinOreBlock
+import ic2_120.content.item.RawTin
 import net.minecraft.data.server.recipe.CookingRecipeJsonBuilder
 import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
 import net.minecraft.data.server.recipe.ShapelessRecipeJsonBuilder
@@ -67,6 +68,16 @@ class TinIngot : Item(FabricItemSettings()) {
                     conditionsFromItem(DeepslateTinOreBlock::class.item())
                 )
                 .offerTo(exporter, TinIngot::class.recipeId("from_deepslate_tin_ore_smelting"))
+
+            CookingRecipeJsonBuilder.createSmelting(
+                Ingredient.ofItems(RawTin::class.instance()),
+                RecipeCategory.MISC,
+                TinIngot::class.instance(),
+                0.1f,
+                200
+            )
+                .criterion(hasItem(RawTin::class.instance()), conditionsFromItem(RawTin::class.instance()))
+                .offerTo(exporter, TinIngot::class.recipeId("from_raw_tin_smelting"))
 
             CookingRecipeJsonBuilder.createSmelting(
                 Ingredient.ofItems(CrushedTin::class.instance()),

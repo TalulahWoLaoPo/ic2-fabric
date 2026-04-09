@@ -16,6 +16,9 @@ import ic2_120.content.item.CopperPlate
 import ic2_120.content.item.CrushedCopper
 import ic2_120.content.item.CrushedGold
 import ic2_120.content.item.CrushedIron
+import ic2_120.content.item.RawLead
+import ic2_120.content.item.RawTin
+import ic2_120.content.item.RawUranium
 import ic2_120.content.item.CrushedLead
 import ic2_120.content.item.CrushedTin
 import ic2_120.content.item.CrushedUranium
@@ -109,6 +112,9 @@ object MaceratorRecipeDatagen {
         Entry("raw_iron_to_crushed_iron", Items.RAW_IRON, CrushedIron::class.instance(), 2),
         Entry("raw_gold_to_crushed_gold", Items.RAW_GOLD, CrushedGold::class.instance(), 2),
         Entry("raw_copper_to_crushed_copper", Items.RAW_COPPER, CrushedCopper::class.instance(), 2),
+        Entry("raw_lead_to_crushed_lead", RawLead::class.instance(), CrushedLead::class.instance(), 2),
+        Entry("raw_tin_to_crushed_tin", RawTin::class.instance(), CrushedTin::class.instance(), 2),
+        Entry("raw_uranium_to_crushed_uranium", RawUranium::class.instance(), CrushedUranium::class.instance(), 2),
         // 金属锭 / 板 → 粉
         Entry("copper_ingot_to_copper_dust", Items.COPPER_INGOT, CopperDust::class.instance(), 1),
         Entry("tin_ingot_to_tin_dust", TinIngot::class.instance(), TinDust::class.instance(), 1),
