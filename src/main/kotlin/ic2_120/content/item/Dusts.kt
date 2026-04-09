@@ -37,6 +37,15 @@ class BronzeDust : Item(FabricItemSettings()) {
                 .criterion(hasItem(BronzeDust::class.instance()), conditionsFromItem(BronzeDust::class.instance()))
                 .offerTo(exporter, SmallBronzeDust::class.recipeId("from_normal"))
 
+            // 合成配方：3铜粉 + 1锡粉 = 4青铜粉
+            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, BronzeDust::class.instance(), 4)
+                .input(CopperDust::class.instance())
+                .input(CopperDust::class.instance())
+                .input(CopperDust::class.instance())
+                .input(TinDust::class.instance())
+                .criterion(hasItem(CopperDust::class.instance()), conditionsFromItem(CopperDust::class.instance()))
+                .offerTo(exporter, BronzeDust::class.recipeId("from_copper_and_tin"))
+
             CookingRecipeJsonBuilder.createSmelting(
                 Ingredient.ofItems(BronzeDust::class.instance()),
                 RecipeCategory.MISC,

@@ -49,7 +49,6 @@
     "ic2_120:coke_kiln_grate",
     "ic2_120:coke_kiln_hatch",
     "ic2_120:compose_debug",
-    "ic2_120:compressor",
     "ic2_120:crop",
     "ic2_120:crop_harvester",
     "ic2_120:crop_stick",
@@ -180,6 +179,7 @@
     "ic2_120:coal_block",
     "ic2_120:reinforced_stone",
     "ic2_120:basalt",
-    "ic2_120:iron_fence"
+    "ic2_120:iron_fence",
+    "ic2_120:compressor"
   ]
 }
