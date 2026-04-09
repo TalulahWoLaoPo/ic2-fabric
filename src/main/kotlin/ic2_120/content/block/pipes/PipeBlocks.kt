@@ -76,6 +76,7 @@ abstract class BasePipeBlock(
             .with(DOWN, false)
             .with(TRANSPARENT, false)
         )
+        buildShapeCache()
     }
 
     override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {
@@ -183,11 +184,19 @@ abstract class BasePipeBlock(
         if (world.isClient) null
         else checkType(type, PipeBlockEntity::class.type()) { w, p, s, be -> be.tick(w, p, s) }
 
-    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
-    override fun getCollisionShape(state: BlockState, world: BlockView, pos: BlockPos, context: ShapeContext): VoxelShape = pipeShape(state)
+    /** Pre-computed shape cache for all block states. Populated in init after stateManager is ready. */
+    protected var shapeCache: Map<BlockState, VoxelShape> = emptyMap()
+
+    /** Call after setDefaultState to populate the shape cache. */
+    protected fun buildShapeCache() {
+        shapeCache = stateManager.states.associateWith { pipeShape(it) }
+    }
 
     @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
-    override fun getOutlineShape(state: BlockState, world: BlockView, pos: BlockPos, context: ShapeContext): VoxelShape = pipeShape(state)
+    override fun getCollisionShape(state: BlockState, world: BlockView, pos: BlockPos, context: ShapeContext): VoxelShape = shapeCache[state] ?: pipeShape(state)
+
+    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
+    override fun getOutlineShape(state: BlockState, world: BlockView, pos: BlockPos, context: ShapeContext): VoxelShape = shapeCache[state] ?: pipeShape(state)
 
     protected open fun pipeShape(state: BlockState): VoxelShape {
         val r = size.radius
@@ -240,6 +249,8 @@ abstract class PumpAttachmentBlock(material: PipeMaterial) : BasePipeBlock(PipeS
             .with(DOWN, false)
             .with(TRANSPARENT, false)
             .with(Properties.FACING, Direction.NORTH)
+        // Rebuild cache with our overridden pipeShape() and the expanded state space (includes FACING)
+        buildShapeCache()
     }
 
     override fun getPlacementState(ctx: ItemPlacementContext): BlockState {

@@ -170,13 +170,37 @@ abstract class BaseCableBlock(settings: AbstractBlock.Settings = defaultSettings
 
     // ── 碰撞/轮廓形状 ──────────────────────────────────────────
 
+    private val shapeCache: Map<BlockState, VoxelShape> by lazy { buildShapeCache() }
+
+    private fun buildShapeCache(): Map<BlockState, VoxelShape> {
+        val min = getCableMin()
+        val max = getCableMax()
+        val center = VoxelShapes.cuboid(min, min, min, max, max, max)
+        val north = VoxelShapes.cuboid(min, min, 0.0, max, max, min)
+        val south = VoxelShapes.cuboid(min, min, max, max, max, 1.0)
+        val west = VoxelShapes.cuboid(0.0, min, min, min, max, max)
+        val east = VoxelShapes.cuboid(max, min, min, 1.0, max, max)
+        val down = VoxelShapes.cuboid(min, 0.0, min, max, min, max)
+        val up = VoxelShapes.cuboid(min, max, min, max, 1.0, max)
+        return stateManager.states.associateWith { state ->
+            var shape = center
+            if (state.get(NORTH)) shape = VoxelShapes.union(shape, north)
+            if (state.get(SOUTH)) shape = VoxelShapes.union(shape, south)
+            if (state.get(WEST)) shape = VoxelShapes.union(shape, west)
+            if (state.get(EAST)) shape = VoxelShapes.union(shape, east)
+            if (state.get(DOWN)) shape = VoxelShapes.union(shape, down)
+            if (state.get(UP)) shape = VoxelShapes.union(shape, up)
+            shape
+        }
+    }
+
     @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
     override fun getCollisionShape(
         state: BlockState,
         world: BlockView,
         pos: BlockPos,
         context: ShapeContext
-    ): VoxelShape = cableShape(state)
+    ): VoxelShape = shapeCache[state]!!
 
     @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
     override fun getOutlineShape(
@@ -184,23 +208,10 @@ abstract class BaseCableBlock(settings: AbstractBlock.Settings = defaultSettings
         world: BlockView,
         pos: BlockPos,
         context: ShapeContext
-    ): VoxelShape = cableShape(state)
+    ): VoxelShape = shapeCache[state]!!
 
     protected open fun getCableMin(): Double = DEFAULT_CABLE_MIN
     protected open fun getCableMax(): Double = DEFAULT_CABLE_MAX
-
-    private fun cableShape(state: BlockState): VoxelShape {
-        val min = getCableMin()
-        val max = getCableMax()
-        var shape = VoxelShapes.cuboid(min, min, min, max, max, max)
-        if (state.get(NORTH)) shape = VoxelShapes.union(shape, VoxelShapes.cuboid(min, min, 0.0, max, max, min))
-        if (state.get(SOUTH)) shape = VoxelShapes.union(shape, VoxelShapes.cuboid(min, min, max, max, max, 1.0))
-        if (state.get(WEST)) shape = VoxelShapes.union(shape, VoxelShapes.cuboid(0.0, min, min, min, max, max))
-        if (state.get(EAST)) shape = VoxelShapes.union(shape, VoxelShapes.cuboid(max, min, min, 1.0, max, max))
-        if (state.get(DOWN)) shape = VoxelShapes.union(shape, VoxelShapes.cuboid(min, 0.0, min, max, min, max))
-        if (state.get(UP)) shape = VoxelShapes.union(shape, VoxelShapes.cuboid(min, max, min, max, 1.0, max))
-        return shape
-    }
 
     companion object {
         val NORTH: BooleanProperty = Properties.NORTH

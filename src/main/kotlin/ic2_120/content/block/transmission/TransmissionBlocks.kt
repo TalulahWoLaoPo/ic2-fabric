@@ -334,10 +334,14 @@ class BevelGearBlock(
         private val BAR_Y = VoxelShapes.cuboid(0.5 - HALF, 0.0, 0.5 - HALF, 0.5 + HALF, 1.0, 0.5 + HALF)
         private val BAR_Z = VoxelShapes.cuboid(0.5 - HALF, 0.5 - HALF, 0.0, 0.5 + HALF, 0.5 + HALF, 1.0)
 
+        private val SHAPE_XY = VoxelShapes.union(CORE, BAR_X, BAR_Y)
+        private val SHAPE_XZ = VoxelShapes.union(CORE, BAR_X, BAR_Z)
+        private val SHAPE_YZ = VoxelShapes.union(CORE, BAR_Y, BAR_Z)
+
         private fun shapeForPlane(plane: BevelPlane): VoxelShape = when (plane) {
-            BevelPlane.XY -> VoxelShapes.union(CORE, BAR_X, BAR_Y)
-            BevelPlane.XZ -> VoxelShapes.union(CORE, BAR_X, BAR_Z)
-            BevelPlane.YZ -> VoxelShapes.union(CORE, BAR_Y, BAR_Z)
+            BevelPlane.XY -> SHAPE_XY
+            BevelPlane.XZ -> SHAPE_XZ
+            BevelPlane.YZ -> SHAPE_YZ
         }
     }
 }
