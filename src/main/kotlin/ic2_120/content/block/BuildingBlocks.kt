@@ -211,9 +211,8 @@ class ReinforcedFoamBlock : Block(
 
 @ModBlock(name = "resin_sheet", registerItem = true, tab = CreativeTab.IC2_MATERIALS, group = "building")
 class ResinSheetBlock : Block(
-    AbstractBlock.Settings.copy(Blocks.OAK_PLANKS)
+    AbstractBlock.Settings.copy(Blocks.WHITE_CARPET)
         .strength(0.5f)
-        .solid()
         .velocityMultiplier(0.4f)
         .jumpVelocityMultiplier(0.0f)
 ) {
