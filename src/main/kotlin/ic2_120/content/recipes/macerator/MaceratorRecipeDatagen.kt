@@ -106,9 +106,9 @@ object MaceratorRecipeDatagen {
         Entry("dead_bush_to_bio_chaff", Items.DEAD_BUSH, BioChaff::class.instance(), 1, 8),
         Entry("weed_to_bio_chaff", Weed::class.instance(), BioChaff::class.instance(), 1, 32),
         Entry("diamond_to_diamond_dust", Items.DIAMOND, DiamondDust::class.instance(), 1),
-        Entry("crushed_iron_to_iron_dust", CrushedIron::class.instance(), IronDust::class.instance(), 2),
-        Entry("crushed_gold_to_gold_dust", CrushedGold::class.instance(), GoldDust::class.instance(), 2),
-        Entry("crushed_copper_to_copper_dust", CrushedCopper::class.instance(), CopperDust::class.instance(), 2),
+        Entry("raw_iron_to_crushed_iron", Items.RAW_IRON, CrushedIron::class.instance(), 2),
+        Entry("raw_gold_to_crushed_gold", Items.RAW_GOLD, CrushedGold::class.instance(), 2),
+        Entry("raw_copper_to_crushed_copper", Items.RAW_COPPER, CrushedCopper::class.instance(), 2),
         // 金属锭 / 板 → 粉
         Entry("copper_ingot_to_copper_dust", Items.COPPER_INGOT, CopperDust::class.instance(), 1),
         Entry("tin_ingot_to_tin_dust", TinIngot::class.instance(), TinDust::class.instance(), 1),
