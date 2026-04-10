@@ -4,6 +4,7 @@ import ic2_120.content.block.IGenerator
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.block.KineticGeneratorBlock
 import ic2_120.content.block.transmission.IKineticMachinePort
+import ic2_120.content.block.transmission.pullKuFromNeighbors
 import ic2_120.content.screen.KineticGeneratorScreenHandler
 import ic2_120.content.sync.KineticGeneratorSync
 import ic2_120.content.syncs.SyncedData
@@ -126,6 +127,7 @@ class KineticGeneratorBlockEntity(
 
     fun tick(world: World, pos: BlockPos, state: BlockState) {
         if (world.isClient) return
+        pullKuFromNeighbors(world, pos, this)
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
         val hasInputThisTick = lastKuInputTick == world.time
         if (!hasInputThisTick) {
