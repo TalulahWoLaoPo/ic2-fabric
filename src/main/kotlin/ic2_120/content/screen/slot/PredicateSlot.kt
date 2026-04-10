@@ -8,7 +8,7 @@ import net.minecraft.screen.slot.Slot
 /**
  * 基于 [SlotSpec] 的通用槽位实现。
  */
-class PredicateSlot(
+open class PredicateSlot(
     inventory: Inventory,
     index: Int,
     x: Int,

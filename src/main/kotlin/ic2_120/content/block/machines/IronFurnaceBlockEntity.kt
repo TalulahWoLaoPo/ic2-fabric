@@ -27,6 +27,7 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.recipe.RecipeType
 import net.minecraft.screen.ScreenHandler
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundCategory
 import net.minecraft.text.Text
 import net.minecraft.util.collection.DefaultedList
@@ -72,6 +73,7 @@ class IronFurnaceBlockEntity(
     }
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
+    private var storedExperience: Float = 0f
     private val itemStorage = RoutedItemStorage(
         inventory = inventory,
         maxCountPerStackProvider = { maxCountPerStack },
@@ -135,6 +137,7 @@ class IronFurnaceBlockEntity(
         sync.burnTime = nbt.getInt(IronFurnaceSync.NBT_BURN_TIME)
         sync.totalBurnTime = nbt.getInt(IronFurnaceSync.NBT_TOTAL_BURN_TIME)
         sync.cookTime = nbt.getInt(IronFurnaceSync.NBT_COOK_TIME)
+        storedExperience = nbt.getFloat(FurnaceExperienceHelper.NBT_EXPERIENCE)
     }
 
     override fun writeNbt(nbt: NbtCompound) {
@@ -144,6 +147,7 @@ class IronFurnaceBlockEntity(
         nbt.putInt(IronFurnaceSync.NBT_BURN_TIME, sync.burnTime)
         nbt.putInt(IronFurnaceSync.NBT_TOTAL_BURN_TIME, sync.totalBurnTime)
         nbt.putInt(IronFurnaceSync.NBT_COOK_TIME, sync.cookTime)
+        nbt.putFloat(FurnaceExperienceHelper.NBT_EXPERIENCE, storedExperience)
     }
 
     fun tick(world: World, pos: BlockPos, state: BlockState) {
@@ -203,6 +207,7 @@ class IronFurnaceBlockEntity(
                 } else {
                     outputItem.increment(result.count)
                 }
+                storedExperience += FurnaceExperienceHelper.getExperienceFromRecipe(recipe)
                 sync.cookTime = 0
                 markDirty()
             }
@@ -277,6 +282,13 @@ class IronFurnaceBlockEntity(
         val w = world ?: return true
         val inv = SimpleInventory(stack.copyWithCount(1))
         return w.recipeManager.getFirstMatch(RecipeType.SMELTING, inv, w).isPresent
+    }
+
+    fun dropStoredExperience() {
+        val world = this.world as? ServerWorld ?: return
+        FurnaceExperienceHelper.dropExperience(world, pos, storedExperience)
+        storedExperience = 0f
+        markDirty()
     }
 
     private fun setActiveState(world: World, pos: BlockPos, state: BlockState, active: Boolean) {

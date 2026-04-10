@@ -6,6 +6,7 @@ import ic2_120.content.block.ElectricFurnaceBlock
 import ic2_120.content.block.machines.ElectricFurnaceBlockEntity
 import ic2_120.content.item.energy.IBatteryItem
 import ic2_120.content.screen.slot.PredicateSlot
+import ic2_120.content.screen.slot.FurnaceOutputSlot
 import ic2_120.content.screen.slot.SlotSpec
 import ic2_120.registry.annotation.ModScreenHandler
 import ic2_120.registry.type
@@ -38,7 +39,7 @@ class ElectricFurnaceScreenHandler(
     val sync = ElectricFurnaceSync(SyncedDataView(propertyDelegate))
 
     private val inputSlotSpec = SlotSpec(canInsert = { stack -> stack.item !is IBatteryItem })
-    private val outputSlotSpec = SlotSpec(canInsert = { false }, canTake = { true })
+    private val outputSlotSpec = SlotSpec(canInsert = { false })
     private val dischargingSlotSpec = SlotSpec(
         canInsert = { stack -> stack.item is IBatteryItem },
         maxItemCount = 1
@@ -49,7 +50,12 @@ class ElectricFurnaceScreenHandler(
         addProperties(propertyDelegate)
         // 输入槽（左侧）、输出槽（右侧），同一行，留出上方给标题与能量条
         addSlot(PredicateSlot(blockInventory, ElectricFurnaceBlockEntity.SLOT_INPUT, 0, 0, inputSlotSpec))
-        addSlot(PredicateSlot(blockInventory, ElectricFurnaceBlockEntity.SLOT_OUTPUT, 0, 0, outputSlotSpec))
+        addSlot(FurnaceOutputSlot(blockInventory, ElectricFurnaceBlockEntity.SLOT_OUTPUT, 0, 0, outputSlotSpec) {
+            context.get({ world, pos ->
+                val be = world.getBlockEntity(pos)
+                if (be is ElectricFurnaceBlockEntity) be.dropStoredExperience()
+            })
+        })
         addSlot(PredicateSlot(blockInventory, ElectricFurnaceBlockEntity.SLOT_DISCHARGING, 0, 0, dischargingSlotSpec))
         // 玩家背包
         for (row in 0 until 3) {

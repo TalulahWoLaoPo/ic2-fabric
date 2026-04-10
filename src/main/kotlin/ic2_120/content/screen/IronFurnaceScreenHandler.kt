@@ -4,6 +4,7 @@ import ic2_120.content.block.IronFurnaceBlock
 import ic2_120.content.block.machines.IronFurnaceBlockEntity
 import ic2_120.content.sync.IronFurnaceSync
 import ic2_120.content.screen.slot.PredicateSlot
+import ic2_120.content.screen.slot.FurnaceOutputSlot
 import ic2_120.content.screen.slot.SlotMoveHelper
 import ic2_120.content.screen.slot.SlotSpec
 import ic2_120.content.screen.slot.SlotTarget
@@ -42,7 +43,12 @@ class IronFurnaceScreenHandler(
 
         addSlot(PredicateSlot(blockInventory, IronFurnaceBlockEntity.SLOT_INPUT, 0, 0, INPUT_SLOT_SPEC))
         addSlot(PredicateSlot(blockInventory, IronFurnaceBlockEntity.SLOT_FUEL, 0, 0, FUEL_SLOT_SPEC))
-        addSlot(PredicateSlot(blockInventory, IronFurnaceBlockEntity.SLOT_OUTPUT, 0, 0, OUTPUT_SLOT_SPEC))
+        addSlot(FurnaceOutputSlot(blockInventory, IronFurnaceBlockEntity.SLOT_OUTPUT, 0, 0, OUTPUT_SLOT_SPEC) {
+            context.get({ world, pos ->
+                val be = world.getBlockEntity(pos)
+                if (be is IronFurnaceBlockEntity) be.dropStoredExperience()
+            })
+        })
 
         // 玩家物品栏
         for (row in 0 until 3) {

@@ -31,6 +31,7 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.recipe.RecipeType
 import net.minecraft.screen.ScreenHandler
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.util.collection.DefaultedList
 import net.minecraft.util.math.BlockPos
@@ -70,6 +71,7 @@ class ElectricFurnaceBlockEntity(
     }
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)  // 0: 输入, 1: 输出, 2: 放电
+    private var storedExperience: Float = 0f
     private val itemStorage = RoutedItemStorage(
         inventory = inventory,
         maxCountPerStackProvider = { maxCountPerStack },
@@ -152,6 +154,7 @@ class ElectricFurnaceBlockEntity(
         sync.amount = nbt.getLong(ElectricFurnaceSync.NBT_ENERGY_STORED)
         sync.syncCommittedAmount()
         sync.energy = sync.amount.toInt().coerceIn(0, Int.MAX_VALUE)
+        storedExperience = nbt.getFloat(FurnaceExperienceHelper.NBT_EXPERIENCE)
     }
 
     override fun writeNbt(nbt: NbtCompound) {
@@ -159,6 +162,7 @@ class ElectricFurnaceBlockEntity(
         Inventories.writeNbt(nbt, inventory)
         syncedData.writeNbt(nbt)
         nbt.putLong(ElectricFurnaceSync.NBT_ENERGY_STORED, sync.amount)
+        nbt.putFloat(FurnaceExperienceHelper.NBT_EXPERIENCE, storedExperience)
     }
 
     fun tick(world: World, pos: BlockPos, state: BlockState) {
@@ -206,6 +210,7 @@ class ElectricFurnaceBlockEntity(
             input.decrement(1)
             if (outputSlot.isEmpty()) setStack(1, result.copy())
             else outputSlot.increment(result.count)
+            storedExperience += FurnaceExperienceHelper.getExperienceFromRecipe(recipe)
             sync.progress = 0
             markDirty()
             setActiveState(world, pos, state, false)
@@ -224,6 +229,13 @@ class ElectricFurnaceBlockEntity(
             setActiveState(world, pos, state, false)
         }
         sync.syncCurrentTickFlow()
+    }
+
+    fun dropStoredExperience() {
+        val world = this.world as? ServerWorld ?: return
+        FurnaceExperienceHelper.dropExperience(world, pos, storedExperience)
+        storedExperience = 0f
+        markDirty()
     }
 
     /**
