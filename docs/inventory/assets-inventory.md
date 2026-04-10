@@ -150,10 +150,10 @@ find src -name "*ElectricKineticGenerator*" -o -name "*electric_kinetic_generato
 | - [x] | block.ic2.rt_heat_generator | 放射性同位素温差加热机 |
 | - [x] | block.ic2.solid_heat_generator | 固体加热机 |
 | - [x] | block.ic2.electric_kinetic_generator | 电力动能发生机 |
-| - [ ] | block.ic2.manual_kinetic_generator | 手摇动能发生机 |
+| - [x] | block.ic2.manual_kinetic_generator | 手摇动能发生机 |
 | - [ ] | block.ic2.steam_kinetic_generator | 蒸汽动能发生机 |
 | - [ ] | block.ic2.stirling_kinetic_generator | 斯特林动能发生器 |
-| - [ ] | block.ic2.water_kinetic_generator | 水力动能发生机 |
+| - [x] | block.ic2.water_kinetic_generator | 水力动能发生机 |
 | - [x] | block.ic2.wind_kinetic_generator | 风力动能发生机 |
 | - [x] | block.ic2.creative_generator | 创造模式发电机 |
 
