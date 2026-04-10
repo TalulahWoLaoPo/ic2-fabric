@@ -101,18 +101,19 @@ class CannerScreen(
                             modifier = Modifier().height(70)
                         ) {
                             SlotHost(CannerScreenHandler.SLOT_CONTAINER_INDEX)
+                            // 左侧流体条
+                            EnergyBar(
+                                leftFluidFrac,
+                                barWidth = 18,
+                                orientation = EnergyBarOrientation.VERTICAL,
+                                emptyColor = 0xFF3A3A8A.toInt(),
+                                fullColor = 0xFF3AAAF5.toInt(),
+                                gradient = false,
+                                modifier = Modifier().fractionHeight(1f)
+                            )
                             SlotHost(CannerScreenHandler.SLOT_LEFT_EMPTY_INDEX)
                         }
-                        // 左侧流体条
-                        EnergyBar(
-                            leftFluidFrac,
-                            barWidth = 18,
-                            orientation = EnergyBarOrientation.VERTICAL,
-                            emptyColor = 0xFF3A3A8A.toInt(),
-                            fullColor = 0xFF3AAAF5.toInt(),
-                            gradient = false,
-                            modifier = Modifier().fractionHeight(1f)
-                        )
+                        
                         Flex(
                             direction = FlexDirection.COLUMN,
                             justifyContent = JustifyContent.SPACE_AROUND,
@@ -141,16 +142,7 @@ class CannerScreen(
                                 gradient = false,
                             )
                         }
-                        // 右侧流体条
-                        EnergyBar(
-                            rightFluidFrac,
-                            barWidth = 18,
-                            orientation = EnergyBarOrientation.VERTICAL,
-                            emptyColor = 0xFF3A3A8A.toInt(),
-                            fullColor = 0xFF3AAAF5.toInt(),
-                            gradient = false,
-                            modifier = Modifier().fractionHeight(1f)
-                        )
+                        
                         // 右液槽：顶部放空容器，底部返回满容器
                         Flex(
                             direction = FlexDirection.COLUMN,
@@ -159,7 +151,15 @@ class CannerScreen(
                             modifier = Modifier().height(70)
                         ) {
                             SlotHost(CannerScreenHandler.SLOT_RIGHT_INPUT_INDEX)
-                            SlotHost(CannerScreenHandler.SLOT_OUTPUT_INDEX)
+                            // 右侧流体条
+                            EnergyBar(
+                                rightFluidFrac,
+                                barWidth = 18,
+                                orientation = EnergyBarOrientation.VERTICAL,
+                                emptyColor = 0xFF3A3A8A.toInt(),
+                                fullColor = 0xFF3AAAF5.toInt(),
+                                gradient = false,
+                            )
                         }
                     }
 
