@@ -246,7 +246,7 @@ class ElectricFurnaceBlockEntity(
         val space = (ElectricFurnaceSync.ENERGY_CAPACITY - sync.amount).coerceAtLeast(0L)
         if (space <= 0L) return
 
-        val request = minOf(space, ElectricFurnaceSync.MAX_EXTRACT)
+        val request = minOf(space, ElectricFurnaceSync.MAX_INSERT)
         val extracted = batteryDischarger.tick(request)
         if (extracted <= 0L) return
 
