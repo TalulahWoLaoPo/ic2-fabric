@@ -55,7 +55,7 @@ class CannerScreenHandler(
     private val containerSlotSpec = SlotSpec(
         canInsert = { stack ->
             stack.item !is IBatteryItem && stack.item !is FoamSprayerItem && (
-                isFilledFluidContainer(stack) || isEmptyFluidContainer(stack) ||
+                isFilledFluidContainer(stack) ||
                 stack.item == tinCanItem
             )
         }
@@ -71,11 +71,17 @@ class CannerScreenHandler(
         }
     )
     private val outputSlotSpec = SlotSpec(
-        canInsert = { stack ->
-            if (sync.getMode() == CannerSync.Mode.BOTTLE_SOLID) return@SlotSpec false
-            stack.item !is IBatteryItem && stack.item !is FoamSprayerItem && isEmptyFluidContainer(stack)
-        },
+        canInsert = { false },
         canTake = { true }
+    )
+    private val leftEmptySlotSpec = SlotSpec(
+        canInsert = { false },
+        canTake = { true }
+    )
+    private val rightInputSlotSpec = SlotSpec(
+        canInsert = { stack ->
+            stack.item !is IBatteryItem && stack.item !is FoamSprayerItem && isEmptyFluidContainer(stack)
+        }
     )
     private val dischargingSlotSpec = SlotSpec(
         maxItemCount = 1,
@@ -90,6 +96,8 @@ class CannerScreenHandler(
         addSlot(PredicateSlot(blockInventory, CannerBlockEntity.SLOT_MATERIAL, 0, 0, materialSlotSpec))
         addSlot(PredicateSlot(blockInventory, CannerBlockEntity.SLOT_OUTPUT, 0, 0, outputSlotSpec))
         addSlot(PredicateSlot(blockInventory, CannerBlockEntity.SLOT_DISCHARGING, 0, 0, dischargingSlotSpec))
+        addSlot(PredicateSlot(blockInventory, CannerBlockEntity.SLOT_LEFT_EMPTY, 0, 0, leftEmptySlotSpec))
+        addSlot(PredicateSlot(blockInventory, CannerBlockEntity.SLOT_RIGHT_INPUT, 0, 0, rightInputSlotSpec))
 
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
             addSlot(
@@ -150,7 +158,7 @@ class CannerScreenHandler(
             val stackInSlot = slot.stack
             stack = stackInSlot.copy()
             when (index) {
-                SLOT_OUTPUT_INDEX -> {
+                SLOT_OUTPUT_INDEX, SLOT_LEFT_EMPTY_INDEX -> {
                     if (!insertItem(stackInSlot, PLAYER_INV_START, HOTBAR_END, true)) return ItemStack.EMPTY
                     slot.onQuickTransfer(stackInSlot, stack)
                 }
@@ -172,6 +180,7 @@ class CannerScreenHandler(
                             listOf(
                                 SlotTarget(slots[SLOT_DISCHARGING_INDEX], dischargingSlotSpec),
                                 SlotTarget(slots[SLOT_CONTAINER_INDEX], containerSlotSpec),
+                                SlotTarget(slots[SLOT_RIGHT_INPUT_INDEX], rightInputSlotSpec),
                                 SlotTarget(slots[SLOT_MATERIAL_INDEX], materialSlotSpec)
                             ) + upgradeTargets
                         )
@@ -205,8 +214,10 @@ class CannerScreenHandler(
         const val SLOT_DISCHARGING_INDEX = 3
         const val SLOT_UPGRADE_INDEX_START = 4
         const val SLOT_UPGRADE_INDEX_END = 7
-        const val PLAYER_INV_START = 8
-        const val HOTBAR_END = 44
+        const val SLOT_LEFT_EMPTY_INDEX = 8
+        const val SLOT_RIGHT_INPUT_INDEX = 9
+        const val PLAYER_INV_START = 10
+        const val HOTBAR_END = 46
         const val BUTTON_ID_MODE_CYCLE = 0
         const val BUTTON_ID_SWAP_TANKS = 1
 
