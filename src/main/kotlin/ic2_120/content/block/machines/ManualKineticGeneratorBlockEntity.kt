@@ -154,6 +154,9 @@ class ManualKineticGeneratorBlockEntity(
             val kuPerTick = getKuPerTick()
             pendingOutputKu += kuPerTick
             sync.storedKu = pendingOutputKu
+            sync.outputKu = kuPerTick
+        } else {
+            sync.outputKu = 0
         }
 
         sync.isTurning = isTurning

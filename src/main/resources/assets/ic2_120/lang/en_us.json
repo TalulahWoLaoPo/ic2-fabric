@@ -655,7 +655,7 @@
   "ic2_120.jade.water_flow_bonus": "Flow bonus: +50%",
   "ic2_120.jade.water_rotor_lifetime": "Rotor lifetime: %s h",
   "ic2_120.jade.manual_stored_ku": "Stored: %s KU",
-  "ic2_120.jade.manual_extracted_ku": "Output: %s KU",
+  "ic2_120.jade.manual_extracted_ku": "Output: %s KU/t",
   "ic2_120.jade.kinetic_input": "Input: %s KU/t",
   "ic2_120.jade.kinetic_output": "Output: %s EU/t",
   "ic2_120.jade.kinetic_buffer": "Buffer: %s / %s EU",

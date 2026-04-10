@@ -417,7 +417,7 @@ object KineticJadeProvider : IBlockComponentProvider, IServerDataProvider<BlockA
             is ManualKineticGeneratorBlockEntity -> {
                 data.putString("kind", "manual_kinetic")
                 data.putInt("storedKu", be.sync.storedKu.coerceAtLeast(0))
-                data.putInt("extractedKu", be.sync.extractedKu.coerceAtLeast(0))
+                data.putInt("outputKu", be.sync.outputKu.coerceAtLeast(0))
             }
 
             is KineticGeneratorBlockEntity -> {
@@ -472,9 +472,9 @@ object KineticJadeProvider : IBlockComponentProvider, IServerDataProvider<BlockA
 
             "manual_kinetic" -> {
                 val storedKu = accessor.serverData.getInt("storedKu")
-                val extractedKu = accessor.serverData.getInt("extractedKu")
+                val outputKu = accessor.serverData.getInt("outputKu")
                 tooltip.add(Text.translatable("ic2_120.jade.manual_stored_ku", storedKu))
-                tooltip.add(Text.translatable("ic2_120.jade.manual_extracted_ku", extractedKu))
+                tooltip.add(Text.translatable("ic2_120.jade.manual_extracted_ku", outputKu))
             }
 
             "kinetic_generator" -> {

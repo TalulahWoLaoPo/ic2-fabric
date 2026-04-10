@@ -5,6 +5,7 @@ import ic2_120.content.syncs.SyncSchema
 class ManualKineticGeneratorSync(schema: SyncSchema) {
     var storedKu by schema.int("StoredKu")
     var extractedKu by schema.int("ExtractedKu")
+    var outputKu by schema.int("OutputKu")  // 当前输出速度 KU/t
     
     // 曲柄相关同步数据（使用 int 模拟 boolean 和 float）
     // hasCrank: 0 = false, 1 = true
