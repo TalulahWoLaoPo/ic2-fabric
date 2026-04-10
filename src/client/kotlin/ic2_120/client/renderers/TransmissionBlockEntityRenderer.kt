@@ -2,6 +2,8 @@ package ic2_120.client.renderers
 
 import ic2_120.content.block.KineticGeneratorBlock
 import ic2_120.content.block.WindKineticGeneratorBlock
+import ic2_120.content.block.WaterKineticGeneratorBlock
+import ic2_120.content.block.ManualKineticGeneratorBlock
 import ic2_120.content.block.transmission.BevelGearBlock
 import ic2_120.content.block.transmission.IKineticMachinePort
 import ic2_120.content.block.transmission.KineticConnectionRules
@@ -236,6 +238,8 @@ class TransmissionBlockEntityRenderer(
         return when (block) {
             // 风力动能发生机：吸附渲染放宽为相邻即识别，输出方向由服务端逻辑决定。
             is WindKineticGeneratorBlock -> true
+            is WaterKineticGeneratorBlock -> true
+            is ManualKineticGeneratorBlock -> true
             // 动能发电机：正面为动能输入口。
             is KineticGeneratorBlock -> facing == direction.opposite
             else -> false
