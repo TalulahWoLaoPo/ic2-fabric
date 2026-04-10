@@ -3,6 +3,7 @@ package ic2_120.content.block.machines
 import ic2_120.content.block.WindKineticGeneratorBlock
 import ic2_120.content.block.transmission.BevelGearBlock
 import ic2_120.content.block.transmission.IKineticMachinePort
+import ic2_120.content.block.transmission.IKineticRotorProvider
 import ic2_120.content.block.transmission.TransmissionShaftBlock
 import ic2_120.content.screen.WindKineticGeneratorScreenHandler
 import ic2_120.content.sync.WindKineticGeneratorSync
@@ -49,7 +50,7 @@ class WindKineticGeneratorBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : MachineBlockEntity(type, pos, state), Inventory, IKineticMachinePort,
+) : MachineBlockEntity(type, pos, state), Inventory, IKineticMachinePort, IKineticRotorProvider,
     net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = WindKineticGeneratorBlock.ACTIVE
@@ -212,7 +213,7 @@ class WindKineticGeneratorBlockEntity(
 
     fun getOutputKu(): Int = kineticSync.outputKu.coerceAtLeast(0)
 
-    fun getRotorStack(): ItemStack = inventory[ROTOR_SLOT]
+    override fun getRotorStack(): ItemStack = inventory[ROTOR_SLOT]
 
     fun getRotorRemainingClearHours(): Double {
         val rotor = inventory[ROTOR_SLOT]
@@ -258,7 +259,7 @@ class WindKineticGeneratorBlockEntity(
         return ALLOWED_ROTORS.contains(id.path)
     }
 
-    private fun getRotorRadius(stack: ItemStack): Float {
+    override fun getRotorRadius(stack: ItemStack): Float {
         return when (Registries.ITEM.getId(stack.item).path) {
             "wooden_rotor" -> 2.0f
             "iron_rotor" -> 3.0f
@@ -337,9 +338,10 @@ class WindKineticGeneratorBlockEntity(
         if (collision) {
             if (!isStuck) {
                 isStuck = true
-                stuckAngle = STUCK_DISPLAY_ANGLE
+                // 记录实际阻挡角度，而不是固定角度
+                stuckAngle = currentAngle
                 markDirtyAndSync()
-                NetworkManager.sendWindRotorStateToNearby(world, pos, true, STUCK_DISPLAY_ANGLE)
+                NetworkManager.sendWindRotorStateToNearby(world, pos, true, stuckAngle)
             }
         } else {
             if (isStuck) {
@@ -558,7 +560,7 @@ class WindKineticGeneratorBlockEntity(
                     }
 
                     if (mutablePos == pos) continue
-                    val other = world.getBlockEntity(mutablePos) as? WindKineticGeneratorBlockEntity ?: continue
+                    val other = world.getBlockEntity(mutablePos) as? IKineticRotorProvider ?: continue
                     val otherRotor = other.getRotorStack()
                     if (otherRotor.isEmpty) continue
 

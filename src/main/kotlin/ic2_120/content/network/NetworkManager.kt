@@ -24,6 +24,7 @@ import net.minecraft.util.Identifier
 object NetworkManager {
     private val REACTOR_HEAT_INFO_PACKET = Identifier(Ic2_120.MOD_ID, "reactor_heat_info")
     private val WIND_ROTOR_STATE_PACKET = Identifier(Ic2_120.MOD_ID, "wind_rotor_state")
+    private val WATER_ROTOR_STATE_PACKET = Identifier(Ic2_120.MOD_ID, "water_rotor_state")
     private val TELEPORTER_VISUAL_STATE_PACKET = TeleporterVisualStatePacket.ID
     val TOGGLE_NIGHT_VISION_GOGGLES_PACKET = Identifier(Ic2_120.MOD_ID, "toggle_night_vision_goggles")
     val TOGGLE_NANO_VISION_PACKET = Identifier(Ic2_120.MOD_ID, "toggle_nano_vision")
@@ -45,6 +46,11 @@ object NetworkManager {
         // 风力发电机转子状态包（仅 S2C，服务端不需要接收处理器）
         ServerPlayNetworking.registerGlobalReceiver(WIND_ROTOR_STATE_PACKET) { server, player, handler, buf, responseSender ->
             // 空实现，这个包只用于服务端发送到客户端
+        }
+
+        // 水力发电机转子状态包（仅 S2C，服务端不需要接收处理器）
+        ServerPlayNetworking.registerGlobalReceiver(WATER_ROTOR_STATE_PACKET) { server, player, handler, buf, responseSender ->
+            // 空实现
         }
 
         // 传送机渲染状态包（仅 S2C，服务端不需要接收处理器）
@@ -203,6 +209,20 @@ object NetworkManager {
                 val buf = PacketByteBuf(Unpooled.buffer())
                 TeleporterVisualStatePacket.write(packet, buf)
                 ServerPlayNetworking.send(player, TELEPORTER_VISUAL_STATE_PACKET, buf)
+            }
+        }
+    }
+
+    // 发送水力发电机转子状态到附近玩家
+    fun sendWaterRotorStateToNearby(world: net.minecraft.world.World, pos: net.minecraft.util.math.BlockPos, isStuck: Boolean, stuckAngle: Float) {
+        if (world.isClient) return
+
+        val serverWorld = world as net.minecraft.server.world.ServerWorld
+        for (player in serverWorld.players) {
+            if (player.squaredDistanceTo(pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble()) < 64 * 64) {
+                val buf = PacketByteBuf(Unpooled.buffer())
+                WaterRotorStatePacket.write(WaterRotorStatePacket(pos, isStuck, stuckAngle), buf)
+                ServerPlayNetworking.send(player, WaterRotorStatePacket.ID, buf)
             }
         }
     }
