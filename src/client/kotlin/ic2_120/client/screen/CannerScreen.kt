@@ -159,7 +159,9 @@ class CannerScreen(
                                 emptyColor = 0xFF3A3A8A.toInt(),
                                 fullColor = 0xFF3AAAF5.toInt(),
                                 gradient = false,
+                                modifier = Modifier().fractionHeight(1f)
                             )
+                            SlotHost(CannerScreenHandler.SLOT_OUTPUT_INDEX)
                         }
                     }
 

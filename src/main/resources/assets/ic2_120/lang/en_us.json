@@ -735,5 +735,9 @@
   "item.ic2_120.creosote_bucket": "Creosote Bucket",
   "message.ic2_120.coke_kiln.structure_ok": "Coke Kiln structure is valid",
   "message.ic2_120.coke_kiln.structure_invalid": "Invalid Coke Kiln: 3x3x3 hollow, hatch at top center, exactly one kiln at middle side center, grate facing down at bottom center",
-  "container.ic2_120.coke_kiln": "Coke Kiln"
+  "container.ic2_120.coke_kiln": "Coke Kiln",
+  "item.ic2_120.wooden_crank_handle": "Wooden Crank Handle",
+  "item.ic2_120.iron_crank_handle": "Iron Crank Handle",
+  "item.ic2_120.steel_crank_handle": "Steel Crank Handle",
+  "item.ic2_120.carbon_crank_handle": "Carbon Crank Handle"
 }

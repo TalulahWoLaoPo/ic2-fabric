@@ -732,5 +732,9 @@
   "item.ic2_120.creosote_bucket": "杂酚油桶",
   "message.ic2_120.coke_kiln.structure_ok": "焦炭窑结构正确",
   "message.ic2_120.coke_kiln.structure_invalid": "焦炭窑结构错误：需 3x3x3 中空，顶中窑口，中层四侧中间仅 1 个焦炭窑，底中炉篦朝下",
-  "container.ic2_120.coke_kiln": "焦炭窑"
+  "container.ic2_120.coke_kiln": "焦炭窑",
+  "item.ic2_120.wooden_crank_handle": "木曲柄",
+  "item.ic2_120.iron_crank_handle": "铁曲柄",
+  "item.ic2_120.steel_crank_handle": "钢曲柄",
+  "item.ic2_120.carbon_crank_handle": "碳曲柄"
 }

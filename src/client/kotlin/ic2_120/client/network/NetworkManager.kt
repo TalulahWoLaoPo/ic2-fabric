@@ -7,6 +7,7 @@ import ic2_120.content.network.ScannerResultPacket
 import ic2_120.content.network.TeleporterVisualStatePacket
 import ic2_120.content.network.WindRotorStatePacket
 import ic2_120.content.network.WaterRotorStatePacket
+
 import ic2_120.client.screen.ScannerScreen
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.MinecraftClient
@@ -17,6 +18,7 @@ object NetworkManager {
     private val BANDWIDTH_HUD_PACKET = BandwidthHudPacket.ID
     private val WIND_ROTOR_STATE_PACKET = WindRotorStatePacket.ID
     private val WATER_ROTOR_STATE_PACKET = WaterRotorStatePacket.ID
+    
     private val SCANNER_RESULT_PACKET = ScannerResultPacket.ID
     private val TELEPORTER_VISUAL_STATE_PACKET = TeleporterVisualStatePacket.ID
 
@@ -61,6 +63,8 @@ object NetworkManager {
                 }
             }
         }
+
+        
 
         // 注册扫描结果 S2C 包
         ClientPlayNetworking.registerGlobalReceiver(SCANNER_RESULT_PACKET) { client, handler, buf, responseSender ->
