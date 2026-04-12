@@ -66,16 +66,16 @@ class CarbonMesh : Item(FabricItemSettings()) {
 
 @ModItem(name = "carbon_plate", tab = CreativeTab.IC2_MATERIALS, group = "carbon_materials")
 class CarbonPlate : Item(FabricItemSettings()) {
-    companion object {
-        @RecipeProvider
-        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, CarbonPlate::class.instance(), 1)
-                .pattern("   ").pattern("   ").pattern(" MM")
-                .input('M', CarbonMesh::class.instance())
-                .criterion(hasItem(CarbonMesh::class.instance()), conditionsFromItem(CarbonMesh::class.instance()))
-                .offerTo(exporter, CarbonPlate::class.id())
-        }
-    }
+    // companion object {
+    //     @RecipeProvider
+    //     fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+    //         ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, CarbonPlate::class.instance(), 1)
+    //             .pattern("   ").pattern("   ").pattern(" MM")
+    //             .input('M', CarbonMesh::class.instance())
+    //             .criterion(hasItem(CarbonMesh::class.instance()), conditionsFromItem(CarbonMesh::class.instance()))
+    //             .offerTo(exporter, CarbonPlate::class.id())
+    //     }
+    // }
 }
 
 @ModItem(name = "wooden_rotor_blade", tab = CreativeTab.IC2_MATERIALS, group = "rotor_blades")
