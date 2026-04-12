@@ -24,17 +24,22 @@
 
 ## 发电机
 
-| 机器 | 文件 | 电压等级 | 输出 | 燃料 |
-|------|------|----------|------|------|
-| [火力发电机](generator.md) | generator.md | Tier 1 (LV) | 10 EU/t | 煤 |
-| [斯特林发电机](stirling-generator.md) | stirling-generator.md | Tier 2 (MV) | 50 EU/t | 热量转电能 |
+| 机器 | 文件 | 电压等级 | 输出 | 燃料/能量来源 |
+|------|------|----------|------|---------------|
+| [火力发电机](generator.md) | generator.md | Tier 1 (LV) | 10 EU/t | 煤/木炭 |
+| [斯特林发电机](stirling-generator.md) | stirling-generator.md | Tier 2 (MV) | 50 EU/t | 热量（HU） |
 | [地热发电机](geo-generator.md) | geo-generator.md | Tier 1 (LV) | 20 EU/t | 岩浆 |
 | [太阳能发电机](solar-generator.md) | solar-generator.md | Tier 1 (LV) | 1 EU/t | 日光 |
 | [风力发电机](wind-generator.md) | wind-generator.md | Tier 1 (LV) | 可变 | 高度/天气 |
-| [动能发电机](kinetic-generator.md) | kinetic-generator.md | Tier 3 (HV) | 可变 | KU输入 |
-| [水力发电机](water-generator.md) | water-generator.md | Tier 1 (LV) | 可变 | 水流 |
-| [半流质发电机](semifluid-generator.md) | semifluid-generator.md | Tier 1 (LV) | 可变 | 流体燃料 |
-| [放射性同位素发电机](rt-generator.md) | rt-generator.md | Tier 1 (LV) | 可变 | 同位素燃料 |
+| [动能发电机](kinetic-generator.md) | kinetic-generator.md | Tier 3 (HV) | 512 EU/t | 动能（KU） |
+
+## 动能机器
+
+| 机器 | 文件 | 输出 | 能量来源 |
+|------|------|------|----------|
+| [手动动能发电机](manual-kinetic-generator.md) | manual-kinetic-generator.md | 4-16 KU/t | 手摇曲柄 |
+| [水力动能发电机](water-kinetic-generator.md) | water-kinetic-generator.md | 64-384 KU/t | 水流 + 转子 |
+| [风力动能发电机](wind-kinetic-generator.md) | wind-kinetic-generator.md | 128-768 KU/t | 风力 + 转子 |
 
 ## 资源机器
 
@@ -63,6 +68,6 @@
 - [EU 能量系统](../systems/eu-energy.md) - 导线、过压爆炸
 - [发电与储电](../guides/power-generation.md) - 发电机指南
 - [升级系统](../guides/upgrades.md) - 升级槽说明
-- [动能系统](../systems/kinetic-transmission.md) - KU 传动
+- [动能系统](../systems/kinetic-transmission.md) - KU 传动详情
 - [热能系统](../systems/heat-system.md) - HU 热量
 - [核反应堆](../systems/nuclear-reactor.md) - 核电系统

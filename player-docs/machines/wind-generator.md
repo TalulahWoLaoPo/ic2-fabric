@@ -56,4 +56,6 @@
 ## 相关
 
 - [太阳能发电机](solar-generator.md) - 另一种绿色能源
-- [动能发电机](kinetic-generator.md) - 接收 KU 发电
+- [风力动能发电机](wind-kinetic-generator.md) - 风力产生 KU
+- [动能发电机](kinetic-generator.md) - KU 转 EU
+- [动能系统](../systems/kinetic-transmission.md) - KU 传动详情
