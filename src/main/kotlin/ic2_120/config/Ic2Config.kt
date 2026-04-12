@@ -32,6 +32,8 @@ data class Ic2MainConfig(
     val uuReplication: UuReplicationConfig = UuReplicationConfig(),
     @field:ConfigComment("采矿机配置。")
     val miner: MinerConfig = MinerConfig(),
+    @field:ConfigComment("采矿镭射枪配置。")
+    val miningLaser: MiningLaserConfig = MiningLaserConfig(),
     @field:ConfigComment("世界生成配置。")
     val worldgen: WorldgenConfig = WorldgenConfig()
 )
@@ -75,6 +77,114 @@ data class MinerConfig(
         "[]"
     )
     val additionalMineableBlocks: List<String> = emptyList()
+)
+
+/**
+ * 采矿镭射枪各模式配置。
+ * 设计原则：一次发射越多弹体，射程越短；单发模式射程最远。
+ */
+@Serializable
+data class MiningLaserConfig(
+    @field:ConfigComment("采矿模式配置。基础远程挖矿，击穿一段距离，距离与被挖掘方块硬度有关。")
+    val mining: LaserModeConfig = LaserModeConfig(
+        energyCost = 2_000L,
+        range = 64.0,
+        speed = 1.5,
+        explosionPower = 0f,
+        color = 0xFF00BFFF.toInt(),
+        scatterCount = 1,
+        scatterSpread = 0.0,
+        entityDamage = 4f
+    ),
+    @field:ConfigComment("低聚焦模式配置。近距离单发，节约用电，有几率点燃方块。")
+    val lowFocus: LaserModeConfig = LaserModeConfig(
+        energyCost = 500L,
+        range = 4.0,
+        speed = 1.0,
+        explosionPower = 0f,
+        color = 0xFFFF8800.toInt(),
+        scatterCount = 1,
+        scatterSpread = 0.0,
+        entityDamage = 2f
+    ),
+    @field:ConfigComment("远距模式配置。超远射程，速度更快。")
+    val longRange: LaserModeConfig = LaserModeConfig(
+        energyCost = 5_000L,
+        range = 64.0,
+        speed = 3.0,
+        explosionPower = 0f,
+        color = 0xFF44FF44.toInt(),
+        scatterCount = 1,
+        scatterSpread = 0.0,
+        entityDamage = 6f
+    ),
+    @field:ConfigComment("超级热线模式配置。烧制方块，将矿石烧制成成品（对原木无效）。")
+    val superHeat: LaserModeConfig = LaserModeConfig(
+        energyCost = 5_000L,
+        range = 8.0,
+        speed = 1.5,
+        explosionPower = 0f,
+        color = 0xFFFF4400.toInt(),
+        scatterCount = 1,
+        scatterSpread = 0.0,
+        entityDamage = 8f
+    ),
+    @field:ConfigComment("散射模式配置。25发同时发射，3x3范围。")
+    val scatter: LaserModeConfig = LaserModeConfig(
+        energyCost = 12_500L,
+        range = 10.0,
+        speed = 1.5,
+        explosionPower = 0f,
+        color = 0xFFFF44FF.toInt(),
+        scatterCount = 25,
+        scatterSpread = 50.0,
+        entityDamage = 2f
+    ),
+    @field:ConfigComment("爆破模式配置。约TNT当量，穿甲效果。")
+    val explosive: LaserModeConfig = LaserModeConfig(
+        energyCost = 10_000L,
+        range = 10.0,
+        speed = 1.5,
+        explosionPower = 4.0f,
+        color = 0xFFFF2222.toInt(),
+        scatterCount = 1,
+        scatterSpread = 0.0,
+        entityDamage = 100f
+    ),
+    @field:ConfigComment("3x3模式配置。9发同时发射，3x3断面向前开挖。")
+    val trench3x3: LaserModeConfig = LaserModeConfig(
+        energyCost = 7_200L,
+        range = 20.0,
+        speed = 1.5,
+        explosionPower = 0f,
+        color = 0xFF00CCFF.toInt(),
+        scatterCount = 9,
+        scatterSpread = 18.0,
+        entityDamage = 2f
+    )
+)
+
+/**
+ * 单个镭射枪模式的数值配置。
+ */
+@Serializable
+data class LaserModeConfig(
+    @field:ConfigComment("每发消耗能量（EU）。", "2000")
+    val energyCost: Long,
+    @field:ConfigComment("最大射程 (blocks)。", "64.0")
+    val range: Double,
+    @field:ConfigComment("弹体飞行速度 (blocks/tick)。", "1.5")
+    val speed: Double,
+    @field:ConfigComment("爆炸威力 (0 = 不爆炸, 4.0 = TNT)。", "0.0")
+    val explosionPower: Float,
+    @field:ConfigComment("弹体视觉颜色 (ARGB 整数)。", "-16740353")
+    val color: Int,
+    @field:ConfigComment("散射弹体数量 (1 = 单发)。", "1")
+    val scatterCount: Int,
+    @field:ConfigComment("散射张角 (度)。", "0.0")
+    val scatterSpread: Double,
+    @field:ConfigComment("对实体伤害（2.0 = 1颗心）。", "4.0")
+    val entityDamage: Float
 )
 
 private val DEFAULT_RUBBER_TREE_BIOMES = listOf(
@@ -186,6 +296,7 @@ private val DEFAULT_CONFIG_TEMPLATE = Ic2MainConfig(
         replicationWhitelist = UuReplicationDefaults.defaultWhitelist
     ),
     miner = MinerConfig(),
+    miningLaser = MiningLaserConfig(),
     worldgen = WorldgenConfig(
         rubberTree = RubberTreeWorldgenConfig()
     )
