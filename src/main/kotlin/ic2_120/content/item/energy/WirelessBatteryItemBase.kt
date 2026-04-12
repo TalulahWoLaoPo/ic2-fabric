@@ -88,6 +88,8 @@ abstract class WirelessBatteryItemBase(
      */
     fun autoChargeEquipment(stack: net.minecraft.item.ItemStack, player: net.minecraft.entity.player.PlayerEntity) {
         if (!canChargeWireless) return
+        // 堆叠的无线电池不能触发充电，避免多耗电（N 倍于堆叠数）
+        if (stack.count > 1) return
 
         val energy = getCurrentCharge(stack)
         if (energy <= 0) return
