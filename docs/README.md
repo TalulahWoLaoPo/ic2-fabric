@@ -53,6 +53,7 @@
 - `docs/registry/CLASS_BASED_REGISTRY.md`
 - `docs/registry/block-variants.md`
 - `docs/registry/biome-colored-blocks.md`
+- `docs/registry/loot-table-system.md`
 
 ### inventory（资源清单）
 
