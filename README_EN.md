@@ -4,11 +4,10 @@
 
 <big>[English](README_EN.md) | [简体中文](README.md)</big>
 
-> **⚠️ Required: Installation** To use this mod, you must copy **all three files** from the release to your Minecraft mods folder:
-> - `ic2_120-*.jar` - Main mod file
-> - `energy-*.jar` - Energy API runtime dependency
+> **⚠️ Required: Installation** To use this mod, you must copy **both files** from the release to your Minecraft mods folder:
+> - `ic2_120-*.jar` - Main mod file (Energy API bundled)
 > - `fabric-language-kotlin-*.jar` - Fabric Kotlin language support library
-> All three files are required, otherwise the mod will not work.
+> Both files are required, otherwise the mod will not work.
 
 > **📢 Sinytra Connector Support**: This mod has been adapted for [Sinytra Connector](https://github.com/Sinytra/connector) and can also run on Forge via Connector. For instructions on using Connector to load Fabric Mods in a Forge environment, please refer to the [official Sinytra Connector documentation](https://github.com/Sinytra/connector)。
 

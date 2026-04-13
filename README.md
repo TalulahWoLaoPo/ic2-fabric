@@ -4,11 +4,10 @@
 
 > 📢 Q群交流：638382077（反馈bug、讨论开发进度、与作者交流等）
 
-> **⚠️ 必读：安装说明** 使用本模组需要同时复制 release 中的**三个文件**到 Minecraft 的 mods 文件夹：
-> - `ic2_120-*.jar` - 模组本体
-> - `energy-*.jar` - Energy API 运行时依赖
+> **⚠️ 必读：安装说明** 使用本模组需要同时复制 release 中的**两个文件**到 Minecraft 的 mods 文件夹：
+> - `ic2_120-*.jar` - 模组本体（已内置 Energy API）
 > - `fabric-language-kotlin-*.jar` - Fabric Kotlin 语言支持库
-> 三个文件缺一不可，否则模组无法正常运行。
+> 两个文件缺一不可，否则模组无法正常运行。
 
 > **📢 Sinytra Connector(信雅互联) 支持**：本模组已针对 [Sinytra Connector](https://github.com/Sinytra/connector) 进行适配，Forge 端也可通过 Connector 运行。关于如何在 Forge 环境中使用 Connector 加载 Fabric Mod，请参阅 [Sinytra Connector 官方文档](https://github.com/Sinytra/connector)。
 
@@ -179,5 +178,5 @@ ic2-fabric/
 
 - 游戏版本：Minecraft `1.20.1`
 - 加载器：Fabric
-- 依赖：Fabric API、Fabric Language Kotlin、Energy API
+- 依赖：Fabric API、Fabric Language Kotlin（Energy API 已内置）
 - 兼容：Sinytra Connector（可在 Forge + Connector 环境运行）

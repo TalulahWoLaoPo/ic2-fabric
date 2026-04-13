@@ -61,6 +61,8 @@ jobs:
           if [ -d "libs" ]; then
             cp libs/*.jar mod-release/
           fi
+          # 移除已打包进 mod jar 的依赖
+          rm -f mod-release/energy-*.jar
       - name: create release
         uses: softprops/action-gh-release@v2
         with:
