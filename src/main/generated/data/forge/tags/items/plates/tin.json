@@ -1,6 +1,6 @@
 {
   "replace": false,
   "values": [
-    "#c:plates/tin"
+    "ic2_120:tin_plate"
   ]
 }

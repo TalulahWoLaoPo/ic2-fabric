@@ -1,6 +1,6 @@
 {
   "replace": false,
   "values": [
-    "#c:storage_blocks/bronze"
+    "ic2_120:bronze_block"
   ]
 }

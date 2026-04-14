@@ -1,6 +1,6 @@
 {
   "replace": false,
   "values": [
-    "#c:dusts/stone"
+    "ic2_120:stone_dust"
   ]
 }

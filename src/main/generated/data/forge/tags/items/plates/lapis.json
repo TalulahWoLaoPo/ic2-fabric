@@ -1,6 +1,6 @@
 {
   "replace": false,
   "values": [
-    "#c:plates/lapis"
+    "ic2_120:lapis_plate"
   ]
 }

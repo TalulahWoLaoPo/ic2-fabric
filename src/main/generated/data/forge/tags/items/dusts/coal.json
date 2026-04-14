@@ -1,6 +1,6 @@
 {
   "replace": false,
   "values": [
-    "#c:dusts/coal"
+    "ic2_120:coal_dust"
   ]
 }

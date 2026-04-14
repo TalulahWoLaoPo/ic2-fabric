@@ -1,6 +1,6 @@
 {
   "replace": false,
   "values": [
-    "#c:ores/iridium"
+    "ic2_120:iridium_ore_item"
   ]
 }

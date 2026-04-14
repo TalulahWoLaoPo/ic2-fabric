@@ -1,6 +1,6 @@
 {
   "replace": false,
   "values": [
-    "#c:plates/lead"
+    "ic2_120:lead_plate"
   ]
 }

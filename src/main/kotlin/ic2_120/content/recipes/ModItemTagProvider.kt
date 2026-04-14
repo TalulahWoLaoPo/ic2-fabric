@@ -39,8 +39,9 @@ class ModItemTagProvider(
     private fun registerModItemPath(path: String, item: Item) {
         val cTag = cItem(path)
         val forgeTag = forgeItem(path)
+        // c: 和 forge: 各自直接放入物品，不交叉引用，避免与 connector 的 c:→forge: 桥接产生循环依赖
         getOrCreateTagBuilder(cTag).setReplace(false).add(item)
-        getOrCreateTagBuilder(forgeTag).setReplace(false).addTag(cTag)
+        getOrCreateTagBuilder(forgeTag).setReplace(false).add(item)
         buildCompatItem(path, cTag, forgeTag)
     }
 
@@ -48,7 +49,7 @@ class ModItemTagProvider(
         val cTag = cItem(path)
         val forgeTag = forgeItem(path)
         getOrCreateTagBuilder(cTag).setReplace(false).add(item)
-        getOrCreateTagBuilder(forgeTag).setReplace(false).addTag(cTag)
+        getOrCreateTagBuilder(forgeTag).setReplace(false).add(item)
         buildCompatItem(path, cTag, forgeTag)
     }
 

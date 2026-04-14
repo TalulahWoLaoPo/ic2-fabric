@@ -1,6 +1,6 @@
 {
   "replace": false,
   "values": [
-    "#c:raw_materials/uranium"
+    "ic2_120:raw_uranium"
   ]
 }

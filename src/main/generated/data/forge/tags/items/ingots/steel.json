@@ -1,6 +1,6 @@
 {
   "replace": false,
   "values": [
-    "#c:ingots/steel"
+    "ic2_120:steel_ingot"
   ]
 }

@@ -1,7 +1,7 @@
 {
   "replace": false,
   "values": [
-    "#c:ores/uranium",
-    "#c:ores/uranium"
+    "ic2_120:uranium_ore",
+    "ic2_120:deepslate_uranium_ore"
   ]
 }

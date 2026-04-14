@@ -133,8 +133,9 @@ class ModBlockTagProvider(
     private fun registerBlockPath(path: String, block: Block) {
         val cTag = cBlock(path)
         val forgeTag = forgeBlock(path)
+        // c: 和 forge: 各自直接放入方块，不交叉引用，避免与 connector 的 c:→forge: 桥接产生循环依赖
         getOrCreateTagBuilder(cTag).setReplace(false).add(block)
-        getOrCreateTagBuilder(forgeTag).setReplace(false).addTag(cTag)
+        getOrCreateTagBuilder(forgeTag).setReplace(false).add(block)
         val compatTag = compatBlock(path)
         getOrCreateTagBuilder(compatTag).setReplace(false).addTag(cTag).addTag(forgeTag)
     }

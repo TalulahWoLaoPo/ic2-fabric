@@ -1,6 +1,6 @@
 {
   "replace": false,
   "values": [
-    "#c:ingots/tin"
+    "ic2_120:tin_ingot"
   ]
 }
