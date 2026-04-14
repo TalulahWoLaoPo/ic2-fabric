@@ -60,6 +60,7 @@ class Ic2JeiPlugin : IModPlugin {
     override fun registerItemSubtypes(registration: ISubtypeRegistration) {
         // 遍历所有已注册的物品
         Registries.ITEM.forEach { item ->
+            if (item === Items.AIR) return@forEach
             // 检查物品是否实现了电力接口
             if (item is IBatteryItem || item is IElectricTool) {
                 // 注册 NBT 子类型解释器
@@ -95,6 +96,7 @@ class Ic2JeiPlugin : IModPlugin {
         val extraStacks = mutableListOf<ItemStack>()
 
         Registries.ITEM.forEach { item ->
+            if (item === Items.AIR) return@forEach
             when (item) {
                 is IBatteryItem -> {
                     // 电池：补充空电 + 满电两个明确变体
