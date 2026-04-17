@@ -20,9 +20,7 @@ object UpgradeItemRegistry {
         register(EnergyStorageUpgrade::class, IEnergyStorageUpgradeSupport::class)
         register(RedstoneInverterUpgrade::class, IRedstoneInverterUpgradeSupport::class)
         register(EjectorUpgrade::class, IEjectorUpgradeSupport::class)
-        register(AdvancedEjectorUpgrade::class, IEjectorUpgradeSupport::class)
         register(PullingUpgrade::class, IEjectorUpgradeSupport::class)
-        register(AdvancedPullingUpgrade::class, IEjectorUpgradeSupport::class)
         // 流体弹出/抽取升级走管道逻辑（IFluidPipeUpgradeSupport），与物品弹出升级（IEjectorUpgradeSupport）分开
         register(FluidEjectorUpgrade::class, IFluidPipeUpgradeSupport::class)
         register(FluidPullingUpgrade::class, IFluidPipeUpgradeSupport::class)

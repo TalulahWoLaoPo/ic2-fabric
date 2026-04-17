@@ -1,13 +1,7 @@
 package ic2_120.content.upgrade
 
-import net.minecraft.item.Item
-import net.minecraft.util.math.Direction
-
 /**
- * 机器支持弹出/抽入升级的接口。
+ * 标记接口：表示机器支持物品弹出升级。
+ * 弹出逻辑由 EjectorUpgradeComponent.ejectIfUpgraded() 统一处理。
  */
-interface IEjectorUpgradeSupport {
-    var itemEjectorEnabled: Boolean
-    var itemEjectorFilter: Item?
-    var itemEjectorSide: Direction?
-}
+interface IEjectorUpgradeSupport

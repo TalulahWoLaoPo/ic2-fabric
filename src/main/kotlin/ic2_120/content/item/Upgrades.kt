@@ -41,7 +41,6 @@ import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 
 private const val PULLING_UPGRADE_NOT_IMPLEMENTED_TOOLTIP = "item.ic2_120.tooltip.pulling_upgrade_not_implemented"
-private const val ITEM_EJECTOR_UPGRADE_MINER_ONLY_TOOLTIP = "item.ic2_120.tooltip.item_ejector_upgrade_miner_only"
 
 // ========== 升级物品接口 ==========
 
@@ -122,7 +121,6 @@ abstract class ItemFilterUpgradeItem : Item(FabricItemSettings()), IUpgradeItem 
         }
         val side = EjectorUpgradeComponent.readDirection(stack)
         tooltip.add(Text.literal("方向: ${directionLabel(side)}").formatted(Formatting.GRAY))
-        tooltip.add(Text.translatable(ITEM_EJECTOR_UPGRADE_MINER_ONLY_TOOLTIP).formatted(Formatting.GRAY))
     }
 
     override fun use(world: World, user: net.minecraft.entity.player.PlayerEntity, hand: Hand): TypedActionResult<ItemStack> {
@@ -287,20 +285,8 @@ class EjectorUpgrade : ItemFilterUpgradeItem() {
     }
 }
 
-@ModItem(name = "advanced_ejector_upgrade", tab = CreativeTab.IC2_MATERIALS, group = "upgrades")
-class AdvancedEjectorUpgrade : ItemFilterUpgradeItem()
-
 @ModItem(name = "pulling_upgrade", tab = CreativeTab.IC2_MATERIALS, group = "upgrades")
 class PullingUpgrade : Item(FabricItemSettings()), IUpgradeItem {
-    @Environment(EnvType.CLIENT)
-    override fun appendTooltip(stack: ItemStack, world: World?, tooltip: MutableList<Text>, context: TooltipContext) {
-        super.appendTooltip(stack, world, tooltip, context)
-        tooltip.add(Text.translatable(PULLING_UPGRADE_NOT_IMPLEMENTED_TOOLTIP).formatted(Formatting.GRAY))
-    }
-}
-
-@ModItem(name = "advanced_pulling_upgrade", tab = CreativeTab.IC2_MATERIALS, group = "upgrades")
-class AdvancedPullingUpgrade : Item(FabricItemSettings()), IUpgradeItem {
     @Environment(EnvType.CLIENT)
     override fun appendTooltip(stack: ItemStack, world: World?, tooltip: MutableList<Text>, context: TooltipContext) {
         super.appendTooltip(stack, world, tooltip, context)

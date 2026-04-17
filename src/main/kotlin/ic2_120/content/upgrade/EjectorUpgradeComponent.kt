@@ -1,108 +1,77 @@
 package ic2_120.content.upgrade
 
-import ic2_120.content.item.AdvancedEjectorUpgrade
 import ic2_120.content.item.EjectorUpgrade
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
-import net.minecraft.util.math.Direction
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Direction
 import net.minecraft.world.World
-import net.minecraft.block.entity.HopperBlockEntity
-import net.minecraft.inventory.SidedInventory
 
 object EjectorUpgradeComponent {
     private const val NBT_ITEM_FILTER = "PipeItemFilter"
     private const val NBT_DIRECTION = "PipeItemDirection"
 
-    /** 统一入口：按升级槽扫描弹出升级，写回机器弹出配置。 */
-    fun <T> apply(machine: T, upgradeSlotIndices: IntArray, outputSlotIndices: IntArray) where T : Inventory, T : IEjectorUpgradeSupport {
-        apply(machine as Inventory, upgradeSlotIndices, outputSlotIndices, machine as Any)
-    }
-
-    fun apply(inventory: Inventory, upgradeSlotIndices: IntArray, outputSlotIndices: IntArray, machine: Any) {
-        if (machine !is IEjectorUpgradeSupport) return
-
-        var provider = false
-        var filter: Item? = null
-        var side: Direction? = null
-
-        for (idx in upgradeSlotIndices) {
-            val stack = inventory.getStack(idx)
-            if (stack.isEmpty) continue
-            when (stack.item) {
-                is EjectorUpgrade, is AdvancedEjectorUpgrade -> {
-                    provider = true
-                    if (filter == null) filter = readFilter(stack)
-                    if (side == null) side = readDirection(stack)
-                }
-            }
-        }
-
-        machine.itemEjectorEnabled = provider
-        machine.itemEjectorFilter = filter
-        machine.itemEjectorSide = side
-    }
+    private data class EjectorConfig(val filter: Item?, val side: Direction?)
 
     /**
-     * 仅从 outputSlotIndices 指定槽位弹出物品。
+     * 统一入口：扫描升级槽中的所有弹出升级，逐个独立弹出 outputSlotIndices 中的物品。
+     * 每个弹出升级使用自己的过滤和方向配置。
+     * 使用 Fabric Transfer API 查找目标容器，兼容 vanilla Inventory 和 modded Storage。
      */
-    fun ejectFromOutputSlots(
+    fun ejectIfUpgraded(
         world: World,
         pos: BlockPos,
         inventory: Inventory,
-        outputSlotIndices: IntArray,
-        side: Direction?,
-        filter: Item?
+        upgradeSlotIndices: IntArray,
+        outputSlotIndices: IntArray
     ) {
         if (outputSlotIndices.isEmpty()) return
-        val dirs = if (side != null) listOf(side) else Direction.values().toList()
 
-        for (slotIndex in outputSlotIndices) {
-            val stack = inventory.getStack(slotIndex)
+        val configs = mutableListOf<EjectorConfig>()
+        for (idx in upgradeSlotIndices) {
+            val stack = inventory.getStack(idx)
             if (stack.isEmpty) continue
-            if (filter != null && stack.item != filter) continue
-
-            var remaining = stack.copy()
-            for (dir in dirs) {
-                val target = HopperBlockEntity.getInventoryAt(world, pos.offset(dir)) ?: continue
-                remaining = insertIntoInventory(target, remaining, dir.opposite)
-                if (remaining.isEmpty) break
+            if (stack.item is EjectorUpgrade) {
+                configs.add(EjectorConfig(readFilter(stack), readDirection(stack)))
             }
-            inventory.setStack(slotIndex, remaining)
         }
-    }
+        if (configs.isEmpty()) return
 
-    private fun insertIntoInventory(inventory: Inventory, stack: ItemStack, fromSide: Direction): ItemStack {
-        var remaining = stack.copy()
-        for (slot in 0 until inventory.size()) {
-            if (remaining.isEmpty) break
-            if (!canInsertToSlot(inventory, slot, remaining, fromSide)) continue
-            val existing = inventory.getStack(slot)
-            if (existing.isEmpty) {
-                val toInsert = minOf(remaining.count, inventory.maxCountPerStack)
-                val inserted = remaining.copy()
-                inserted.count = toInsert
-                inventory.setStack(slot, inserted)
-                remaining.decrement(toInsert)
-            } else if (ItemStack.canCombine(existing, remaining)) {
-                val room = minOf(existing.maxCount, inventory.maxCountPerStack) - existing.count
-                if (room > 0) {
-                    val move = minOf(room, remaining.count)
-                    existing.increment(move)
-                    remaining.decrement(move)
+        for (config in configs) {
+            val dirs = if (config.side != null) listOf(config.side) else Direction.values().toList()
+
+            for (slotIndex in outputSlotIndices) {
+                val stack = inventory.getStack(slotIndex)
+                if (stack.isEmpty) continue
+                if (config.filter != null && stack.item != config.filter) continue
+
+                var remaining = stack.count
+                val variant = ItemVariant.of(stack)
+
+                for (dir in dirs) {
+                    if (remaining <= 0) break
+                    val target = ItemStorage.SIDED.find(world, pos.offset(dir), dir.opposite) ?: continue
+                    val tx = Transaction.openOuter()
+                    val moved = target.insert(variant, remaining.toLong(), tx)
+                    tx.commit()
+                    remaining -= moved.toInt()
+                }
+
+                if (remaining <= 0) {
+                    inventory.setStack(slotIndex, ItemStack.EMPTY)
+                } else {
+                    val newStack = stack.copy()
+                    newStack.count = remaining
+                    inventory.setStack(slotIndex, newStack)
                 }
             }
         }
-        return remaining
-    }
-
-    private fun canInsertToSlot(inventory: Inventory, slot: Int, stack: ItemStack, fromSide: Direction): Boolean {
-        if (!inventory.isValid(slot, stack)) return false
-        if (inventory is SidedInventory && !inventory.canInsert(slot, stack, fromSide)) return false
-        return true
     }
 
     fun readFilter(stack: ItemStack): Item? {
