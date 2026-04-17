@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.FluidHeatGeneratorBlock
 import ic2_120.content.block.machines.FluidHeatGeneratorBlockEntity
@@ -47,9 +48,9 @@ class FluidHeatGeneratorScreen(
         val generatedRate = handler.sync.getSyncedGeneratedHeat()
         val outputRate = handler.sync.getSyncedOutputHeat()
 
-        val fuelText = "燃料: $fuel mB"
-        val generatedText = "产热 $generatedRate HU/t"
-        val outputText = "输出 $outputRate HU/t"
+        val fuelText = t("gui.ic2_120.fluid_heat_generator.fuel", fuel)
+        val generatedText = t("gui.ic2_120.generate_hu", generatedRate)
+        val outputText = t("gui.ic2_120.output_hu", outputRate)
         val sideTextWidth = maxOf(
             textRenderer.getWidth(fuelText),
             textRenderer.getWidth(generatedText),

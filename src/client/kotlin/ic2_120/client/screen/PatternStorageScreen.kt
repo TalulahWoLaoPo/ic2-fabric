@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.PatternStorageBlock
 import ic2_120.content.block.machines.PatternStorageBlockEntity
@@ -65,14 +66,14 @@ class PatternStorageScreen(
                     )
                     // 按钮
                     Button(
-                        text = "写入水晶", modifier = Modifier.EMPTY.width(70)
+                        text = t("gui.ic2_120.pattern_storage.write_crystal"), modifier = Modifier.EMPTY.width(70)
                     ) {
                         client?.player?.networkHandler?.sendPacket(
                             ButtonClickC2SPacket(handler.syncId, PatternStorageScreenHandler.BUTTON_EXPORT_TO_CRYSTAL)
                         )
                     }
                     Button(
-                        text = "导入水晶", modifier = Modifier.EMPTY.width(70)
+                        text = t("gui.ic2_120.pattern_storage.import_crystal"), modifier = Modifier.EMPTY.width(70)
                     ) {
                         client?.player?.networkHandler?.sendPacket(
                             ButtonClickC2SPacket(handler.syncId, PatternStorageScreenHandler.BUTTON_IMPORT_FROM_CRYSTAL)
@@ -103,14 +104,14 @@ class PatternStorageScreen(
                     modifier = Modifier.EMPTY.fractionWidth(1.0f).height(guiSize.contentHeight),
                     gap = 2,
                 ) {
-                    Text("共 ${templates.size} 个", color = 0x666666, shadow = false)
+                    Text(t("gui.ic2_120.count_items", templates.size), color = 0x666666, shadow = false)
 
                     ScrollView(
                         scrollbarWidth = 8, modifier = Modifier.EMPTY.fractionHeight(1.0f)
                     ) {
                         Column(spacing = 2) {
                             if (templates.isEmpty()) {
-                                Text("暂无模板", color = 0x666666, shadow = false)
+                                Text(t("gui.ic2_120.pattern_storage.no_templates"), color = 0x666666, shadow = false)
                             } else {
                                 templates.forEachIndexed { index, template ->
                                     Row(spacing = 0, modifier = Modifier.EMPTY.fractionWidth(1.0f)) {

@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.screen.StorageBoxScreenHandler
 import ic2_120.content.screen.GuiSize
@@ -54,7 +55,7 @@ class StorageBoxScreen(
                 // 标题区
                 Text(title.string, color = 0xFFFFFF)
                 Text(
-                    "容量: $inventorySize 格",
+                    t("gui.ic2_120.storage_box.capacity", inventorySize),
                     color = 0xAAAAAA,
                     shadow = false
                 )

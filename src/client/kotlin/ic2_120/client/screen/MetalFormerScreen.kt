@@ -2,6 +2,7 @@ package ic2_120.client.screen
 
 import ic2_120.client.compose.*
 import ic2_120.client.EnergyFormatUtils
+import ic2_120.client.t
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.MetalFormerBlock
@@ -52,17 +53,17 @@ class MetalFormerScreen(
         } else 0f
         val currentMode = handler.sync.getMode()
         val modeText = when (currentMode) {
-            MetalFormerSync.Mode.ROLLING -> "辊压"
-            MetalFormerSync.Mode.CUTTING -> "切割"
-            MetalFormerSync.Mode.EXTRUDING -> "挤压"
+            MetalFormerSync.Mode.ROLLING -> t("gui.ic2_120.metal_former.rolling")
+            MetalFormerSync.Mode.CUTTING -> t("gui.ic2_120.metal_former.cutting")
+            MetalFormerSync.Mode.EXTRUDING -> t("gui.ic2_120.metal_former.extruding")
         }
         // 直接使用后端滤波后的值
         val inputRate = handler.sync.getSyncedInsertedAmount()
         val consumeRate = handler.sync.getSyncedConsumedAmount()
 
         // 在UI左侧绘制速度文本
-        val inputText = "输入 ${EnergyFormatUtils.formatEu(inputRate)} EU/t"
-        val consumeText = "耗能 ${EnergyFormatUtils.formatEu(consumeRate)} EU/t"
+        val inputText = t("gui.ic2_120.input_eu", EnergyFormatUtils.formatEu(inputRate))
+        val consumeText = t("gui.ic2_120.consume_eu", EnergyFormatUtils.formatEu(consumeRate))
         val sideTextWidth = maxOf(textRenderer.getWidth(inputText), textRenderer.getWidth(consumeText))
         val sideTextX = left - sideTextWidth - 4
 

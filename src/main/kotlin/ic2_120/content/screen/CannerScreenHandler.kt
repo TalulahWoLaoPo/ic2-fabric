@@ -138,11 +138,16 @@ class CannerScreenHandler(
                         val leftAfter = be.sync.leftFluidAmountMb
                         val rightAfter = be.sync.rightFluidAmountMb
                         player.sendMessage(
-                            Text.literal(
+                            Text.translatable(
                                 if (changed) {
-                                    "液槽已交换: 左 ${leftBefore}mB -> ${leftAfter}mB, 右 ${rightBefore}mB -> ${rightAfter}mB"
+                                    "gui.ic2_120.canner.tanks_swapped"
                                 } else {
-                                    "液槽交换无可见变化: 左 ${leftAfter}mB, 右 ${rightAfter}mB"
+                                    "gui.ic2_120.canner.tanks_swap_unchanged"
+                                },
+                                *if (changed) {
+                                    arrayOf(leftBefore, leftAfter, rightBefore, rightAfter)
+                                } else {
+                                    arrayOf(leftAfter, rightAfter)
                                 }
                             ),
                             true

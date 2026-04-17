@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.IronFurnaceBlock
@@ -58,7 +59,7 @@ class IronFurnaceScreen(
             ) {
                 Flex(direction = FlexDirection.ROW, alignItems = AlignItems.CENTER, gap = 8) {
                     Text(title.string, color = 0xFFFFFF)
-                    Text("燃烧 $burnPercent%", color = 0xFFFFFF, shadow = false)
+                    Text(t("gui.ic2_120.iron_furnace.burning", burnPercent), color = 0xFFFFFF, shadow = false)
                 }
                 EnergyBar(burnFrac, barHeight = 12)
 
@@ -73,7 +74,7 @@ class IronFurnaceScreen(
                 }
                 Flex(direction = FlexDirection.ROW, alignItems = AlignItems.CENTER, gap = 4) {
                     SlotHost(IronFurnaceBlockEntity.SLOT_FUEL)
-                    Text("燃料槽", color = 0xAAAAAA, shadow = false)
+                    Text(t("gui.ic2_120.iron_furnace.fuel_slot"), color = 0xAAAAAA, shadow = false)
                 }
             }
 

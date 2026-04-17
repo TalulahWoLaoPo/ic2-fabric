@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.EnergyFormatUtils
+import ic2_120.client.t
 import ic2_120.client.compose.*
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
@@ -44,8 +45,8 @@ class UuScannerScreen(
         val cap = handler.sync.energyCapacity.toLong().coerceAtLeast(1L)
         val fraction = (energy.toFloat() / cap.toFloat()).coerceIn(0f, 1f)
         val progressFraction = (handler.sync.progress.toFloat() / UuScannerSync.PROGRESS_MAX.toFloat()).coerceIn(0f, 1f)
-        val inputText = "输入 ${EnergyFormatUtils.formatEu(handler.sync.getSyncedInsertedAmount())} EU/t"
-        val consumeText = "耗能 ${EnergyFormatUtils.formatEu(handler.sync.getSyncedConsumedAmount())} EU/t"
+        val inputText = t("gui.ic2_120.input_eu", EnergyFormatUtils.formatEu(handler.sync.getSyncedInsertedAmount()))
+        val consumeText = t("gui.ic2_120.consume_eu", EnergyFormatUtils.formatEu(handler.sync.getSyncedConsumedAmount()))
         val sideTextWidth = maxOf(textRenderer.getWidth(inputText), textRenderer.getWidth(consumeText))
         val sideTextX = left - sideTextWidth - 4
 
@@ -69,7 +70,7 @@ class UuScannerScreen(
                     Text(statusText(handler.sync.status), color = statusColor(handler.sync.status), shadow = false)
                     Text("${handler.sync.currentCostUb} uB", color = 0xFFAA33, shadow = false)
                     Text(
-                        "扫描进度: ${handler.sync.progress} / ${UuScannerSync.PROGRESS_MAX}",
+                        t("gui.ic2_120.uu_scanner.scan_progress", handler.sync.progress, UuScannerSync.PROGRESS_MAX),
                         color = 0xAAAAAA,
                         shadow = false
                     )
@@ -77,7 +78,7 @@ class UuScannerScreen(
 
                     Row(spacing = 6) {
                         Column(spacing = 4) {
-                            Text("物品", color = 0xAAAAAA, shadow = false)
+                            Text(t("gui.ic2_120.item_slot"), color = 0xAAAAAA, shadow = false)
                             SlotAnchor(
                                 id = slotAnchorId(UuScannerScreenHandler.SLOT_INPUT_INDEX),
                                 width = 18,
@@ -85,7 +86,7 @@ class UuScannerScreen(
                             )
                         }
                         Column(spacing = 4) {
-                            Text("电池", color = 0xAAAAAA, shadow = false)
+                            Text(t("gui.ic2_120.battery_slot"), color = 0xAAAAAA, shadow = false)
                             SlotAnchor(
                                 id = slotAnchorId(UuScannerScreenHandler.SLOT_BATTERY_INDEX),
                                 width = 18,
@@ -138,13 +139,13 @@ class UuScannerScreen(
     }
 
     private fun statusText(status: Int): String = when (status) {
-        UuScannerSync.STATUS_NO_STORAGE -> "未连接唯一存储机"
-        UuScannerSync.STATUS_NO_INPUT -> "请放入待扫描物品"
-        UuScannerSync.STATUS_NOT_WHITELISTED -> "物品不在白名单"
-        UuScannerSync.STATUS_NO_ENERGY -> "能量不足"
-        UuScannerSync.STATUS_SCANNING -> "扫描中"
-        UuScannerSync.STATUS_COMPLETE -> "扫描完成"
-        else -> "待机"
+        UuScannerSync.STATUS_NO_STORAGE -> t("gui.ic2_120.status_no_storage")
+        UuScannerSync.STATUS_NO_INPUT -> t("gui.ic2_120.uu_scanner.status_no_input")
+        UuScannerSync.STATUS_NOT_WHITELISTED -> t("gui.ic2_120.uu_scanner.status_not_whitelisted")
+        UuScannerSync.STATUS_NO_ENERGY -> t("gui.ic2_120.status_no_energy")
+        UuScannerSync.STATUS_SCANNING -> t("gui.ic2_120.uu_scanner.status_scanning")
+        UuScannerSync.STATUS_COMPLETE -> t("gui.ic2_120.uu_scanner.status_complete")
+        else -> t("gui.ic2_120.status_idle")
     }
 
     private fun statusColor(status: Int): Int = when (status) {

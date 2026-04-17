@@ -2,6 +2,7 @@ package ic2_120.client.screen
 
 import ic2_120.client.compose.*
 import ic2_120.client.EnergyFormatUtils
+import ic2_120.client.t
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.TransformerBlock
@@ -66,23 +67,23 @@ class TransformerScreen(
             if (lastLoggedInput.compareAndSet(lastIn, rawInput) ||
                 lastLoggedOutput.compareAndSet(lastOut, rawOutput)) {
                 val modeText = when (currentMode) {
-                    TransformerSync.Mode.STEP_UP -> "升压"
-                    TransformerSync.Mode.STEP_DOWN -> "降压"
+                    TransformerSync.Mode.STEP_UP -> t("gui.ic2_120.transformer.step_up")
+                    TransformerSync.Mode.STEP_DOWN -> t("gui.ic2_120.transformer.step_down")
                 }
             }
         }
 
         val modeText = when (currentMode) {
-            TransformerSync.Mode.STEP_UP -> "升压 (低→高)"
-            TransformerSync.Mode.STEP_DOWN -> "降压 (高→低)"
+            TransformerSync.Mode.STEP_UP -> t("gui.ic2_120.transformer.step_up_full")
+            TransformerSync.Mode.STEP_DOWN -> t("gui.ic2_120.transformer.step_down_full")
         }
         val modeColor = when (currentMode) {
             TransformerSync.Mode.STEP_UP -> 0xAAFFAA
             TransformerSync.Mode.STEP_DOWN -> 0xFFAAAA
         }
 
-        val inputText = "输入 ${EnergyFormatUtils.formatEu(filteredInputRate)} EU/t"
-        val outputText = "输出 ${EnergyFormatUtils.formatEu(filteredOutputRate)} EU/t"
+        val inputText = t("gui.ic2_120.input_eu", EnergyFormatUtils.formatEu(filteredInputRate))
+        val outputText = t("gui.ic2_120.output_eu", EnergyFormatUtils.formatEu(filteredOutputRate))
         val sideTextWidth = maxOf(textRenderer.getWidth(inputText), textRenderer.getWidth(outputText))
         val sideTextX = left - sideTextWidth - 4
 
@@ -101,7 +102,7 @@ class TransformerScreen(
                     gap = 6,
                     modifier = Modifier.EMPTY.width(GUI_SIZE.contentWidth - 8)
                 ) {
-                    Text("能量:", color = 0xFFFFFF, shadow = false)
+                    Text(t("gui.ic2_120.transformer.energy_label"), color = 0xFFFFFF, shadow = false)
                     EnergyBar(
                         energyFraction,
                         barWidth = 100,
@@ -116,9 +117,9 @@ class TransformerScreen(
                     gap = 8,
                     modifier = Modifier.EMPTY.width(GUI_SIZE.contentWidth - 8)
                 ) {
-                    Text("模式:", color = 0xFFFFFF, shadow = false)
+                    Text(t("gui.ic2_120.transformer.mode_label"), color = 0xFFFFFF, shadow = false)
                     Text(modeText, color = modeColor, shadow = false)
-                    Button("切换", onClick = {
+                    Button(t("gui.ic2_120.transformer.switch_button"), onClick = {
                         client?.player?.networkHandler?.sendPacket(
                             ButtonClickC2SPacket(handler.syncId, TransformerScreenHandler.BUTTON_ID_TOGGLE_MODE)
                         )
@@ -131,14 +132,14 @@ class TransformerScreen(
                         val outputTier = handler.sync.highTier
                         val inputEu = handler.sync.getLowEuPerTick()
                         val outputEu = handler.sync.getHighEuPerTick()
-                        "正面接收: $inputEu EU/t (级${inputTier})" to "其他面输出: $outputEu EU/t (级${outputTier})"
+                        t("gui.ic2_120.transformer.face_receive", "$inputEu EU/t", inputTier) to t("gui.ic2_120.transformer.other_output", "$outputEu EU/t", outputTier)
                     }
                     TransformerSync.Mode.STEP_DOWN -> {
                         val inputTier = handler.sync.highTier
                         val outputTier = handler.sync.lowTier
                         val inputEu = handler.sync.getHighEuPerTick()
                         val outputEu = handler.sync.getLowEuPerTick()
-                        "其他面接收: $inputEu EU/t (级${inputTier})" to "正面输出: $outputEu EU/t (级${outputTier})"
+                        t("gui.ic2_120.transformer.other_receive", "$inputEu EU/t", inputTier) to t("gui.ic2_120.transformer.face_output", "$outputEu EU/t", outputTier)
                     }
                 }
                 Text(inputDesc, color = 0x999999, shadow = false)

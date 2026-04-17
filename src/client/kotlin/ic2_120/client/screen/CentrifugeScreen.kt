@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
@@ -57,8 +58,8 @@ class CentrifugeScreen(
         val consumeRate = handler.sync.getSyncedConsumedAmount()
         val isProcessing = handler.sync.progress > 0
 
-        val inputText = "输入 ${EnergyFormatUtils.formatEu(inputRate)} EU/t"
-        val consumeText = "耗能 ${EnergyFormatUtils.formatEu(consumeRate)} EU/t"
+        val inputText = t("gui.ic2_120.input_eu", EnergyFormatUtils.formatEu(inputRate))
+        val consumeText = t("gui.ic2_120.consume_eu", EnergyFormatUtils.formatEu(consumeRate))
         val sideTextWidth = maxOf(textRenderer.getWidth(inputText), textRenderer.getWidth(consumeText))
         val sideTextX = left - sideTextWidth - 4
 
@@ -102,7 +103,7 @@ class CentrifugeScreen(
                         ) {
                             EnergyBar(progressFrac, modifier = Modifier.EMPTY.fractionWidth(1.0f))
                             Row {
-                                Text("热量", color = 0xAAAAAA)
+                                Text(t("gui.ic2_120.heat"), color = 0xAAAAAA)
                                 HeatProgressBar(
                                     heatFrac,
 //                                barWidth = 0,
@@ -115,11 +116,7 @@ class CentrifugeScreen(
                                 Text("$heat/${CentrifugeSync.HEAT_MAX}", color = 0xFFFFFF, shadow = false)
                             }
                             Text(
-                                "${if (isProcessing) "加工" else "预热"} | 入${EnergyFormatUtils.formatEu(inputRate)} 耗${
-                                    EnergyFormatUtils.formatEu(
-                                        consumeRate
-                                    )
-                                } EU/t",
+                                t("gui.ic2_120.centrifuge.status_line", if (isProcessing) t("gui.ic2_120.centrifuge.processing") else t("gui.ic2_120.centrifuge.preheating"), EnergyFormatUtils.formatEu(inputRate), EnergyFormatUtils.formatEu(consumeRate)),
                                 color = if (isProcessing) 0x00CC00 else 0xCC0000,
                                 shadow = false
                             )

@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.GuiBackground
 import ic2_120.client.ui.HeatProgressBar
 import ic2_120.content.block.BlastFurnaceBlock
@@ -72,7 +73,7 @@ class BlastFurnaceScreen(
                         alignItems = AlignItems.CENTER,
                         gap = 8
                     ) {
-                        Text("热量", color = 0xAAAAAA)
+                        Text(t("gui.ic2_120.heat"), color = 0xAAAAAA)
                         HeatProgressBar(
                             preheatFrac,
                             barWidth = 0,
@@ -86,7 +87,7 @@ class BlastFurnaceScreen(
                     }
 
                     Text(
-                        "空气: $airUsed/${BlastFurnaceSync.AIR_CELLS_PER_STEEL} 瓶/周期",
+                        t("gui.ic2_120.blast_furnace.air_usage", airUsed, BlastFurnaceSync.AIR_CELLS_PER_STEEL),
                         color = 0xAAAAAA,
                         shadow = false
                     )

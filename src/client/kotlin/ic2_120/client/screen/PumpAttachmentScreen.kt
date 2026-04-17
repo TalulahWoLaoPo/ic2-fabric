@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.screen.PumpAttachmentScreenHandler
 import ic2_120.content.screen.GuiSize
@@ -41,7 +42,7 @@ class PumpAttachmentScreen(
                 Text(title.string, color = 0xFFFFFF)
                 Row(spacing = 8) {
                     SlotHost(0)
-                    Text("过滤样本", color = 0xCFCFCF, shadow = false)
+                    Text(t("gui.ic2_120.pump_attachment.filter_sample"), color = 0xCFCFCF, shadow = false)
                 }
             }
 
@@ -57,7 +58,7 @@ class PumpAttachmentScreen(
         applyAnchoredSlots(layout, left, top)
         super.render(context, mouseX, mouseY, delta)
         val stack = handler.slots[0].stack
-        val line = if (stack.isEmpty) "当前: 任意流体" else "当前: ${stack.name.string}"
+        val line = if (stack.isEmpty) t("gui.ic2_120.pump_attachment.filter_any") else t("gui.ic2_120.pump_attachment.filter_current", stack.name.string)
         context.drawText(textRenderer, line, x + 8, y + 42, 0xAAAAAA, false)
         ui.render(context, textRenderer, mouseX, mouseY, content = content)
         drawMouseoverTooltip(context, mouseX, mouseY)

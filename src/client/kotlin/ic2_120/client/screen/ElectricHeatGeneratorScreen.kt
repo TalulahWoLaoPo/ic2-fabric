@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.ElectricHeatGeneratorBlock
@@ -53,8 +54,8 @@ class ElectricHeatGeneratorScreen(
         val outputRate = handler.sync.getSyncedOutputHeat()
 
         val energyText = "$energy / $cap EU"
-        val generatedText = "产热 $generatedRate HU/t"
-        val outputText = "输出 $outputRate HU/t"
+        val generatedText = t("gui.ic2_120.generate_hu", generatedRate)
+        val outputText = t("gui.ic2_120.output_hu", outputRate)
         val sideTextWidth = maxOf(
             textRenderer.getWidth(energyText),
             textRenderer.getWidth(generatedText),
@@ -122,7 +123,7 @@ class ElectricHeatGeneratorScreen(
         ui.render(context, textRenderer, mouseX, mouseY, content = content)
         context.drawText(textRenderer, generatedText, sideTextX, top + 8, 0xAAAAAA, false)
         context.drawText(textRenderer, outputText, sideTextX, top + 20, 0xAAAAAA, false)
-        context.drawText(textRenderer, "线圈 $coils/10", sideTextX, top + 32, 0xAAAAAA, false)
+        context.drawText(textRenderer, t("gui.ic2_120.electric_heat_generator.coils", coils), sideTextX, top + 32, 0xAAAAAA, false)
 
         drawMouseoverTooltip(context, mouseX, mouseY)
     }

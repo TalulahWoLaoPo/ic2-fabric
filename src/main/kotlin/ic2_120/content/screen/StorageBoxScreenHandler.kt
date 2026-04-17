@@ -99,7 +99,7 @@ class StorageBoxScreenHandler(
                 return StorageBoxScreenHandler(syncId, playerInventory, blockEntity)
             }
 
-            throw IllegalStateException("储物箱 BlockEntity 不存在于位置 $pos")
+            throw IllegalStateException(net.minecraft.text.Text.translatable("gui.ic2_120.storage_box.entity_not_found", pos).string)
         }
 
         /**

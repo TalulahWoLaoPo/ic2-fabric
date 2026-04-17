@@ -3,6 +3,7 @@ package ic2_120.client.screen
 import ic2_120.client.compose.*
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
+import ic2_120.client.t
 import ic2_120.content.item.CropSeedData
 import ic2_120.content.screen.CropnalyzerScreenHandler
 import ic2_120.content.screen.GuiSize
@@ -57,7 +58,7 @@ class CropnalyzerScreen(
         val fraction = (energy.toFloat() / cap.toFloat()).coerceIn(0f, 1f)
         val seed = handler.slots[CropnalyzerScreenHandler.SLOT_INDEX_SEED].stack
         val scanLevel = CropSeedData.readScanLevel(seed)
-        val type = CropSeedData.readType(seed)?.let { CropSeedData.displayName(it).string } ?: "未知"
+        val type = CropSeedData.readType(seed)?.let { CropSeedData.displayName(it).string } ?: t("gui.ic2_120.cropnalyzer.unknown")
         val canScan = energy >= 50L && !seed.isEmpty
 
         val content: UiScope.() -> Unit = {
@@ -68,7 +69,7 @@ class CropnalyzerScreen(
                 modifier = Modifier().width(gui.contentWidth)
             ) {
                 Flex(alignItems = AlignItems.CENTER, gap = 4) {
-                    Text("种子扫描仪", color = 0xFFFFFF)
+                    Text(t("gui.ic2_120.cropnalyzer.title"), color = 0xFFFFFF)
                     EnergyBar(fraction, barHeight = 8, modifier = Modifier().fractionWidth(1f))
                     Text(
                         "${EnergyFormatUtils.formatEu(energy)} / ${EnergyFormatUtils.formatEu(cap)} EU",
@@ -83,11 +84,11 @@ class CropnalyzerScreen(
                         height = GuiSize.SLOT_SIZE
                     )
                 }
-                Text("放入种子袋后点击扫描", color = 0xAAAAAA, shadow = false)
-                Text("作物: $type", color = 0xFFFFFF, shadow = false)
-                Text("扫描等级: $scanLevel/4", color = 0xFFFFFF, shadow = false)
+                Text(t("gui.ic2_120.cropnalyzer.scan_hint"), color = 0xAAAAAA, shadow = false)
+                Text(t("gui.ic2_120.cropnalyzer.crop_type", type), color = 0xFFFFFF, shadow = false)
+                Text(t("gui.ic2_120.cropnalyzer.scan_level", scanLevel), color = 0xFFFFFF, shadow = false)
                 Button(
-                    text = if (canScan) "扫描" else "无法扫描",
+                    text = if (canScan) t("gui.ic2_120.scan") else t("gui.ic2_120.cannot_scan"),
                     modifier = Modifier().width(90),
                     onClick = {
                         client?.player?.networkHandler?.sendPacket(

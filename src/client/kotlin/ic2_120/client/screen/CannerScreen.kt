@@ -2,6 +2,7 @@ package ic2_120.client.screen
 
 import ic2_120.client.compose.*
 import ic2_120.client.EnergyFormatUtils
+import ic2_120.client.t
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.EnergyBarOrientation
 import ic2_120.client.ui.GuiBackground
@@ -56,15 +57,15 @@ class CannerScreen(
         val inputRate = handler.sync.getSyncedInsertedAmount()
         val consumeRate = handler.sync.getSyncedConsumedAmount()
         val modeText = when (handler.sync.getMode()) {
-            CannerSync.Mode.BOTTLE_SOLID -> "固体装罐"
-            CannerSync.Mode.EMPTY_LIQUID -> "排出"
-            CannerSync.Mode.BOTTLE_LIQUID -> "灌入"
-            CannerSync.Mode.ENRICH_LIQUID -> "流体混合"
+            CannerSync.Mode.BOTTLE_SOLID -> t("gui.ic2_120.canner.mode_bottle_solid")
+            CannerSync.Mode.EMPTY_LIQUID -> t("gui.ic2_120.canner.mode_empty_liquid")
+            CannerSync.Mode.BOTTLE_LIQUID -> t("gui.ic2_120.canner.mode_bottle_liquid")
+            CannerSync.Mode.ENRICH_LIQUID -> t("gui.ic2_120.canner.mode_enrich_liquid")
         }
 
         val energyText = "${EnergyFormatUtils.formatEu(energy)} / ${EnergyFormatUtils.formatEu(cap)} EU"
-        val inputText = "输入 ${EnergyFormatUtils.formatEu(inputRate)} EU/t"
-        val consumeText = "耗能 ${EnergyFormatUtils.formatEu(consumeRate)} EU/t"
+        val inputText = t("gui.ic2_120.input_eu", EnergyFormatUtils.formatEu(inputRate))
+        val consumeText = t("gui.ic2_120.consume_eu", EnergyFormatUtils.formatEu(consumeRate))
         val sideTextWidth = maxOf(
             textRenderer.getWidth(energyText), textRenderer.getWidth(inputText), textRenderer.getWidth(consumeText)
         )
@@ -80,7 +81,7 @@ class CannerScreen(
                 ) {
                     // 标题、电量文本、能量条同一行
                     Flex(direction = FlexDirection.ROW, alignItems = AlignItems.CENTER, gap = 8) {
-                        Text("流体/固体装罐机", color = 0xFFFFFF)
+                        Text(t("gui.ic2_120.canner.title"), color = 0xFFFFFF)
                         // EnergyBar(
                         //     energyFraction,
                         //     modifier = Modifier.EMPTY.fractionWidth(1f)
@@ -127,7 +128,7 @@ class CannerScreen(
                                     ButtonClickC2SPacket(handler.syncId, CannerScreenHandler.BUTTON_ID_MODE_CYCLE)
                                 )
                             })
-                            Button("交换液槽", onClick = {
+                            Button(t("gui.ic2_120.canner.swap_tanks"), onClick = {
                                 client?.player?.networkHandler?.sendPacket(
                                     ButtonClickC2SPacket(handler.syncId, CannerScreenHandler.BUTTON_ID_SWAP_TANKS)
                                 )

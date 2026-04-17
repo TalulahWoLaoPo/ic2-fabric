@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
@@ -53,8 +54,8 @@ class ChunkLoaderScreen(
         val consumeRate = handler.sync.getSyncedConsumedAmount()
 
         val energyText = "$energy / $cap EU"
-        val inputText = "输入 ${EnergyFormatUtils.formatEu(inputRate)} EU/t"
-        val consumeText = "耗能 ${EnergyFormatUtils.formatEu(consumeRate)} EU/t ($chunkCount 区块)"
+        val inputText = t("gui.ic2_120.input_eu", EnergyFormatUtils.formatEu(inputRate))
+        val consumeText = t("gui.ic2_120.chunk_loader.consume_chunks", EnergyFormatUtils.formatEu(consumeRate), chunkCount)
         val sideTextWidth = maxOf(
             textRenderer.getWidth(energyText),
             textRenderer.getWidth(inputText),
@@ -80,7 +81,7 @@ class ChunkLoaderScreen(
                     SlotAnchor(id = "slot.${ChunkLoaderScreenHandler.SLOT_DISCHARGING_INDEX}")
                 }
 
-                Text("加载范围: $chunkCount 区块", color = 0xFFFFFF, shadow = false)
+                Text(t("gui.ic2_120.chunk_loader.load_range", chunkCount), color = 0xFFFFFF, shadow = false)
             }
 
             playerInventoryAndHotbarSlotAnchors(

@@ -2,6 +2,7 @@ package ic2_120.client.screen
 
 import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.MagnetizerBlock
@@ -50,9 +51,9 @@ class MagnetizerScreen(
         val inputRate = handler.sync.getSyncedInsertedAmount()
         val consumeRate = handler.sync.getSyncedConsumedAmount()
 
-        val poweredText = if (handler.sync.redstonePowered != 0) "红石: 已触发" else "红石: 未触发"
-        val fenceText = "栅栏: ${handler.sync.fenceCount}"
-        val heightText = "高度: ${handler.sync.effectiveHeight}"
+        val poweredText = if (handler.sync.redstonePowered != 0) t("gui.ic2_120.magnetizer.redstone_triggered") else t("gui.ic2_120.magnetizer.redstone_untriggered")
+        val fenceText = t("gui.ic2_120.magnetizer.fence_count", handler.sync.fenceCount)
+        val heightText = t("gui.ic2_120.magnetizer.height", handler.sync.effectiveHeight)
 
         val content: ic2_120.client.compose.UiScope.() -> Unit = {
             Column(
@@ -90,8 +91,8 @@ class MagnetizerScreen(
         super.render(context, mouseX, mouseY, delta)
         ui.render(context, textRenderer, mouseX, mouseY, content = content)
 
-        val inputText = "输入 ${EnergyFormatUtils.formatEu(inputRate)} EU/t"
-        val consumeText = "耗能 ${EnergyFormatUtils.formatEu(consumeRate)} EU/t"
+        val inputText = t("gui.ic2_120.input_eu", EnergyFormatUtils.formatEu(inputRate))
+        val consumeText = t("gui.ic2_120.consume_eu", EnergyFormatUtils.formatEu(consumeRate))
         val sideTextWidth = maxOf(textRenderer.getWidth(inputText), textRenderer.getWidth(consumeText))
         val sideTextX = left - sideTextWidth - 4
         context.drawText(textRenderer, inputText, sideTextX, top + 8, 0xAAAAAA, false)

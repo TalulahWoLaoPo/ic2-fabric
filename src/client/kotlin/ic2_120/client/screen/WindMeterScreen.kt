@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.screen.GuiSize
 import ic2_120.content.screen.WindMeterScreenHandler
@@ -40,14 +41,14 @@ class WindMeterScreen(
                 modifier = Modifier.EMPTY.width(GUI_SIZE.contentWidth)
             ) {
                 Text(title.string, color = 0xFFFFFF)
-                Text("平均风力: ${permilleToPct(handler.getValue(WindMeterScreenHandler.IDX_MEAN_PERMILLE))}", color = 0xAAAAAA, shadow = false)
-                Text("天气增益: ${permilleToMultiplier(handler.getValue(WindMeterScreenHandler.IDX_WEATHER_PERMILLE))}", color = 0xAAAAAA, shadow = false)
-                Text("随机增益: ${permilleToMultiplier(handler.getValue(WindMeterScreenHandler.IDX_GUST_PERMILLE))}", color = 0xAAAAAA, shadow = false)
-                Text("有效风力: ${permilleToPct(handler.getValue(WindMeterScreenHandler.IDX_EFFECTIVE_PERMILLE))}", color = 0xAAAAAA, shadow = false)
-                Text(rotorLine("木", handler.getValue(WindMeterScreenHandler.IDX_WOOD_KU), handler.getValue(WindMeterScreenHandler.IDX_WOOD_START_Y)), color = 0xAAAAAA, shadow = false)
-                Text(rotorLine("铁", handler.getValue(WindMeterScreenHandler.IDX_IRON_KU), handler.getValue(WindMeterScreenHandler.IDX_IRON_START_Y)), color = 0xAAAAAA, shadow = false)
-                Text(rotorLine("钢", handler.getValue(WindMeterScreenHandler.IDX_STEEL_KU), handler.getValue(WindMeterScreenHandler.IDX_STEEL_START_Y)), color = 0xAAAAAA, shadow = false)
-                Text(rotorLine("碳", handler.getValue(WindMeterScreenHandler.IDX_CARBON_KU), handler.getValue(WindMeterScreenHandler.IDX_CARBON_START_Y)), color = 0xAAAAAA, shadow = false)
+                Text(t("gui.ic2_120.wind_meter.mean_wind", permilleToPct(handler.getValue(WindMeterScreenHandler.IDX_MEAN_PERMILLE))), color = 0xAAAAAA, shadow = false)
+                Text(t("gui.ic2_120.wind_meter.weather_bonus", permilleToMultiplier(handler.getValue(WindMeterScreenHandler.IDX_WEATHER_PERMILLE))), color = 0xAAAAAA, shadow = false)
+                Text(t("gui.ic2_120.wind_meter.gust_bonus", permilleToMultiplier(handler.getValue(WindMeterScreenHandler.IDX_GUST_PERMILLE))), color = 0xAAAAAA, shadow = false)
+                Text(t("gui.ic2_120.wind_meter.effective_wind", permilleToPct(handler.getValue(WindMeterScreenHandler.IDX_EFFECTIVE_PERMILLE))), color = 0xAAAAAA, shadow = false)
+                Text(rotorLine(t("gui.ic2_120.wind_meter.wood"), handler.getValue(WindMeterScreenHandler.IDX_WOOD_KU), handler.getValue(WindMeterScreenHandler.IDX_WOOD_START_Y)), color = 0xAAAAAA, shadow = false)
+                Text(rotorLine(t("gui.ic2_120.wind_meter.iron"), handler.getValue(WindMeterScreenHandler.IDX_IRON_KU), handler.getValue(WindMeterScreenHandler.IDX_IRON_START_Y)), color = 0xAAAAAA, shadow = false)
+                Text(rotorLine(t("gui.ic2_120.wind_meter.steel"), handler.getValue(WindMeterScreenHandler.IDX_STEEL_KU), handler.getValue(WindMeterScreenHandler.IDX_STEEL_START_Y)), color = 0xAAAAAA, shadow = false)
+                Text(rotorLine(t("gui.ic2_120.wind_meter.carbon"), handler.getValue(WindMeterScreenHandler.IDX_CARBON_KU), handler.getValue(WindMeterScreenHandler.IDX_CARBON_START_Y)), color = 0xAAAAAA, shadow = false)
             }
 
         }
@@ -64,12 +65,12 @@ class WindMeterScreen(
 
     private fun rotorLine(name: String, ku: Int, requiredY: Int): String {
         if (requiredY >= 0) {
-            return "${name}转子理论输出: ${ku} KU/t (不可启动，需Y≥$requiredY)"
+            return t("gui.ic2_120.wind_meter.rotor_need_height", name, ku, requiredY)
         }
         if (requiredY == -1) {
-            return "${name}转子理论输出: ${ku} KU/t (当前天气/随机下无法启动)"
+            return t("gui.ic2_120.wind_meter.rotor_no_weather", name, ku)
         }
-        return "${name}转子理论输出: ${ku} KU/t"
+        return t("gui.ic2_120.wind_meter.rotor_output", name, ku)
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean =

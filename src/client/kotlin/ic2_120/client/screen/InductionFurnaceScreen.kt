@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
@@ -144,8 +145,8 @@ class InductionFurnaceScreen(
         val inputRate = handler.sync.getSyncedInsertedAmount()
         val consumeRate = handler.sync.getSyncedConsumedAmount()
 
-        val inputText = "输入 ${EnergyFormatUtils.formatEu(inputRate)} EU/t"
-        val consumeText = "耗能 ${EnergyFormatUtils.formatEu(consumeRate)} EU/t"
+        val inputText = t("gui.ic2_120.input_eu", EnergyFormatUtils.formatEu(inputRate))
+        val consumeText = t("gui.ic2_120.consume_eu", EnergyFormatUtils.formatEu(consumeRate))
         val sideTextWidth = maxOf(textRenderer.getWidth(inputText), textRenderer.getWidth(consumeText))
         val sideTextX = left - sideTextWidth - 4
 
@@ -206,7 +207,7 @@ class InductionFurnaceScreen(
                     alignItems = AlignItems.CENTER,
                     gap = 8
                 ) {
-                    Text("热量 $heatPercent%", color = 0xFFFFFF)
+                    Text(t("gui.ic2_120.induction_furnace.heat_percent", heatPercent), color = 0xFFFFFF)
                     EnergyBar(
                         heatFactor,
                         barHeight = 8,

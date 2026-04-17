@@ -2,6 +2,7 @@ package ic2_120.client.screen
 
 import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.FluidBar
 import ic2_120.client.ui.GuiBackground
@@ -52,8 +53,8 @@ class AnimalmatronScreen(
         val waterFraction = (handler.sync.waterAmountMb.toFloat() / AnimalmatronSync.WATER_TANK_CAPACITY_MB).coerceIn(0f, 1f)
         val weedExFraction = (handler.sync.weedExAmountMb.toFloat() / AnimalmatronSync.WEED_EX_TANK_CAPACITY_MB).coerceIn(0f, 1f)
 
-        val inputRateText = "输入 ${EnergyFormatUtils.formatEu(handler.sync.getSyncedInsertedAmount())} EU/t"
-        val consumeRateText = "耗能 ${EnergyFormatUtils.formatEu(handler.sync.getSyncedConsumedAmount())} EU/t"
+        val inputRateText = t("gui.ic2_120.input_eu", EnergyFormatUtils.formatEu(handler.sync.getSyncedInsertedAmount()))
+        val consumeRateText = t("gui.ic2_120.consume_eu", EnergyFormatUtils.formatEu(handler.sync.getSyncedConsumedAmount()))
 
         val content: UiScope.() -> Unit = {
             Row(
@@ -71,7 +72,7 @@ class AnimalmatronScreen(
 
                     Flex(direction = FlexDirection.ROW, justifyContent = JustifyContent.SPACE_BETWEEN, alignItems = AlignItems.END) {
                         Column(spacing = 2) {
-                            Text("水", color = 0xAAAAAA, shadow = false)
+                            Text(t("gui.ic2_120.water"), color = 0xAAAAAA, shadow = false)
                             SlotAnchor(id = slotAnchorId(AnimalmatronScreenHandler.SLOT_WATER_INPUT_INDEX))
                             SlotAnchor(id = slotAnchorId(AnimalmatronScreenHandler.SLOT_WATER_OUTPUT_INDEX))
                         }
@@ -139,7 +140,7 @@ class AnimalmatronScreen(
         super.render(context, mouseX, mouseY, delta)
         ui.render(context, textRenderer, mouseX, mouseY, content = content)
 
-        val animalCountText = "监管动物 ${handler.sync.animalCount} 只"
+        val animalCountText = t("gui.ic2_120.animalmatron.monitored_animals", handler.sync.animalCount)
         val sideTextWidth = maxOf(textRenderer.getWidth(inputRateText), textRenderer.getWidth(consumeRateText), textRenderer.getWidth(animalCountText))
         val sideX = left - sideTextWidth - 4
         context.drawText(textRenderer, animalCountText, sideX, top + 8, 0x55FF55, false)

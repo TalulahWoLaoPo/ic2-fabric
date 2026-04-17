@@ -4,6 +4,7 @@ import ic2_120.client.compose.*
 import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
+import ic2_120.client.t
 import ic2_120.content.block.CreativeGeneratorBlock
 import ic2_120.content.block.machines.CreativeGeneratorBlockEntity
 import ic2_120.content.screen.CreativeGeneratorScreenHandler
@@ -50,9 +51,9 @@ class CreativeGeneratorScreen(
         val outputRate = handler.sync.getSyncedExtractedAmount()
         val total = handler.sync.getTotalGenerated()
 
-        val generationText = "发电 ${EnergyFormatUtils.formatEu(generationRate)} EU/t"
-        val outputText = "输出 ${EnergyFormatUtils.formatEu(outputRate)} EU/t"
-        val totalText = "累计 ${EnergyFormatUtils.formatEu(total)} EU"
+        val generationText = t("gui.ic2_120.generate_eu", EnergyFormatUtils.formatEu(generationRate))
+        val outputText = t("gui.ic2_120.output_eu", EnergyFormatUtils.formatEu(outputRate))
+        val totalText = t("gui.ic2_120.total_eu", EnergyFormatUtils.formatEu(total))
         val sideTextWidth = maxOf(
             textRenderer.getWidth(generationText),
             textRenderer.getWidth(outputText),

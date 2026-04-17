@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.item.OdScannerItem
@@ -151,17 +152,17 @@ class ScannerScreen(
                 )
                 EnergyBar(energyFraction)
                 Text(
-                    "剩余次数: $usesRemaining / $maxUses",
+                    t("gui.ic2_120.scanner.remaining_uses", usesRemaining, maxUses),
                     color = if (usesRemaining > 0) 0xAAAAAA else 0xFF4A4A,
                     shadow = false
                 )
                 Text(
-                    "扫描范围: $scanRangeText",
+                    t("gui.ic2_120.scanner.scan_range", scanRangeText),
                     color = 0x888888,
                     shadow = false
                 )
                 Button(
-                    text = if (canScan) "扫描" else "能量不足",
+                    text = if (canScan) t("gui.ic2_120.scan") else t("gui.ic2_120.status_no_energy"),
                     modifier = Modifier.EMPTY.width(100),
                     onClick = {
                         client?.player?.networkHandler?.sendPacket(
@@ -180,7 +181,7 @@ class ScannerScreen(
                         scrollbarWidth = 8
                     ) {
                         Column(spacing = 6) {
-                            Text("扫描结果:", color = 0xFFFFFF)
+                            Text(t("gui.ic2_120.scanner.scan_results"), color = 0xFFFFFF)
                             for (entry in results) {
                                 val oreStack = entryToItemStack(entry)
                                 if (!oreStack.isEmpty) {
@@ -207,7 +208,7 @@ class ScannerScreen(
                     }
                 } else {
                     Text(
-                        "点击「扫描」开始",
+                        t("gui.ic2_120.scanner.click_to_scan"),
                         color = 0x666666,
                         shadow = false
                     )

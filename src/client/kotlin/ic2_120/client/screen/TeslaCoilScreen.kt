@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
@@ -51,8 +52,8 @@ class TeslaCoilScreen(
         val contentW = GUI_SIZE.contentWidth
 
         val energyText = "$energy / $cap EU"
-        val inputText = "输入 ${EnergyFormatUtils.formatEu(inputRate)} EU/t"
-        val consumeText = "耗能 ${EnergyFormatUtils.formatEu(consumeRate)} EU/t"
+        val inputText = t("gui.ic2_120.input_eu", EnergyFormatUtils.formatEu(inputRate))
+        val consumeText = t("gui.ic2_120.consume_eu", EnergyFormatUtils.formatEu(consumeRate))
         val sideTextWidth = maxOf(
             textRenderer.getWidth(energyText),
             textRenderer.getWidth(inputText),

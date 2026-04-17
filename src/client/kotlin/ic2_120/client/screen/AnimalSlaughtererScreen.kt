@@ -2,6 +2,7 @@ package ic2_120.client.screen
 
 import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.AnimalSlaughtererBlock
@@ -42,14 +43,14 @@ class AnimalSlaughtererScreen(
         val capacity = handler.sync.energyCapacity.toLong().coerceAtLeast(1L)
         val energyFraction = (energy.toFloat() / capacity).coerceIn(0f, 1f)
 
-        val inputRateText = "输入 ${EnergyFormatUtils.formatEu(handler.sync.getSyncedInsertedAmount())} EU/t"
-        val consumeRateText = "耗能 ${EnergyFormatUtils.formatEu(handler.sync.getSyncedConsumedAmount())} EU/t"
+        val inputRateText = t("gui.ic2_120.input_eu", EnergyFormatUtils.formatEu(handler.sync.getSyncedInsertedAmount()))
+        val consumeRateText = t("gui.ic2_120.consume_eu", EnergyFormatUtils.formatEu(handler.sync.getSyncedConsumedAmount()))
 
         val animalCount = handler.sync.animalCount
         val statusText = when {
-            animalCount >= 32 -> "[屠宰中]"
-            animalCount >= 16 -> "[繁殖中]"
-            else -> "[等待]"
+            animalCount >= 32 -> t("gui.ic2_120.animal_slaughterer.slaughtering")
+            animalCount >= 16 -> t("gui.ic2_120.animal_slaughterer.breeding")
+            else -> t("gui.ic2_120.animal_slaughterer.waiting")
         }
 
         val content: UiScope.() -> Unit = {
@@ -67,12 +68,12 @@ class AnimalSlaughtererScreen(
                     }
 
                     Text(
-                        "动物: $animalCount/32 $statusText",
+                        t("gui.ic2_120.animal_slaughterer.animal_count", animalCount, statusText),
                         color = 0xFFFFFF,
                         shadow = false
                     )
                     Text(
-                        "本轮: 屠宰 ${handler.sync.slaughteredThisRun}",
+                        t("gui.ic2_120.animal_slaughterer.run_slaughtered", handler.sync.slaughteredThisRun),
                         color = 0xAAAAAA,
                         shadow = false
                     )

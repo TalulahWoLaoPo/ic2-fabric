@@ -2,6 +2,7 @@ package ic2_120.client.screen
 
 import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.FluidBar
 import ic2_120.client.ui.GuiBackground
@@ -52,8 +53,8 @@ class CropmatronScreen(
         val waterFraction = (handler.sync.waterAmountMb.toFloat() / CropmatronSync.WATER_TANK_CAPACITY_MB).coerceIn(0f, 1f)
         val weedExFraction = (handler.sync.weedExAmountMb.toFloat() / CropmatronSync.WEED_EX_TANK_CAPACITY_MB).coerceIn(0f, 1f)
 
-        val inputRateText = "输入 ${EnergyFormatUtils.formatEu(handler.sync.getSyncedInsertedAmount())} EU/t"
-        val consumeRateText = "耗能 ${EnergyFormatUtils.formatEu(handler.sync.getSyncedConsumedAmount())} EU/t"
+        val inputRateText = t("gui.ic2_120.input_eu", EnergyFormatUtils.formatEu(handler.sync.getSyncedInsertedAmount()))
+        val consumeRateText = t("gui.ic2_120.consume_eu", EnergyFormatUtils.formatEu(handler.sync.getSyncedConsumedAmount()))
 
         val content: UiScope.() -> Unit = {
             Row(
@@ -71,7 +72,7 @@ class CropmatronScreen(
 
                     Flex(direction = FlexDirection.ROW, justifyContent = JustifyContent.SPACE_BETWEEN, alignItems = AlignItems.END) {
                         Column(spacing = 2) {
-                            Text("水", color = 0xAAAAAA, shadow = false)
+                            Text(t("gui.ic2_120.water"), color = 0xAAAAAA, shadow = false)
                             SlotAnchor(id = slotAnchorId(CropmatronScreenHandler.SLOT_WATER_INPUT_INDEX))
                             SlotAnchor(id = slotAnchorId(CropmatronScreenHandler.SLOT_WATER_OUTPUT_INDEX))
                         }

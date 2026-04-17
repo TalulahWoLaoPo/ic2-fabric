@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.nuclear.ReactorFluidPortBlock
 import ic2_120.content.screen.ReactorFluidPortScreenHandler
@@ -61,7 +62,7 @@ class ReactorFluidPortScreen(
                 modifier = Modifier().width(gui.contentWidth)
             ) {
                 Text(title.string, color = 0xFFFFFF)
-                Text("流体接口", color = 0xAAAAAA, shadow = false)
+                Text(t("gui.ic2_120.reactor_fluid_port.title"), color = 0xAAAAAA, shadow = false)
                 Flex(justifyContent = JustifyContent.CENTER, alignItems = AlignItems.CENTER) {
                     SlotAnchor(
                         id = slotAnchorId(ReactorFluidPortScreenHandler.UPGRADE_SLOT_INDEX),

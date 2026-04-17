@@ -2,6 +2,7 @@ package ic2_120.client.screen
 
 import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.CropHarvesterBlock
@@ -42,8 +43,8 @@ class CropHarvesterScreen(
         val capacity = handler.sync.energyCapacity.toLong().coerceAtLeast(1L)
         val energyFraction = (energy.toFloat() / capacity).coerceIn(0f, 1f)
 
-        val inputRateText = "输入 ${EnergyFormatUtils.formatEu(handler.sync.getSyncedInsertedAmount())} EU/t"
-        val consumeRateText = "耗能 ${EnergyFormatUtils.formatEu(handler.sync.getSyncedConsumedAmount())} EU/t"
+        val inputRateText = t("gui.ic2_120.input_eu", EnergyFormatUtils.formatEu(handler.sync.getSyncedInsertedAmount()))
+        val consumeRateText = t("gui.ic2_120.consume_eu", EnergyFormatUtils.formatEu(handler.sync.getSyncedConsumedAmount()))
 
         val content: UiScope.() -> Unit = {
             Row(
@@ -60,12 +61,12 @@ class CropHarvesterScreen(
                     }
 
                     Text(
-                        "扫描游标: (${handler.sync.scanX}, ${handler.sync.scanY}, ${handler.sync.scanZ})",
+                        t("gui.ic2_120.crop_harvester.scan_cursor", handler.sync.scanX, handler.sync.scanY, handler.sync.scanZ),
                         color = 0xAAAAAA,
                         shadow = false
                     )
                     Text(
-                        "本轮: 检查 ${handler.sync.checkedThisRun}  收割 ${handler.sync.harvestedThisRun}",
+                        t("gui.ic2_120.crop_harvester.run_stats", handler.sync.checkedThisRun, handler.sync.harvestedThisRun),
                         color = 0xAAAAAA,
                         shadow = false
                     )

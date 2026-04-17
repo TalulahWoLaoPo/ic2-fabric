@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.FluidUtils
+import ic2_120.client.t
 import ic2_120.client.compose.*
 import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.ui.EnergyBar
@@ -66,8 +67,8 @@ class SemifluidGeneratorScreen(
         val fuelColor = if (sampledColor != -1) bgrToArgb(sampledColor) else handler.sync.fuelColorArgb
         handler.sync.fuelColorArgb = fuelColor
 
-        val inputText = "发电 ${EnergyFormatUtils.formatEu(inputRate)} EU/t"
-        val outputText = "输出 ${EnergyFormatUtils.formatEu(outputRate)} EU/t"
+        val inputText = t("gui.ic2_120.generate_eu", EnergyFormatUtils.formatEu(inputRate))
+        val outputText = t("gui.ic2_120.output_eu", EnergyFormatUtils.formatEu(outputRate))
         val sideTextWidth = maxOf(textRenderer.getWidth(inputText), textRenderer.getWidth(outputText))
         val sideTextX = left - sideTextWidth - 4
 

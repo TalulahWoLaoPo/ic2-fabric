@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.GuiBackground
 import ic2_120.client.ui.HeatProgressBar
 import ic2_120.content.block.FermenterBlock
@@ -59,7 +60,7 @@ class FermenterScreen(
                     spacing = 4,
                     modifier = Modifier.EMPTY.padding(0, 8, 0, 0)
                 ) {
-                    Text("生物质", color = 0xAAAAAA)
+                    Text(t("gui.ic2_120.fermenter.biomass"), color = 0xAAAAAA)
                     SlotAnchor(
                         id = slotAnchorId(FermenterScreenHandler.SLOT_INPUT_FILLED_CONTAINER_INDEX),
                         width = FermenterScreenHandler.SLOT_SIZE,
@@ -76,12 +77,12 @@ class FermenterScreen(
                 Column(spacing = 6) {
                     Text(title.string, color = 0xFFFFFF)
                     Text(
-                        if (handler.sync.isWorking != 0) "状态: 工作中" else "状态: 停止",
+                        if (handler.sync.isWorking != 0) t("gui.ic2_120.status_working") else t("gui.ic2_120.status_stopped"),
                         color = 0xAAAAAA,
                         shadow = false
                     )
                     Flex(direction = FlexDirection.ROW, alignItems = AlignItems.CENTER, gap = 8) {
-                        Text("热量", color = 0xAAAAAA)
+                        Text(t("gui.ic2_120.heat"), color = 0xAAAAAA)
                         HeatProgressBar(
                             heatFraction,
                             barWidth = 0,
@@ -94,7 +95,7 @@ class FermenterScreen(
                         Text("${handler.sync.bufferedHeat} HU", color = 0xFFFFFF, shadow = false)
                     }
                     Flex(direction = FlexDirection.ROW, alignItems = AlignItems.CENTER, gap = 8) {
-                        Text("进度", color = 0xAAAAAA)
+                        Text(t("gui.ic2_120.progress"), color = 0xAAAAAA)
                         HeatProgressBar(
                             progressFraction,
                             barWidth = 0,
@@ -113,7 +114,7 @@ class FermenterScreen(
                     spacing = 4,
                     modifier = Modifier.EMPTY.padding(0, 8, 0, 0)
                 ) {
-                    Text("沼气", color = 0xAAAAAA)
+                    Text(t("gui.ic2_120.fermenter.biogas"), color = 0xAAAAAA)
                     SlotAnchor(
                         id = slotAnchorId(FermenterScreenHandler.SLOT_OUTPUT_EMPTY_CONTAINER_INDEX),
                         width = FermenterScreenHandler.SLOT_SIZE,
@@ -162,8 +163,8 @@ class FermenterScreen(
         super.render(context, mouseX, mouseY, delta)
         ui.render(context, textRenderer, mouseX, mouseY, content = content)
 
-        val inputText = "传热 ${handler.sync.heatInputPerTick} HU/t"
-        val consumeText = "耗热 ${handler.sync.heatConsumePerTick} HU/t"
+        val inputText = t("gui.ic2_120.transfer_hu", handler.sync.heatInputPerTick)
+        val consumeText = t("gui.ic2_120.consume_hu", handler.sync.heatConsumePerTick)
         val sideTextWidth = maxOf(textRenderer.getWidth(inputText), textRenderer.getWidth(consumeText))
         val sideTextX = left - sideTextWidth - 4
         context.drawText(textRenderer, inputText, sideTextX, top + 8, 0xAAAAAA, false)

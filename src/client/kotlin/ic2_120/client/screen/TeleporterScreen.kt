@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.EnergyFormatUtils
+import ic2_120.client.t
 import ic2_120.client.compose.*
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
@@ -47,13 +48,13 @@ class TeleporterScreen(
         val cap = handler.sync.energyCapacity.toLong().coerceAtLeast(1L)
         val fraction = if (cap > 0) (energy.toFloat() / cap).coerceIn(0f, 1f) else 0f
         val targetText = if (handler.sync.targetSet != 0) {
-            "目标: ${handler.sync.targetX}, ${handler.sync.targetY}, ${handler.sync.targetZ}"
+            t("gui.ic2_120.teleporter.target_set", handler.sync.targetX, handler.sync.targetY, handler.sync.targetZ)
         } else {
-            "目标: 未设置"
+            t("gui.ic2_120.teleporter.target_unset")
         }
-        val cooldownText = "冷却: ${handler.sync.cooldown}t"
+        val cooldownText = t("gui.ic2_120.teleporter.cooldown", handler.sync.cooldown)
         val range = handler.sync.teleportRange.coerceIn(1, 3)
-        val rangeText = "激活范围: ${range}x${range}x${range}"
+        val rangeText = t("gui.ic2_120.teleporter.range", range)
 
         val content: UiScope.() -> Unit = {
             Column(

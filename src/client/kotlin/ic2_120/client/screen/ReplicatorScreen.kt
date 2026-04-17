@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.EnergyFormatUtils
+import ic2_120.client.t
 import ic2_120.client.compose.*
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.FluidBar
@@ -66,9 +67,9 @@ class ReplicatorScreen(
         }.coerceIn(0f, 1f)
         val energyText = "${EnergyFormatUtils.formatEu(energy)} / ${EnergyFormatUtils.formatEu(cap)} EU"
         val fluidText = "${handler.sync.fluidAmountMb} / ${handler.sync.fluidCapacityMb} mB"
-        val inputText = "输入 ${EnergyFormatUtils.formatEu(handler.sync.getSyncedInsertedAmount())} EU/t"
-        val consumeText = "耗能 ${EnergyFormatUtils.formatEu(handler.sync.getSyncedConsumedAmount())} EU/t"
-        val progressLine = "进度: ${handler.sync.progressUb} / ${handler.sync.progressMaxUb} uB"
+        val inputText = t("gui.ic2_120.input_eu", EnergyFormatUtils.formatEu(handler.sync.getSyncedInsertedAmount()))
+        val consumeText = t("gui.ic2_120.consume_eu", EnergyFormatUtils.formatEu(handler.sync.getSyncedConsumedAmount()))
+        val progressLine = t("gui.ic2_120.replicator.progress", handler.sync.progressUb, handler.sync.progressMaxUb)
         val statusLine = statusText(handler.sync.status)
         val leftSideStrings = listOf(
             inputText,
@@ -129,7 +130,7 @@ class ReplicatorScreen(
                                     justifyContent = JustifyContent.START,
                                     alignItems = AlignItems.CENTER
                                 ) {
-                                    Text("产物", color = 0xAAAAAA, shadow = false)
+                                    Text(t("gui.ic2_120.replicator.product_slot"), color = 0xAAAAAA, shadow = false)
                                     SlotAnchor(
                                         id = slotAnchorId(ReplicatorScreenHandler.SLOT_OUTPUT_INDEX),
                                         width = 18,
@@ -143,7 +144,7 @@ class ReplicatorScreen(
                                     alignItems = AlignItems.CENTER
                                 ) {
 
-                                    Text("进液", color = 0xAAAAAA, shadow = false)
+                                    Text(t("gui.ic2_120.replicator.input_fluid"), color = 0xAAAAAA, shadow = false)
                                     SlotAnchor(
                                         id = slotAnchorId(ReplicatorScreenHandler.SLOT_CONTAINER_INPUT_INDEX),
                                         width = 18,
@@ -165,7 +166,7 @@ class ReplicatorScreen(
                                     justifyContent = JustifyContent.START,
                                     alignItems = AlignItems.CENTER
                                 ) {
-                                    Text("空桶", color = 0xAAAAAA, shadow = false)
+                                    Text(t("gui.ic2_120.replicator.empty_bucket"), color = 0xAAAAAA, shadow = false)
                                     SlotAnchor(
                                         id = slotAnchorId(ReplicatorScreenHandler.SLOT_CONTAINER_OUTPUT_INDEX),
                                         width = 18,
@@ -178,7 +179,7 @@ class ReplicatorScreen(
                                     justifyContent = JustifyContent.START,
                                     alignItems = AlignItems.CENTER
                                 ) {
-                                    Text("电池", color = 0xAAAAAA, shadow = false)
+                                    Text(t("gui.ic2_120.battery_slot"), color = 0xAAAAAA, shadow = false)
                                     SlotAnchor(
                                         id = slotAnchorId(ReplicatorScreenHandler.SLOT_BATTERY_INDEX),
                                         width = 18,
@@ -193,7 +194,7 @@ class ReplicatorScreen(
                             barHeight = 6
                         )
                         Button(
-                            "模式: ${modeText(handler.sync.mode)}",
+                            t("gui.ic2_120.replicator.mode", modeText(handler.sync.mode)),
                             modifier = Modifier.EMPTY.fillMaxWidth()
                         ) {
                             client?.player?.networkHandler?.sendPacket(
@@ -206,8 +207,8 @@ class ReplicatorScreen(
                         modifier = Modifier.EMPTY.fractionWidth(1.0f).fractionHeight(1f),
                         gap = 2
                     ) {
-                        Text("复制模板列表", color = 0xFFFFFF)
-                        Text("共 ${templates.size} 个", color = 0x666666, shadow = false)
+                        Text(t("gui.ic2_120.replicator.template_list"), color = 0xFFFFFF)
+                        Text(t("gui.ic2_120.count_items", templates.size), color = 0x666666, shadow = false)
 
                         ScrollView(
                             scrollbarWidth = 8,
@@ -215,7 +216,7 @@ class ReplicatorScreen(
                         ) {
                             Column(spacing = 2) {
                                 if (templates.isEmpty()) {
-                                    Text("未连接模板", color = 0x666666, shadow = false)
+                                    Text(t("gui.ic2_120.replicator.no_template"), color = 0x666666, shadow = false)
                                 } else {
                                     templates.forEachIndexed { index, template ->
                                         Flex(gap = 0, modifier = Modifier.EMPTY.fractionWidth(1.0f)) {
@@ -333,18 +334,18 @@ class ReplicatorScreen(
         return if (item == net.minecraft.item.Items.AIR) ItemStack.EMPTY else ItemStack(item)
     }
 
-    private fun modeText(mode: Int): String = if (mode == ReplicatorSync.MODE_CONTINUOUS) "连续" else "单次"
+    private fun modeText(mode: Int): String = if (mode == ReplicatorSync.MODE_CONTINUOUS) t("gui.ic2_120.replicator.mode_continuous") else t("gui.ic2_120.replicator.mode_single")
 
     private fun statusText(status: Int): String = when (status) {
-        ReplicatorSync.STATUS_NO_REDSTONE -> "等待红石"
-        ReplicatorSync.STATUS_NO_STORAGE -> "未连接唯一存储机"
-        ReplicatorSync.STATUS_NO_TEMPLATE -> "没有模板"
-        ReplicatorSync.STATUS_NO_FLUID -> "UU 物质不足"
-        ReplicatorSync.STATUS_NO_OUTPUT -> "输出槽已满"
-        ReplicatorSync.STATUS_NO_ENERGY -> "能量不足"
-        ReplicatorSync.STATUS_RUNNING -> "复制中"
-        ReplicatorSync.STATUS_COMPLETE -> "完成"
-        else -> "待机"
+        ReplicatorSync.STATUS_NO_REDSTONE -> t("gui.ic2_120.replicator.status_no_redstone")
+        ReplicatorSync.STATUS_NO_STORAGE -> t("gui.ic2_120.status_no_storage")
+        ReplicatorSync.STATUS_NO_TEMPLATE -> t("gui.ic2_120.replicator.status_no_template")
+        ReplicatorSync.STATUS_NO_FLUID -> t("gui.ic2_120.replicator.status_no_fluid")
+        ReplicatorSync.STATUS_NO_OUTPUT -> t("gui.ic2_120.replicator.status_no_output")
+        ReplicatorSync.STATUS_NO_ENERGY -> t("gui.ic2_120.status_no_energy")
+        ReplicatorSync.STATUS_RUNNING -> t("gui.ic2_120.replicator.status_running")
+        ReplicatorSync.STATUS_COMPLETE -> t("gui.ic2_120.replicator.status_complete")
+        else -> t("gui.ic2_120.status_idle")
     }
 
     private fun statusColor(status: Int): Int = when (status) {

@@ -2,6 +2,7 @@ package ic2_120.client.screen
 
 import ic2_120.client.compose.*
 import ic2_120.client.EnergyFormatUtils
+import ic2_120.client.t
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.machines.BaseMinerBlockEntity
@@ -39,13 +40,13 @@ class MinerScreen(
         val energy = handler.sync.energy.toLong().coerceAtLeast(0)
         val cap = handler.sync.energyCapacity.toLong().coerceAtLeast(1)
         val fraction = (energy.toFloat() / cap.toFloat()).coerceIn(0f, 1f)
-        val modeText = if (handler.sync.mode == 0) "白名单" else "黑名单"
-        val silkText = if (handler.sync.silkTouch == 0) "关" else "开"
-        val runningText = if (handler.sync.running == 0) "已停止" else "运行中"
+        val modeText = if (handler.sync.mode == 0) t("gui.ic2_120.miner.mode_whitelist") else t("gui.ic2_120.miner.mode_blacklist")
+        val silkText = if (handler.sync.silkTouch == 0) t("gui.ic2_120.miner.off") else t("gui.ic2_120.miner.on")
+        val runningText = if (handler.sync.running == 0) t("gui.ic2_120.miner.stopped") else t("gui.ic2_120.miner.running")
         val inputRate = handler.sync.getSyncedInsertedAmount()
         val consumeRate = handler.sync.getSyncedConsumedAmount()
-        val inputText = "输入 ${EnergyFormatUtils.formatEu(inputRate)} EU/t"
-        val consumeText = "耗能 ${EnergyFormatUtils.formatEu(consumeRate)} EU/t"
+        val inputText = t("gui.ic2_120.input_eu", EnergyFormatUtils.formatEu(inputRate))
+        val consumeText = t("gui.ic2_120.consume_eu", EnergyFormatUtils.formatEu(consumeRate))
         val sideTextWidth = maxOf(textRenderer.getWidth(inputText), textRenderer.getWidth(consumeText))
         val sideTextX = left - sideTextWidth - 4
 
@@ -61,13 +62,13 @@ class MinerScreen(
                     ) {
                         Text(title.string, color = 0xFFFFFF)
                         EnergyBar(fraction, barHeight = 8, modifier = Modifier().fractionWidth(1f))
-                        Text("能量", color = 0xDDDDDD)
+                        Text(t("gui.ic2_120.energy"), color = 0xDDDDDD)
                         Text("$energy / $cap EU", shadow = false)
                     }
                     Row {
-                        Text("状态: $runningText", color = 0xAAAAAA, shadow = false)
+                        Text(t("gui.ic2_120.miner.status", runningText), color = 0xAAAAAA, shadow = false)
                         Text(
-                            "扫描游标: (${handler.sync.cursorX}, ${handler.sync.cursorY}, ${handler.sync.cursorZ})",
+                            t("gui.ic2_120.miner.scan_cursor", handler.sync.cursorX, handler.sync.cursorY, handler.sync.cursorZ),
                             color = 0xAAAAAA,
                             shadow = false
                         )
@@ -84,9 +85,9 @@ class MinerScreen(
                             justifyContent = JustifyContent.SPACE_BETWEEN,
 //                            alignItems = AlignItems.CENTER,
                         ) {
-                            Text("扫描器", center = true, modifier = Modifier.EMPTY.height(18))
-                            Text("钻头", center = true, modifier = Modifier.EMPTY.height(18))
-                            Text("电池", center = true, modifier = Modifier.EMPTY.height(18))
+                            Text(t("gui.ic2_120.miner.scanner"), center = true, modifier = Modifier.EMPTY.height(18))
+                            Text(t("gui.ic2_120.miner.drill"), center = true, modifier = Modifier.EMPTY.height(18))
+                            Text(t("gui.ic2_120.battery_slot"), center = true, modifier = Modifier.EMPTY.height(18))
                         }
                         Column {
                             SlotHost(MinerScreenHandler.SLOT_SCANNER_INDEX)
@@ -109,14 +110,14 @@ class MinerScreen(
 
                     Flex(direction = FlexDirection.ROW, gap = 3) {
                         if (handler.isAdvanced) {
-                            Button("模式: $modeText") {
+                            Button(t("gui.ic2_120.miner.mode", modeText)) {
                                 client?.player?.networkHandler?.sendPacket(
                                     ButtonClickC2SPacket(
                                         handler.syncId, MinerScreenHandler.BUTTON_TOGGLE_MODE
                                     )
                                 )
                             }
-                            Button("精准采集: $silkText") {
+                            Button(t("gui.ic2_120.miner.silk_touch", silkText)) {
                                 client?.player?.networkHandler?.sendPacket(
                                     ButtonClickC2SPacket(
                                         handler.syncId, MinerScreenHandler.BUTTON_TOGGLE_SILK
@@ -124,7 +125,7 @@ class MinerScreen(
                                 )
                             }
                         }
-                        Button("重启") {
+                        Button(t("gui.ic2_120.miner.restart")) {
                             client?.player?.networkHandler?.sendPacket(
                                 ButtonClickC2SPacket(
                                     handler.syncId, MinerScreenHandler.BUTTON_RESTART

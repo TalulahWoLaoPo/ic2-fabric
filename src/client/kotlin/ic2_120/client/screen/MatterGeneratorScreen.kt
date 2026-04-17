@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.FluidBar
 import ic2_120.client.ui.GuiBackground
@@ -53,7 +54,7 @@ class MatterGeneratorScreen(
         val fluidCap = handler.sync.fluidCapacityMb.toLong().coerceAtLeast(1L)
         val fluidFraction = (fluidAmount.toFloat() / fluidCap).coerceIn(0f, 1f)
         val progressFraction = (handler.sync.progress.toFloat() / MatterGeneratorSync.PROGRESS_MAX).coerceIn(0f, 1f)
-        val modeText = if (handler.sync.mode != 0) "模式: 废料增效" else "模式: 普通"
+        val modeText = if (handler.sync.mode != 0) t("gui.ic2_120.matter_generator.mode_scrap") else t("gui.ic2_120.matter_generator.mode_normal")
 
         val content: UiScope.() -> Unit = {
             Row(
@@ -83,13 +84,13 @@ class MatterGeneratorScreen(
                         }
 
                         Flex(direction = FlexDirection.ROW, alignItems = AlignItems.CENTER, gap = 8) {
-                            Text("能量", color = 0xAAAAAA)
+                            Text(t("gui.ic2_120.energy"), color = 0xAAAAAA)
                             EnergyBar(energyFraction, modifier = Modifier.EMPTY.fractionWidth(1.0f))
                             Text("${formatEu(energy)} / ${formatEu(energyCap)}", color = 0xFFFFFF, shadow = false)
                         }
 
                         Flex(direction = FlexDirection.ROW, alignItems = AlignItems.CENTER, gap = 8) {
-                            Text("进度", color = 0xAAAAAA)
+                            Text(t("gui.ic2_120.progress"), color = 0xAAAAAA)
                             HeatProgressBar(
                                 progressFraction,
                                 barWidth = 0,
@@ -121,7 +122,7 @@ class MatterGeneratorScreen(
                         alignItems = AlignItems.END,
                         gap = 4
                     ) {
-                        Text("UU储罐", color = 0xAAAAAA)
+                        Text(t("gui.ic2_120.matter_generator.uu_tank"), color = 0xAAAAAA)
                         FluidBar(
                             fluidFraction,
                             barWidth = 8,
@@ -165,8 +166,8 @@ class MatterGeneratorScreen(
         super.render(context, mouseX, mouseY, delta)
         ui.render(context, textRenderer, mouseX, mouseY, content = content)
 
-        val inputText = "输入 ${formatEu(handler.sync.getSyncedInsertedAmount())} EU/t"
-        val consumeText = "耗能 ${formatEu(handler.sync.getSyncedConsumedAmount())} EU/t"
+        val inputText = t("gui.ic2_120.input_eu", formatEu(handler.sync.getSyncedInsertedAmount()))
+        val consumeText = t("gui.ic2_120.consume_eu", formatEu(handler.sync.getSyncedConsumedAmount()))
         val sideTextWidth = maxOf(textRenderer.getWidth(inputText), textRenderer.getWidth(consumeText))
         val sideTextX = left - sideTextWidth - 4
         context.drawText(textRenderer, inputText, sideTextX, top + 8, 0xAAAAAA, false)

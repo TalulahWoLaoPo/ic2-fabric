@@ -5,6 +5,7 @@ import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.EnergyBarOrientation
 import ic2_120.client.ui.GuiBackground
+import ic2_120.client.t
 import ic2_120.content.block.GeneratorBlock
 import ic2_120.content.block.machines.MachineBlockEntity
 import ic2_120.content.screen.GeneratorScreenHandler
@@ -57,8 +58,8 @@ class GeneratorScreen(
         val burnTime = handler.sync.burnTime.coerceIn(0, totalBurn)
         val burnFrac = (burnTime.toFloat() / totalBurn).coerceIn(0f, 1f)
         val energyText = "${EnergyFormatUtils.formatEu(energy)} / ${EnergyFormatUtils.formatEu(cap)} EU"
-        val statusText1 = "发电 ${EnergyFormatUtils.formatEu(inputRate)} EU/t"
-        val statusText2 = "输出 ${EnergyFormatUtils.formatEu(outputRate)} EU/t"
+        val statusText1 = t("gui.ic2_120.generate_eu", EnergyFormatUtils.formatEu(inputRate))
+        val statusText2 = t("gui.ic2_120.output_eu", EnergyFormatUtils.formatEu(outputRate))
         val sideTextWidth = maxOf(
             textRenderer.getWidth(energyText),
             textRenderer.getWidth(statusText1),

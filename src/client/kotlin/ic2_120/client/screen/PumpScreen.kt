@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.PumpBlock
@@ -47,7 +48,7 @@ class PumpScreen(
         val fluidAmount = handler.sync.fluidAmountMb.coerceAtLeast(0)
 
         val energyText = "$energy / $cap EU"
-        val fluidLine = "液体 ${fluidAmount} mB · " + if (fluidAmount > 0) "状态: 已填充" else "状态: 空"
+        val fluidLine = if (fluidAmount > 0) t("gui.ic2_120.pump.fluid_filled", fluidAmount) else t("gui.ic2_120.pump.fluid_empty", fluidAmount)
 
         val content: UiScope.() -> Unit = {
             Row(

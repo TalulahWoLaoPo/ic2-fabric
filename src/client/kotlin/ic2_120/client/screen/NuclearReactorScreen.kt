@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.nuclear.NuclearReactorBlock
@@ -287,17 +288,17 @@ class NuclearReactorScreen(
         // 在 GUI 左侧外部绘制状态信息（缩短文本避免溢出）
         val lines = mutableListOf<String>()
         if (!isThermalLayout()) {
-            lines.add("能量 ${EnergyFormatUtils.formatEu(energy)}/${EnergyFormatUtils.formatEu(cap)}")
-            lines.add("发电 ${EnergyFormatUtils.formatEu(inputRate)} 输出 ${EnergyFormatUtils.formatEu(outputRate)} EU/t")
+            lines.add(t("gui.ic2_120.nuclear_reactor.energy_line", EnergyFormatUtils.formatEu(energy), EnergyFormatUtils.formatEu(cap)))
+            lines.add(t("gui.ic2_120.nuclear_reactor.gen_output_line", EnergyFormatUtils.formatEu(inputRate), EnergyFormatUtils.formatEu(outputRate)))
         }
-        lines.add("堆温 $temp")
+        lines.add(t("gui.ic2_120.nuclear_reactor.core_temp", temp))
         if (isThermalLayout()) {
             lines.add("(流体堆发热翻倍)")
-            lines.add("热输出 ${thermalHeatOutput/20} HU/t")
-            lines.add("产热 ${heatProduced} 散热能力 ${heatDissipated}")
-            lines.add("实际散热 ${actualHeatDissipated/20} HU/t")
+            lines.add(t("gui.ic2_120.nuclear_reactor.thermal_output", thermalHeatOutput/20))
+            lines.add(t("gui.ic2_120.nuclear_reactor.produce_dissipate", heatProduced, heatDissipated))
+            lines.add(t("gui.ic2_120.nuclear_reactor.actual_dissipate", actualHeatDissipated/20))
         } else {
-            lines.add("产热 ${heatProduced} 散热能力 ${heatDissipated}")
+            lines.add(t("gui.ic2_120.nuclear_reactor.produce_dissipate", heatProduced, heatDissipated))
             lines.add("HU/s")
         }
 
@@ -307,9 +308,9 @@ class NuclearReactorScreen(
             val inputMb = handler.sync.inputCoolantMb.coerceAtLeast(0)
             val outputMb = handler.sync.outputHotCoolantMb.coerceAtLeast(0)
             val capMb = NuclearReactorSync.COOLANT_TANK_CAPACITY_MB
-            lines.add("冷液 $inputMb/$capMb")
+            lines.add(t("gui.ic2_120.nuclear_reactor.coolant_input", inputMb, capMb))
             lines.add("${"%.1f".format(inputMb.toFloat() / capMb.toFloat() * 100)}%")
-            lines.add("热液 $outputMb/$capMb")
+            lines.add(t("gui.ic2_120.nuclear_reactor.hot_coolant", outputMb, capMb))
             lines.add("${"%.1f".format(outputMb.toFloat() / capMb.toFloat() * 100)}%")
         }
 

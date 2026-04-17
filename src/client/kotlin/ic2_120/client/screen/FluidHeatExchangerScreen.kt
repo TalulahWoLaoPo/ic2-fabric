@@ -2,6 +2,7 @@ package ic2_120.client.screen
 
 import ic2_120.client.compose.ComposeUI
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.FluidBar
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.FluidHeatExchangerBlock
@@ -71,7 +72,7 @@ class FluidHeatExchangerScreen(
                     direction = FlexDirection.ROW,
                     justifyContent = JustifyContent.CENTER,
                 ) {
-                    Text("换热器: $exchangerCount/10", color = 0xAAAAAA)
+                    Text(t("gui.ic2_120.fluid_heat_exchanger.exchanger_count", exchangerCount), color = 0xAAAAAA)
                 }
 
                 // 两个流体槽
@@ -80,12 +81,12 @@ class FluidHeatExchangerScreen(
                     justifyContent = JustifyContent.SPACE_BETWEEN,
                 ) {
                     Column(spacing = 2) {
-                        Text("输入液", color = 0xAAAAAA)
+                        Text(t("gui.ic2_120.fluid_heat_exchanger.input_fluid"), color = 0xAAAAAA)
                         FluidBar(inputFraction, barWidth = 8, barHeight = 58, vertical = true, modifier = Modifier.EMPTY.width(8).height(58))
                         Text("${handler.sync.inputFluidMb} mB", color = 0xFFFFFF, shadow = false)
                     }
                     Column(spacing = 2) {
-                        Text("输出液", color = 0xAAAAAA)
+                        Text(t("gui.ic2_120.fluid_heat_exchanger.output_fluid"), color = 0xAAAAAA)
                         FluidBar(outputFraction, barWidth = 8, barHeight = 58, vertical = true, modifier = Modifier.EMPTY.width(8).height(58))
                         Text("${handler.sync.outputFluidMb} mB", color = 0xFFFFFF, shadow = false)
                     }
@@ -97,7 +98,7 @@ class FluidHeatExchangerScreen(
                     justifyContent = JustifyContent.CENTER,
                 ) {
                     Text(
-                        if (handler.sync.isWorking != 0) "状态: 工作中" else "状态: 停止",
+                        if (handler.sync.isWorking != 0) t("gui.ic2_120.status_working") else t("gui.ic2_120.status_stopped"),
                         color = 0xAAAAAA,
                         shadow = false
                     )
@@ -106,7 +107,7 @@ class FluidHeatExchangerScreen(
                     direction = FlexDirection.ROW,
                     justifyContent = JustifyContent.CENTER,
                 ) {
-                    Text("产热: $generatedRate HU/t  输出热: $outputRate HU/t", color = 0xAAAAAA)
+                    Text(t("gui.ic2_120.fluid_heat_exchanger.heat_line", generatedRate, outputRate), color = 0xAAAAAA)
                 }
 
                 // 机器槽位（8个槽位）

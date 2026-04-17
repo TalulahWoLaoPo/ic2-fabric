@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.WindKineticGeneratorBlock
 import ic2_120.content.screen.WindKineticGeneratorScreenHandler
@@ -70,9 +71,9 @@ class WindKineticGeneratorScreen(
                 Text(title.string, color = 0xFFFFFF)
                 Row(spacing = 8) {
                     SlotHost(0)
-                    Text("转子槽", color = 0xAAAAAA, shadow = false)
+                    Text(t("gui.ic2_120.water_kinetic.rotor_slot"), color = 0xAAAAAA, shadow = false)
                 }
-                Text("放入木/铁/钢/碳转子后显示叶片", color = 0xAAAAAA, shadow = false)
+                Text(t("gui.ic2_120.wind_kinetic.rotor_hint"), color = 0xAAAAAA, shadow = false)
             }
 
             playerInventoryAndHotbarSlotAnchors(

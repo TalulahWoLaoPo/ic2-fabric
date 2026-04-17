@@ -2,6 +2,7 @@ package ic2_120.client.screen
 
 import ic2_120.client.compose.ComposeUI
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.FluidBar
 import ic2_120.client.ui.GuiBackground
 import ic2_120.content.block.SolarDistillerBlock
@@ -103,7 +104,7 @@ class SolarDistillerScreen(
                                 fullColor = 0xFF88AA44.toInt(),
                             )
                             Column(spacing = 2) {
-                                Text("蒸馏进度", color = 0xAAAAAA, shadow = false)
+                                Text(t("gui.ic2_120.solar_distiller.distill_progress"), color = 0xAAAAAA, shadow = false)
                                 Text(
                                     "${handler.sync.progress}/${SolarDistillerSync.PRODUCE_INTERVAL_TICKS} tick",
                                     color = 0xFFFFFF,
@@ -111,11 +112,11 @@ class SolarDistillerScreen(
                                 )
                             }
                             Flex(direction = FlexDirection.ROW, alignItems = AlignItems.CENTER, gap = 8) {
-                                Text("输入 ${handler.sync.waterInputMb} mB", color = 0xAAAAAA, shadow = false)
-                                Text("输出 ${handler.sync.distilledOutputMb} mB", color = 0xAAAAAA, shadow = false)
+                                Text(t("gui.ic2_120.solar_distiller.input_water", handler.sync.waterInputMb), color = 0xAAAAAA, shadow = false)
+                                Text(t("gui.ic2_120.solar_distiller.output_distilled", handler.sync.distilledOutputMb), color = 0xAAAAAA, shadow = false)
                             }
                             Text(
-                                if (handler.sync.isWorking != 0) "状态: 工作中（80 tick -> 1 mB）" else "状态: 停止",
+                                if (handler.sync.isWorking != 0) t("gui.ic2_120.status_working") else t("gui.ic2_120.status_stopped"),
                                 color = 0xAAAAAA,
                                 shadow = false
                             )

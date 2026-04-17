@@ -61,20 +61,20 @@ class CropnalyzerScreenHandler(
         val scanner = getScannerStack(player) ?: return true
         val seed = itemInventory.getStack(SLOT_SEED)
         if (seed.item !is CropSeedBagItem) {
-            player.sendMessage(net.minecraft.text.Text.literal("请先放入种子袋").formatted(net.minecraft.util.Formatting.RED), true)
+            player.sendMessage(net.minecraft.text.Text.translatable("gui.ic2_120.cropnalyzer.insert_seed_bag").formatted(net.minecraft.util.Formatting.RED), true)
             return true
         }
 
         val type = CropSeedData.readType(seed)
         if (type == null) {
-            player.sendMessage(net.minecraft.text.Text.literal("种子袋没有有效作物数据").formatted(net.minecraft.util.Formatting.RED), true)
+            player.sendMessage(net.minecraft.text.Text.translatable("gui.ic2_120.cropnalyzer.no_valid_crop_data").formatted(net.minecraft.util.Formatting.RED), true)
             return true
         }
 
         val tool = scanner.item as? IElectricTool ?: return true
         val currentEnergy = tool.getEnergy(scanner)
         if (currentEnergy < CropnalyzerItem.ENERGY_PER_SCAN) {
-            player.sendMessage(net.minecraft.text.Text.literal("Cropnalyzer 电量不足").formatted(net.minecraft.util.Formatting.RED), true)
+            player.sendMessage(net.minecraft.text.Text.translatable("gui.ic2_120.status_no_energy").formatted(net.minecraft.util.Formatting.RED), true)
             return true
         }
 

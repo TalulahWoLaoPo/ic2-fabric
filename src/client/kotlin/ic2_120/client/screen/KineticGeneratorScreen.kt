@@ -4,6 +4,7 @@ import ic2_120.client.compose.*
 import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
+import ic2_120.client.t
 import ic2_120.content.block.KineticGeneratorBlock
 import ic2_120.content.screen.GuiSize
 import ic2_120.content.screen.KineticGeneratorScreenHandler
@@ -48,8 +49,8 @@ class KineticGeneratorScreen(
         val kuIn = handler.sync.currentKu.coerceAtLeast(0)
         val euOut = handler.sync.outputEu.coerceAtLeast(0)
 
-        val inputText = "输入 ${kuIn} KU/t"
-        val outputText = "输出 ${EnergyFormatUtils.formatEu(euOut.toLong())} EU/t"
+        val inputText = t("gui.ic2_120.input_ku", kuIn)
+        val outputText = t("gui.ic2_120.output_eu", EnergyFormatUtils.formatEu(euOut.toLong()))
         val sideTextWidth = maxOf(textRenderer.getWidth(inputText), textRenderer.getWidth(outputText))
         val sideTextX = left - sideTextWidth - 4
 
@@ -66,7 +67,7 @@ class KineticGeneratorScreen(
                 }
                 EnergyBar(energyFraction, barHeight = 12)
                 Text("4 KU = 1 EU", color = 0xAAAAAA, shadow = false)
-                Text("从正面相邻传动节点取能", color = 0xAAAAAA, shadow = false)
+                Text(t("gui.ic2_120.kinetic_generator.hint"), color = 0xAAAAAA, shadow = false)
             }
 
             playerInventoryAndHotbarSlotAnchors(

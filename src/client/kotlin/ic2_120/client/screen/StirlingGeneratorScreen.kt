@@ -4,6 +4,7 @@ import ic2_120.client.compose.*
 import ic2_120.client.EnergyFormatUtils
 import ic2_120.client.ui.EnergyBar
 import ic2_120.client.ui.GuiBackground
+import ic2_120.client.t
 import ic2_120.content.block.StirlingGeneratorBlock
 import ic2_120.content.block.machines.StirlingGeneratorBlockEntity
 import ic2_120.content.screen.StirlingGeneratorScreenHandler
@@ -50,9 +51,9 @@ class StirlingGeneratorScreen(
         val heatConsumeRate = (generationRate * StirlingGeneratorBlockEntity.HU_PER_EU).coerceAtLeast(0L)
         val outputRate = handler.sync.getSyncedExtractedAmount()
 
-        val generationText = "发电 ${EnergyFormatUtils.formatEu(generationRate)} EU/t"
-        val heatConsumeText = "耗热 ${formatHu(heatConsumeRate)} HU/t"
-        val outputText = "输出 ${EnergyFormatUtils.formatEu(outputRate)} EU/t"
+        val generationText = t("gui.ic2_120.generate_eu", EnergyFormatUtils.formatEu(generationRate))
+        val heatConsumeText = t("gui.ic2_120.consume_hu", formatHu(heatConsumeRate))
+        val outputText = t("gui.ic2_120.output_eu", EnergyFormatUtils.formatEu(outputRate))
         val sideTextWidth = maxOf(
             textRenderer.getWidth(generationText),
             textRenderer.getWidth(heatConsumeText),

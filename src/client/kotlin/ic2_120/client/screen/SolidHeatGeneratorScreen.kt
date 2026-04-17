@@ -1,6 +1,7 @@
 package ic2_120.client.screen
 
 import ic2_120.client.compose.*
+import ic2_120.client.t
 import ic2_120.client.ui.GuiBackground
 import ic2_120.client.ui.ProgressBar
 import ic2_120.content.block.SolidHeatGeneratorBlock
@@ -80,8 +81,8 @@ class SolidHeatGeneratorScreen(
         val generatedRate = handler.sync.getSyncedGeneratedHeat()
         val outputRate = handler.sync.getSyncedOutputHeat()
 
-        val generatedText = "产热 $generatedRate HU/t"
-        val outputText = "输出 $outputRate HU/t"
+        val generatedText = t("gui.ic2_120.generate_hu", generatedRate)
+        val outputText = t("gui.ic2_120.output_hu", outputRate)
         val generatedTextWidth = generatedText.length * 6
         val outputTextWidth = outputText.length * 6
         val textX = x - maxOf(generatedTextWidth, outputTextWidth) - 4
