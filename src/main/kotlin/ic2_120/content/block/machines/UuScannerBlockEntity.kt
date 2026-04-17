@@ -24,10 +24,6 @@ import ic2_120.registry.annotation.RegisterEnergy
 import ic2_120.registry.annotation.RegisterItemStorage
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
@@ -52,7 +48,7 @@ class UuScannerBlockEntity(
     pos: BlockPos,
     state: BlockState
 ) : MachineBlockEntity(type, pos, state), Inventory, ITieredMachine, IOverclockerUpgradeSupport,
-    IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, Storage<ItemVariant>, ExtendedScreenHandlerFactory {
+    IEnergyStorageUpgradeSupport, ITransformerUpgradeSupport, ExtendedScreenHandlerFactory {
 
     override val activeProperty = UuScannerBlock.ACTIVE
     override val tier: Int = UuScannerSync.UU_SCANNER_TIER
@@ -140,14 +136,6 @@ class UuScannerBlockEntity(
         SLOT_DISCHARGING -> !stack.isEmpty && stack.item is IBatteryItem
         else -> SLOT_UPGRADE_INDICES.contains(slot) && stack.item is IUpgradeItem
     }
-
-    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.insert(resource, maxAmount, transaction)
-
-    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.extract(resource, maxAmount, transaction)
-
-    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)

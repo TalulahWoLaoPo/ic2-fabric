@@ -12,10 +12,6 @@ import ic2_120.content.storage.RoutedItemStorage
 import ic2_120.registry.annotation.RegisterItemStorage
 import net.fabricmc.fabric.api.registry.FuelRegistry
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
@@ -43,7 +39,7 @@ class SolidHeatGeneratorBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : HeatGeneratorBlockEntityBase(type, pos, state), Inventory, Storage<ItemVariant>, ExtendedScreenHandlerFactory {
+) : HeatGeneratorBlockEntityBase(type, pos, state), Inventory, ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = SolidHeatGeneratorBlock.ACTIVE
 
@@ -110,14 +106,6 @@ class SolidHeatGeneratorBlockEntity(
 
     override fun isValid(slot: Int, stack: ItemStack): Boolean =
         slot == SLOT_FUEL && !stack.isEmpty && getFuelTimeForSolidHeat(stack) > 0
-
-    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.insert(resource, maxAmount, transaction)
-
-    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.extract(resource, maxAmount, transaction)
-
-    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     override fun readNbt(nbt: NbtCompound) {
         super.readNbt(nbt)

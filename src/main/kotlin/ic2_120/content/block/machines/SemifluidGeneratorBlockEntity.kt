@@ -24,10 +24,7 @@ import ic2_120.registry.type
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleVariantStorage
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntityType
@@ -55,8 +52,7 @@ class SemifluidGeneratorBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : MachineBlockEntity(type, pos, state), Inventory, IGenerator, IFluidPipeUpgradeSupport,
-    Storage<ItemVariant>, net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
+) : MachineBlockEntity(type, pos, state), Inventory, IGenerator, IFluidPipeUpgradeSupport, net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = SemifluidGeneratorBlock.ACTIVE
 
@@ -236,14 +232,6 @@ class SemifluidGeneratorBlockEntity(
         SLOT_UPGRADE_INDICES.contains(slot) -> stack.item is IUpgradeItem
         else -> false
     }
-
-    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.insert(resource, maxAmount, transaction)
-
-    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.extract(resource, maxAmount, transaction)
-
-    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     private fun tryInsertEmptyContainer(emptyStack: ItemStack): Boolean {
         if (emptyStack.isEmpty) return false

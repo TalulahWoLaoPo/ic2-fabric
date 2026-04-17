@@ -29,10 +29,6 @@ import net.minecraft.screen.ScreenHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.state.property.Properties
 import net.minecraft.text.Text
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.minecraft.util.collection.DefaultedList
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
@@ -52,7 +48,7 @@ class SolarGeneratorBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : MachineBlockEntity(type, pos, state), Inventory, IGenerator, Storage<ItemVariant>,
+) : MachineBlockEntity(type, pos, state), Inventory, IGenerator,
     net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = SolarGeneratorBlock.ACTIVE
@@ -131,14 +127,6 @@ class SolarGeneratorBlockEntity(
     }
 
     override fun isValid(slot: Int, stack: ItemStack): Boolean = canPlaceInSlot(slot, stack)
-
-    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.insert(resource, maxAmount, transaction)
-
-    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.extract(resource, maxAmount, transaction)
-
-    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)

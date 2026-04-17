@@ -30,11 +30,7 @@ import ic2_120.content.item.energy.IBatteryItem
 import ic2_120.content.item.energy.canBeCharged
 import ic2_120.content.storage.ItemInsertRoute
 import ic2_120.content.storage.RoutedItemStorage
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
 import net.minecraft.util.collection.DefaultedList
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 
@@ -47,7 +43,7 @@ class GeneratorBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : MachineBlockEntity(type, pos, state), Inventory, IGenerator, Storage<ItemVariant>,
+) : MachineBlockEntity(type, pos, state), Inventory, IGenerator,
     net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
 
     companion object {
@@ -144,14 +140,6 @@ class GeneratorBlockEntity(
     }
 
     override fun isValid(slot: Int, stack: ItemStack): Boolean = canPlaceInSlot(slot, stack)
-
-    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.insert(resource, maxAmount, transaction)
-
-    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.extract(resource, maxAmount, transaction)
-
-    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     override fun writeScreenOpeningData(player: net.minecraft.server.network.ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)

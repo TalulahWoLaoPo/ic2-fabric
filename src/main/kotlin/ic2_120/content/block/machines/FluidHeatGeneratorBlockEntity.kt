@@ -17,9 +17,6 @@ import ic2_120.content.storage.ItemInsertRoute
 import ic2_120.content.storage.RoutedItemStorage
 import ic2_120.registry.annotation.RegisterItemStorage
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant
@@ -57,7 +54,7 @@ class FluidHeatGeneratorBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : HeatGeneratorBlockEntityBase(type, pos, state), Inventory, IFluidPipeUpgradeSupport, Storage<ItemVariant>, ExtendedScreenHandlerFactory {
+) : HeatGeneratorBlockEntityBase(type, pos, state), Inventory, IFluidPipeUpgradeSupport, ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = FluidHeatGeneratorBlock.ACTIVE
 
@@ -226,14 +223,6 @@ class FluidHeatGeneratorBlockEntity(
     }
 
     override fun isValid(slot: Int, stack: ItemStack): Boolean = canPlaceInSlot(slot, stack)
-
-    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.insert(resource, maxAmount, transaction)
-
-    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.extract(resource, maxAmount, transaction)
-
-    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     private fun isSupportedFuelContainer(stack: ItemStack): Boolean {
         if (stack.isEmpty) return false

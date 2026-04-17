@@ -12,10 +12,6 @@ import ic2_120.content.uu.setUuTemplate
 import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import ic2_120.content.storage.ItemInsertRoute
 import ic2_120.content.storage.RoutedItemStorage
 import ic2_120.registry.annotation.RegisterItemStorage
@@ -47,7 +43,7 @@ class PatternStorageBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, Storage<ItemVariant>, ExtendedScreenHandlerFactory {
+) : BlockEntity(type, pos, state), Inventory, ExtendedScreenHandlerFactory {
 
     companion object {
         const val SLOT_CRYSTAL = 0
@@ -150,14 +146,6 @@ class PatternStorageBlockEntity(
         SLOT_CRYSTAL -> stack.isEmpty || isCrystalMemory(stack)
         else -> false
     }
-
-    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.insert(resource, maxAmount, transaction)
-
-    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.extract(resource, maxAmount, transaction)
-
-    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     override fun setStack(slot: Int, stack: ItemStack) {
         inventory[slot] = if (slot == SLOT_CRYSTAL && !isCrystalMemory(stack)) ItemStack.EMPTY else stack

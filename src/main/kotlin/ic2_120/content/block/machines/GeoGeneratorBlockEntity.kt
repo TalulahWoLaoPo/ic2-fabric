@@ -24,10 +24,7 @@ import ic2_120.content.upgrade.IFluidPipeUpgradeSupport
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleVariantStorage
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntityType
@@ -67,8 +64,7 @@ class GeoGeneratorBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : MachineBlockEntity(type, pos, state), Inventory, IGenerator, IFluidPipeUpgradeSupport,
-    Storage<ItemVariant>, net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
+) : MachineBlockEntity(type, pos, state), Inventory, IGenerator, IFluidPipeUpgradeSupport, net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory {
 
     // 流体管道升级支持属性（IFluidPipeUpgradeSupport 接口实现）
     override var fluidPipeProviderEnabled: Boolean = false  // 是否作为 provider 向管道输出流体
@@ -252,14 +248,6 @@ class GeoGeneratorBlockEntity(
         SLOT_UPGRADE_INDICES.contains(slot) -> stack.item is IUpgradeItem
         else -> false
     }
-
-    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.insert(resource, maxAmount, transaction)
-
-    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.extract(resource, maxAmount, transaction)
-
-    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     /** 尝试将空容器放入 EMPTY_CONTAINER_SLOT，可堆叠则合并。返回是否成功放入。 */
     private fun tryInsertEmptyContainer(emptyStack: ItemStack): Boolean {

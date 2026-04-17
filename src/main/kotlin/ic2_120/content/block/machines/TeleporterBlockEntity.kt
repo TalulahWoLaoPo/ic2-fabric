@@ -22,10 +22,6 @@ import ic2_120.content.item.energy.IBatteryItem
 import ic2_120.content.storage.ItemInsertRoute
 import ic2_120.content.storage.RoutedItemStorage
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.Entity
@@ -67,7 +63,6 @@ class TeleporterBlockEntity(
     IOverclockerUpgradeSupport,
     IEnergyStorageUpgradeSupport,
     ITransformerUpgradeSupport,
-    Storage<ItemVariant>,
     ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = TeleporterBlock.ACTIVE
@@ -197,14 +192,6 @@ class TeleporterBlockEntity(
         SLOT_UPGRADE_INDICES.contains(slot) -> stack.item is IUpgradeItem
         else -> false
     }
-
-    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.insert(resource, maxAmount, transaction)
-
-    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.extract(resource, maxAmount, transaction)
-
-    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     fun setTarget(pos: BlockPos, dimension: String) {
         targetPos = pos.toImmutable()

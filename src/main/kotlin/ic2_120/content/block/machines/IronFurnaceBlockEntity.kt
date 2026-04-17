@@ -9,10 +9,6 @@ import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.registry.FuelRegistry
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import ic2_120.content.storage.ItemInsertRoute
 import ic2_120.content.storage.RoutedItemStorage
 import ic2_120.registry.annotation.RegisterItemStorage
@@ -49,7 +45,7 @@ class IronFurnaceBlockEntity(
     type: net.minecraft.block.entity.BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), Inventory, Storage<ItemVariant>, ExtendedScreenHandlerFactory {
+) : BlockEntity(type, pos, state), Inventory, ExtendedScreenHandlerFactory {
 
     private val activeProperty: net.minecraft.state.property.BooleanProperty = IronFurnaceBlock.ACTIVE
 
@@ -112,14 +108,6 @@ class IronFurnaceBlockEntity(
         Inventory.canPlayerUse(this, player)
 
     override fun isValid(slot: Int, stack: ItemStack): Boolean = canPlaceInSlot(slot, stack)
-
-    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.insert(resource, maxAmount, transaction)
-
-    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.extract(resource, maxAmount, transaction)
-
-    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     override fun writeScreenOpeningData(player: net.minecraft.server.network.ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)

@@ -22,7 +22,6 @@ import ic2_120.registry.annotation.ModBlockEntity
 import ic2_120.registry.annotation.RegisterFluidStorage
 import ic2_120.registry.type
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants
@@ -68,7 +67,7 @@ class FluidHeatExchangerBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : HeatGeneratorBlockEntityBase(type, pos, state), Inventory, IFluidPipeUpgradeSupport, Storage<ItemVariant>, ExtendedScreenHandlerFactory {
+) : HeatGeneratorBlockEntityBase(type, pos, state), Inventory, IFluidPipeUpgradeSupport, ExtendedScreenHandlerFactory {
 
     override val activeProperty: net.minecraft.state.property.BooleanProperty = FluidHeatExchangerBlock.ACTIVE
 
@@ -414,14 +413,6 @@ class FluidHeatExchangerBlockEntity(
         slot == SLOT_OUTPUT_FILLED_CONTAINER -> false
         else -> false
     }
-
-    override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.insert(resource, maxAmount, transaction)
-
-    override fun extract(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long =
-        itemStorage.extract(resource, maxAmount, transaction)
-
-    override fun iterator(): MutableIterator<StorageView<ItemVariant>> = itemStorage.iterator()
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)
