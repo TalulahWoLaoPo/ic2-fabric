@@ -433,7 +433,6 @@
   "item.ic2_120.advanced_pulling_upgrade": "Advanced Pulling Upgrade",
   "item.ic2_120.fluid_ejector_upgrade": "Fluid Ejector Upgrade",
   "item.ic2_120.fluid_pulling_upgrade": "Fluid Pulling Upgrade",
-  "item.ic2_120.tooltip.pulling_upgrade_not_implemented": "No effect yet; not implemented",
   "item.ic2_120.tooltip.item_ejector_upgrade_miner_only": "Currently only the Miner supports this upgrade; other machines are not implemented yet.",
   "item.ic2_120.blank_tfbp": "TFBP - Empty",
   "item.ic2_120.chilling_tfbp": "TFBP - Chilling",

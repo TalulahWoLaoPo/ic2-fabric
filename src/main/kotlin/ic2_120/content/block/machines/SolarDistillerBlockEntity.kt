@@ -16,6 +16,7 @@ import ic2_120.content.storage.ItemInsertRoute
 import ic2_120.content.storage.RoutedItemStorage
 import ic2_120.registry.annotation.RegisterItemStorage
 import ic2_120.content.upgrade.EjectorUpgradeComponent
+import ic2_120.content.upgrade.PullingUpgradeComponent
 import ic2_120.content.upgrade.IEjectorUpgradeSupport
 import ic2_120.content.upgrade.IFluidPipeUpgradeSupport
 import ic2_120.content.upgrade.FluidPipeUpgradeComponent
@@ -98,6 +99,7 @@ class SolarDistillerBlockEntity(
         const val SLOT_UPGRADE_3 = 7         // 升级槽 3
         val SLOT_UPGRADE_INDICES = intArrayOf(SLOT_UPGRADE_0, SLOT_UPGRADE_1, SLOT_UPGRADE_2, SLOT_UPGRADE_3)
         val SLOT_OUTPUT_INDICES = intArrayOf(SLOT_OUTPUT_EMPTY, SLOT_OUTPUT_CELL)
+        val SLOT_INPUT_INDICES = intArrayOf(SLOT_INPUT_WATER, SLOT_INPUT_CELL)
         const val INVENTORY_SIZE = 8
 
         // NBT 存储键
@@ -428,6 +430,7 @@ class SolarDistillerBlockEntity(
         // 每 tick 重新从升级槽同步”是否参与流体管网 + 过滤条件”
         FluidPipeUpgradeComponent.apply(this, SLOT_UPGRADE_INDICES)
         EjectorUpgradeComponent.ejectIfUpgraded(world, pos, this, SLOT_UPGRADE_INDICES, SLOT_OUTPUT_INDICES)
+        PullingUpgradeComponent.pullIfUpgraded(world, pos, this, SLOT_UPGRADE_INDICES, SLOT_INPUT_INDICES)
 
         // 机器物品槽处理放在产线逻辑前，确保本 tick 新放入的容器可立即参与计算
         handleWaterInputSlot()

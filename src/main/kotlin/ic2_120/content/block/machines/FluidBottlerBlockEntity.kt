@@ -10,6 +10,7 @@ import ic2_120.content.screen.FluidBottlerScreenHandler
 import ic2_120.content.sync.FluidBottlerSync
 import ic2_120.content.syncs.SyncedData
 import ic2_120.content.upgrade.EjectorUpgradeComponent
+import ic2_120.content.upgrade.PullingUpgradeComponent
 import ic2_120.content.upgrade.EnergyStorageUpgradeComponent
 import ic2_120.content.upgrade.FluidPipeUpgradeComponent
 import ic2_120.content.upgrade.IEjectorUpgradeSupport
@@ -101,6 +102,7 @@ class FluidBottlerBlockEntity(
         const val SLOT_DISCHARGING = 3
         val SLOT_UPGRADE_INDICES = intArrayOf(4, 5, 6, 7)
         val SLOT_OUTPUT_INDICES = intArrayOf(SLOT_OUTPUT)
+        val SLOT_INPUT_INDICES = intArrayOf(SLOT_INPUT_FILLED, SLOT_INPUT_EMPTY)
         const val INVENTORY_SIZE = 8
         private const val NBT_FLUID_AMOUNT = "FluidAmount"
         private const val NBT_FLUID_VARIANT = "FluidVariant"
@@ -241,6 +243,7 @@ class FluidBottlerBlockEntity(
         sync.energyCapacity = sync.getEffectiveCapacity().toInt().coerceIn(0, Int.MAX_VALUE)
 
         EjectorUpgradeComponent.ejectIfUpgraded(world, pos, this, SLOT_UPGRADE_INDICES, SLOT_OUTPUT_INDICES)
+        PullingUpgradeComponent.pullIfUpgraded(world, pos, this, SLOT_UPGRADE_INDICES, SLOT_INPUT_INDICES)
 
         pullEnergyFromNeighbors(world, pos, sync)
         extractFromDischargingSlot()

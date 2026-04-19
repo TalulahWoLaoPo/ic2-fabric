@@ -40,7 +40,6 @@ import net.minecraft.util.TypedActionResult
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 
-private const val PULLING_UPGRADE_NOT_IMPLEMENTED_TOOLTIP = "item.ic2_120.tooltip.pulling_upgrade_not_implemented"
 
 // ========== 升级物品接口 ==========
 
@@ -110,6 +109,10 @@ abstract class FluidFilterUpgradeItem : Item(FabricItemSettings()), IUpgradeItem
 }
 
 abstract class ItemFilterUpgradeItem : Item(FabricItemSettings()), IUpgradeItem {
+
+    /** 子类可重写此属性以改变方向设置消息，如 "弹出方向" 或 "抽入方向" */
+    protected open val directionActionLabel: String = "弹出方向"
+
     @Environment(EnvType.CLIENT)
     override fun appendTooltip(stack: ItemStack, world: World?, tooltip: MutableList<Text>, context: TooltipContext) {
         super.appendTooltip(stack, world, tooltip, context)
@@ -131,7 +134,7 @@ abstract class ItemFilterUpgradeItem : Item(FabricItemSettings()), IUpgradeItem 
             val next = EjectorUpgradeComponent.nextDirection(EjectorUpgradeComponent.readDirection(stack))
             EjectorUpgradeComponent.writeDirection(stack, next)
             if (user is ServerPlayerEntity) {
-                user.sendMessage(Text.literal("已设置弹出方向: ${directionLabel(next)}"), true)
+                user.sendMessage(Text.literal("已设置$directionActionLabel: ${directionLabel(next)}"), true)
             }
             return TypedActionResult.success(stack)
         }
@@ -286,11 +289,32 @@ class EjectorUpgrade : ItemFilterUpgradeItem() {
 }
 
 @ModItem(name = "pulling_upgrade", tab = CreativeTab.IC2_MATERIALS, group = "upgrades")
-class PullingUpgrade : Item(FabricItemSettings()), IUpgradeItem {
-    @Environment(EnvType.CLIENT)
-    override fun appendTooltip(stack: ItemStack, world: World?, tooltip: MutableList<Text>, context: TooltipContext) {
-        super.appendTooltip(stack, world, tooltip, context)
-        tooltip.add(Text.translatable(PULLING_UPGRADE_NOT_IMPLEMENTED_TOOLTIP).formatted(Formatting.GRAY))
+class PullingUpgrade : ItemFilterUpgradeItem() {
+    override val directionActionLabel: String = "抽入方向"
+
+    companion object {
+        @RecipeProvider
+        fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+            val tin = TinPlate::class.instance()
+            val dense = DenseTinPlate::class.instance()
+            val hopper = Items.HOPPER
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, PullingUpgrade::class.instance(), 1)
+                .pattern("T T")
+                .pattern(" H ")
+                .pattern("T T")
+                .input('T', tin)
+                .input('H', hopper)
+                .criterion(hasItem(hopper), conditionsFromItem(hopper))
+                .offerTo(exporter)
+            ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, PullingUpgrade::class.instance(), 9)
+                .pattern("T T")
+                .pattern(" H ")
+                .pattern("T T")
+                .input('T', dense)
+                .input('H', hopper)
+                .criterion(hasItem(dense), conditionsFromItem(dense))
+                .offerTo(exporter, PullingUpgrade::class.recipeId("from_dense_tin"))
+        }
     }
 }
 

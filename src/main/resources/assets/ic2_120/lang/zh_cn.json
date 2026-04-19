@@ -430,7 +430,6 @@
   "item.ic2_120.pulling_upgrade": "抽入升级",
   "item.ic2_120.fluid_ejector_upgrade": "流体弹出升级",
   "item.ic2_120.fluid_pulling_upgrade": "流体抽入升级",
-  "item.ic2_120.tooltip.pulling_upgrade_not_implemented": "暂无效果，功能尚未实现",
   "item.ic2_120.blank_tfbp": "地形转换模板 - 空白",
   "item.ic2_120.chilling_tfbp": "地形转换模板 - 冰原",
   "item.ic2_120.cultivation_tfbp": "地形转换模板 - 耕地",
