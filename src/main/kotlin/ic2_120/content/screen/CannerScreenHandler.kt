@@ -100,8 +100,6 @@ class CannerScreenHandler(
         addSlot(PredicateSlot(blockInventory, CannerBlockEntity.SLOT_MATERIAL, 0, 0, materialSlotSpec))
         addSlot(PredicateSlot(blockInventory, CannerBlockEntity.SLOT_OUTPUT, 0, 0, outputSlotSpec))
         addSlot(PredicateSlot(blockInventory, CannerBlockEntity.SLOT_DISCHARGING, 0, 0, dischargingSlotSpec))
-        addSlot(PredicateSlot(blockInventory, CannerBlockEntity.SLOT_LEFT_EMPTY, 0, 0, leftEmptySlotSpec))
-        addSlot(PredicateSlot(blockInventory, CannerBlockEntity.SLOT_RIGHT_INPUT, 0, 0, rightInputSlotSpec))
 
         for (i in 0 until UpgradeSlotLayout.SLOT_COUNT) {
             addSlot(
@@ -114,6 +112,9 @@ class CannerScreenHandler(
                 )
             )
         }
+
+        addSlot(PredicateSlot(blockInventory, CannerBlockEntity.SLOT_LEFT_EMPTY, 0, 0, leftEmptySlotSpec))
+        addSlot(PredicateSlot(blockInventory, CannerBlockEntity.SLOT_RIGHT_INPUT, 0, 0, rightInputSlotSpec))
 
         for (row in 0 until 3) {
             for (col in 0 until 9) {
