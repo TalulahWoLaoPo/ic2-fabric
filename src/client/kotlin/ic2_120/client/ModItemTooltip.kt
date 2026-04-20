@@ -59,6 +59,7 @@ object ModItemTooltip {
                     }
                     is ManualKineticGeneratorBlock -> {
                         lines.add(Text.translatable("tooltip.ic2_120.kinetic_source").formatted(Formatting.GRAY))
+                        lines.add(Text.translatable("tooltip.ic2_120.manual_kinetic_insert_crank").formatted(Formatting.DARK_GRAY))
                     }
                     is KineticGeneratorBlock -> {
                         lines.add(Text.translatable("tooltip.ic2_120.kinetic_convert_rate").formatted(Formatting.GRAY))

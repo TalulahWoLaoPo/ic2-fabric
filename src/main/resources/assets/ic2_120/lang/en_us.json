@@ -388,6 +388,8 @@
   "tooltip.ic2_120.kinetic_capacity": "Kinetic Capacity: %s KU/t",
   "tooltip.ic2_120.kinetic_loss": "Kinetic Loss: %s KU/block",
   "tooltip.ic2_120.kinetic_source": "Kinetic Source: outputs to front transmission node",
+  "tooltip.ic2_120.manual_kinetic_insert_crank": "Insert a crank handle on top to use",
+  "message.ic2_120.manual_kinetic_no_crank": "Insert a crank handle on top first!",
   "tooltip.ic2_120.kinetic_convert_rate": "Conversion: 4 KU = 1 EU",
   "tooltip.ic2_120.kinetic_max_input": "Max Input: 2048 KU/t (512 EU/t)",
   "tooltip.ic2_120.rotor_lifetime": "Lifetime (clear): %s / %s h",

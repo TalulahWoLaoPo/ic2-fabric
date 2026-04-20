@@ -27,6 +27,7 @@ import net.minecraft.util.collection.DefaultedList
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
+import net.minecraft.text.Text
 import net.minecraft.world.World
 
 @ModBlockEntity(block = ManualKineticGeneratorBlock::class)
@@ -110,6 +111,11 @@ class ManualKineticGeneratorBlockEntity(
 
             heldStack.isEmpty && hasCrank() -> {
                 playerLastUseTick[player] = world.time
+                return ActionResult.SUCCESS
+            }
+
+            heldStack.isEmpty && !hasCrank() -> {
+                player.sendMessage(Text.translatable("message.ic2_120.manual_kinetic_no_crank"), true)
                 return ActionResult.SUCCESS
             }
 

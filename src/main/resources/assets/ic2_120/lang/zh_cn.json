@@ -387,6 +387,8 @@
   "tooltip.ic2_120.kinetic_capacity": "动能承载: %s KU/t",
   "tooltip.ic2_120.kinetic_loss": "动能损耗: %s KU/格",
   "tooltip.ic2_120.kinetic_source": "动能源: 输出到前方传动节点",
+  "tooltip.ic2_120.manual_kinetic_insert_crank": "需要在顶部插入曲柄才能使用",
+  "message.ic2_120.manual_kinetic_no_crank": "请先在顶部插入曲柄!",
   "tooltip.ic2_120.kinetic_convert_rate": "转换率: 4 KU = 1 EU",
   "tooltip.ic2_120.kinetic_max_input": "最大输入: 2048 KU/t (512 EU/t)",
   "tooltip.ic2_120.rotor_lifetime": "寿命(晴天): %s / %s 小时",
