@@ -158,6 +158,8 @@ class PatternStorageScreen(
         val tooltip = ui.getTooltipAt(mouseX, mouseY)
         if (!tooltip.isNullOrEmpty()) {
             context.drawTooltip(textRenderer, tooltip, mouseX, mouseY)
+        } else {
+            drawMouseoverTooltip(context, mouseX, mouseY)
         }
     }
 

@@ -119,6 +119,8 @@ class UuScannerScreen(
         val tooltip = ui.getTooltipAt(mouseX, mouseY)
         if (!tooltip.isNullOrEmpty()) {
             context.drawTooltip(textRenderer, tooltip, mouseX, mouseY)
+        } else {
+            drawMouseoverTooltip(context, mouseX, mouseY)
         }
         context.drawText(textRenderer, inputText, sideTextX, top + 8, 0xAAAAAA, false)
         context.drawText(textRenderer, consumeText, sideTextX, top + 20, 0xAAAAAA, false)
