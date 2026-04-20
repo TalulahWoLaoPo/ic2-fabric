@@ -7,10 +7,13 @@ import net.minecraft.block.BlockState
 import net.minecraft.block.BlockWithEntity
 import net.minecraft.block.Blocks
 import net.minecraft.block.entity.BlockEntity
+import net.minecraft.entity.LivingEntity
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemPlacementContext
+import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.state.StateManager
 import net.minecraft.state.property.Properties
 import net.minecraft.util.Identifier
@@ -52,6 +55,13 @@ abstract class MachineBlock(settings: AbstractBlock.Settings = defaultMachineSet
 
     override fun getPlacementState(ctx: ItemPlacementContext): BlockState? =
         defaultState.with(Properties.HORIZONTAL_FACING, ctx.horizontalPlayerFacing.opposite)
+
+    override fun onPlaced(world: World, pos: BlockPos, state: BlockState, placer: LivingEntity?, stack: ItemStack) {
+        super.onPlaced(world, pos, state, placer, stack)
+        if (placer is ServerPlayerEntity) {
+            (world.getBlockEntity(pos) as? IOwned)?.ownerUuid = placer.uuid
+        }
+    }
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? = null
 

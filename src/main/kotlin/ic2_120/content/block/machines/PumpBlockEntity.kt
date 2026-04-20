@@ -338,6 +338,7 @@ class PumpBlockEntity(
         if (fluidState.isEmpty || !fluidState.isStill) return 0L
         val fluid = fluidState.fluid
         if (!canAccept(fluid)) return 0L
+        if (ic2_120.integration.ftbchunks.ClaimProtection.isProtected(world, targetPos, ownerUuid)) return 0L
 
         val variant = FluidVariant.of(fluid)
         val toDrain = FluidConstants.BUCKET

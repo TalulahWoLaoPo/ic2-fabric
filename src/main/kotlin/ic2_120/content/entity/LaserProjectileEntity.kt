@@ -194,7 +194,7 @@ class LaserProjectileEntity(
         // 低聚焦模式：易燃物先破坏再在空格上随机点火（不可先放火再破坏，否则火随方块一起没了）
         val isFlammable = state.isIn(BlockTags.LEAVES) || state.isIn(BlockTags.PLANKS) || state.isIn(BlockTags.WOOL)
         if (currentMode == LaserMode.LOW_FOCUS && isFlammable) {
-            if (canBreak(state)) {
+            if (canBreak(state) && !ic2_120.integration.ftbchunks.ClaimProtection.isProtected(world, pos, owner)) {
                 world.breakBlock(pos, true, owner)
                 tryRandomIgniteAfterBreak(pos)
             }
@@ -205,6 +205,10 @@ class LaserProjectileEntity(
 
         // 采矿模式：按方块硬度消耗射程，可连续击穿多个方块（与 LaserMode 描述一致）
         if (currentMode == LaserMode.MINING && canBreak(state)) {
+            if (ic2_120.integration.ftbchunks.ClaimProtection.isProtected(world, pos, owner)) {
+                discard()
+                return
+            }
             val hardness = state.block.hardness.coerceAtLeast(0.1f)
             remainingRange -= hardness.toDouble()
             world.breakBlock(pos, true, owner)
@@ -219,7 +223,7 @@ class LaserProjectileEntity(
         }
 
         // 其他模式：破坏方块
-        if (canBreak(state)) {
+        if (canBreak(state) && !ic2_120.integration.ftbchunks.ClaimProtection.isProtected(world, pos, owner)) {
             world.breakBlock(pos, true, owner)
             tryRandomIgniteAfterBreak(pos)
             world.playSound(null, pos, LASER_HIT_SOUND, SoundCategory.PLAYERS, 0.8f, 1.2f)
@@ -282,6 +286,7 @@ class LaserProjectileEntity(
     private fun smeltBlock(pos: net.minecraft.util.math.BlockPos, state: BlockState) {
         if (state.isIn(BlockTags.LOGS) || state.isIn(BlockTags.LOGS_THAT_BURN)) return
         if (!canBreak(state)) return
+        if (ic2_120.integration.ftbchunks.ClaimProtection.isProtected(world, pos, owner)) return
 
         val serverWorld = world as? ServerWorld ?: return
         val blockItem = state.block.asItem()

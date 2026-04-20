@@ -500,6 +500,7 @@ abstract class BaseMinerBlockEntity(
     }
 
     private fun mineBlock(world: ServerWorld, targetPos: BlockPos, state: BlockState) {
+        if (ic2_120.integration.ftbchunks.ClaimProtection.isProtected(world, targetPos, ownerUuid)) return
         val tool = getLootToolStack()
         val drops = net.minecraft.block.Block.getDroppedStacks(
             state,
@@ -576,6 +577,7 @@ abstract class BaseMinerBlockEntity(
         if (!fluidPipeProviderEnabled) return false
         if (tankInternal.amount > 0L) return false
         if (world.time % 20L != 0L) return false
+        if (ic2_120.integration.ftbchunks.ClaimProtection.isProtected(world, targetPos, ownerUuid)) return false
 
         val fs = world.getFluidState(targetPos)
         if (fs.isEmpty || !fs.isStill) return false

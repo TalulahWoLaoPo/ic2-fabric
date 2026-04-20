@@ -210,14 +210,14 @@ class FoamSprayerItem : Item(FabricItemSettings().maxCount(1)) {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
             val iron = IronCasing::class.instance()
-            val fluidCell = FluidCellItem::class.instance()
-            if (iron != Items.AIR && fluidCell != Items.AIR) {
+            val emptyCell = EmptyCell::class.instance()
+            if (iron != Items.AIR && emptyCell != Items.AIR) {
                 ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, FoamSprayerItem::class.instance(), 1)
                     .pattern("I  ")
                     .pattern(" I ")
                     .pattern(" FI")
                     .input('I', iron)
-                    .input('F', fluidCell)
+                    .input('F', emptyCell)
                     .criterion(hasItem(iron), conditionsFromItem(iron))
                     .offerTo(exporter, FoamSprayerItem::class.id())
             }

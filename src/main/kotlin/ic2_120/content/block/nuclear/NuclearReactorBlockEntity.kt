@@ -3,6 +3,7 @@ package ic2_120.content.block.nuclear
 import ic2_120.Ic2_120
 import ic2_120.config.Ic2Config
 import ic2_120.content.block.IGenerator
+import ic2_120.content.block.IOwned
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.block.MachineBlock
 import ic2_120.content.block.cables.BaseCableBlock
@@ -82,9 +83,11 @@ class NuclearReactorBlockEntity(
     pos: BlockPos,
     state: BlockState
 ) : BlockEntity(type, pos, state), Inventory, IGenerator, ITieredMachine, IReactor,
-    ExtendedScreenHandlerFactory, IRedstoneControlSupport {
+    ExtendedScreenHandlerFactory, IRedstoneControlSupport, IOwned {
 
     override val tier: Int = NuclearReactorSync.REACTOR_TIER
+
+    override var ownerUuid: java.util.UUID? = null
 
     private val inventory = DefaultedList.ofSize(INVENTORY_SIZE, ItemStack.EMPTY)
 
@@ -322,6 +325,7 @@ class NuclearReactorBlockEntity(
             outputTank.variant = FluidVariant.fromNbt(nbt.getCompound("OutputHotCoolant"))
         }
         outputTank.amount = nbt.getLong("OutputHotCoolantAmount")
+        ownerUuid = if (nbt.containsUuid("OwnerUUID")) nbt.getUuid("OwnerUUID") else null
     }
 
     override fun writeNbt(nbt: NbtCompound) {
@@ -343,6 +347,7 @@ class NuclearReactorBlockEntity(
         nbt.putLong("InputCoolantAmount", inputTank.amount)
         nbt.put("OutputHotCoolant", outputTank.variant.toNbt())
         nbt.putLong("OutputHotCoolantAmount", outputTank.amount)
+        ownerUuid?.let { nbt.putUuid("OwnerUUID", it) }
     }
 
     private fun currentCapacity(): Int {
@@ -1234,6 +1239,7 @@ class NuclearReactorBlockEntity(
                 if (rng.nextFloat() > 0.02f) continue
                 val p = pos.add(dx, dy, dz)
                 if (!world.isInBuildLimit(p)) continue
+                if (ic2_120.integration.ftbchunks.ClaimProtection.isProtected(world, p, ownerUuid)) continue
                 if (AbstractFireBlock.canPlaceAt(world, p, Direction.UP)) {
                     world.setBlockState(p, Blocks.FIRE.defaultState)
                 }
@@ -1245,6 +1251,7 @@ class NuclearReactorBlockEntity(
                 if (rng.nextFloat() > 0.02f) continue
                 val p = pos.add(dx, dy, dz)
                 if (!world.isInBuildLimit(p)) continue
+                if (ic2_120.integration.ftbchunks.ClaimProtection.isProtected(world, p, ownerUuid)) continue
                 if (world.getBlockState(p).isOf(Blocks.WATER)) {
                     world.setBlockState(p, Blocks.AIR.defaultState)
                 }
@@ -1268,6 +1275,7 @@ class NuclearReactorBlockEntity(
                 if (rng.nextFloat() > 0.01f) continue
                 val p = pos.add(dx, dy, dz)
                 if (!world.isInBuildLimit(p)) continue
+                if (ic2_120.integration.ftbchunks.ClaimProtection.isProtected(world, p, ownerUuid)) continue
                 val state = world.getBlockState(p)
                 val block = state.block
                 if (block === Blocks.BEDROCK || block is NuclearReactorBlock || block is ReactorChamberBlock || block is MachineBlock || block is BaseCableBlock) continue

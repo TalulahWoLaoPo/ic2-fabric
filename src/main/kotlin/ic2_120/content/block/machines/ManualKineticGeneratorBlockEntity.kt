@@ -187,12 +187,7 @@ class ManualKineticGeneratorBlockEntity(
         }
     }
 
-    override fun canOutputKuTo(side: Direction): Boolean {
-        val world = world ?: return false
-        val state = world.getBlockState(pos)
-        val facing = state.getOrEmpty(Properties.FACING).orElse(Direction.NORTH)
-        return side == facing.opposite
-    }
+    override fun canOutputKuTo(side: Direction): Boolean = side.axis.isHorizontal
 
     override fun getStoredKu(side: Direction): Int =
         if (canOutputKuTo(side)) pendingOutputKu.coerceAtLeast(0) else 0

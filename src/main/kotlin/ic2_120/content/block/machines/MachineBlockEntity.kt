@@ -1,13 +1,16 @@
 package ic2_120.content.block.machines
 
+import ic2_120.content.block.IOwned
 import ic2_120.content.block.ITieredMachine
 import ic2_120.content.sound.MachineSoundConfig
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.sound.SoundCategory
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
+import java.util.UUID
 
 /**
  * 机器 BlockEntity 基类
@@ -22,12 +25,25 @@ abstract class MachineBlockEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState
-) : BlockEntity(type, pos, state), ITieredMachine {
+) : BlockEntity(type, pos, state), ITieredMachine, IOwned {
 
     companion object {
         /** 槽位索引常量 */
         const val FUEL_SLOT = 0      // 燃料槽（子类可使用）
         const val BATTERY_SLOT = 1   // 电池充电/供电槽
+        private const val NBT_OWNER_UUID = "OwnerUUID"
+    }
+
+    override var ownerUuid: UUID? = null
+
+    override fun readNbt(nbt: NbtCompound) {
+        super.readNbt(nbt)
+        ownerUuid = if (nbt.containsUuid(NBT_OWNER_UUID)) nbt.getUuid(NBT_OWNER_UUID) else null
+    }
+
+    override fun writeNbt(nbt: NbtCompound) {
+        super.writeNbt(nbt)
+        ownerUuid?.let { nbt.putUuid(NBT_OWNER_UUID, it) }
     }
 
     /**

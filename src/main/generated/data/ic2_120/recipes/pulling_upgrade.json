@@ -2,20 +2,20 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "F": {
-      "item": "ic2_120:empty_cell"
+    "H": {
+      "item": "minecraft:hopper"
     },
-    "I": {
-      "item": "ic2_120:iron_casing"
+    "T": {
+      "item": "ic2_120:tin_plate"
     }
   },
   "pattern": [
-    "I  ",
-    " I ",
-    " FI"
+    "T T",
+    " H ",
+    "T T"
   ],
   "result": {
-    "item": "ic2_120:foam_sprayer"
+    "item": "ic2_120:pulling_upgrade"
   },
   "show_notification": true
 }

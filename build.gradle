@@ -25,6 +25,8 @@ repositories {
 	// maven { url "https://maven.fabricmc.net/" }
 	maven { url "https://maven.blamejared.com/" } // JEI
 	maven { url "https://api.modrinth.com/maven" } // Jade
+	maven { url "https://maven.ftb.dev/releases" } // FTB Chunks
+	maven { url "https://maven.architectury.dev/" } // Architectury (FTB Chunks dependency)
 }
 
 loom {
@@ -75,6 +77,12 @@ dependencies {
 	// runtime JEI is loaded from run/mods to avoid classpath mapping conflicts in dev
 	// Jade / Waila API for pipe flow rate HUD rendering
 	modCompileOnlyApi("maven.modrinth:jade:${project.jade_version}")
+
+	// FTB Chunks API (领地保护集成，软依赖)
+	modCompileOnly("dev.ftb.mods:ftb-chunks-fabric:${project.ftb_chunks_version}") { transitive = false }
+	modCompileOnly("dev.ftb.mods:ftb-library-fabric:${project.ftb_library_version}") { transitive = false }
+	modCompileOnly("dev.ftb.mods:ftb-teams-fabric:${project.ftb_teams_version}") { transitive = false }
+	modCompileOnly("dev.architectury:architectury-fabric:${project.architectury_version}")
 
 	// YAML config via kotlinx.serialization
 	implementation "org.jetbrains.kotlinx:kotlinx-serialization-core:${project.kotlinx_serialization_version}"
