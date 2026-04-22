@@ -28,12 +28,13 @@ object ClaimProtection {
      * @param world 服务端世界
      * @param pos    目标方块位置
      * @param ownerUuid  操作发起者的 UUID（机器放置者或玩家），用于判断是否为领地成员
+     * @param protection FTB Chunks 保护类型，默认 [Protection.EDIT_BLOCK]
      * @return true 表示应阻止操作
      */
-    fun isProtected(world: World, pos: BlockPos, ownerUuid: UUID? = null): Boolean {
+    fun isProtected(world: World, pos: BlockPos, ownerUuid: UUID? = null, protection: Protection = Protection.EDIT_BLOCK): Boolean {
         if (world.isClient) return false
         if (!ftbChunksLoaded) return false
-        return checkProtection(world, pos, ownerUuid)
+        return checkProtection(world, pos, ownerUuid, protection)
     }
 
     /**
@@ -42,15 +43,16 @@ object ClaimProtection {
      * @param world 服务端世界
      * @param pos    目标方块位置
      * @param actor  操作发起实体（如玩家、镭射弹的 owner）
+     * @param protection FTB Chunks 保护类型，默认 [Protection.EDIT_BLOCK]
      * @return true 表示应阻止操作
      */
-    fun isProtected(world: World, pos: BlockPos, actor: net.minecraft.entity.Entity?): Boolean {
+    fun isProtected(world: World, pos: BlockPos, actor: net.minecraft.entity.Entity?, protection: Protection = Protection.EDIT_BLOCK): Boolean {
         if (world.isClient) return false
         if (!ftbChunksLoaded) return false
-        return checkProtectionWithActor(world, pos, actor)
+        return checkProtectionWithActor(world, pos, actor, protection)
     }
 
-    private fun checkProtection(world: World, pos: BlockPos, ownerUuid: UUID?): Boolean {
+    private fun checkProtection(world: World, pos: BlockPos, ownerUuid: UUID?, protection: Protection): Boolean {
         val api = FTBChunksAPI.api()
         if (!api.isManagerLoaded) return false
         val manager = api.manager
@@ -62,7 +64,7 @@ object ClaimProtection {
         if (ownerPlayer != null) {
             return manager.shouldPreventInteraction(
                 ownerPlayer, Hand.MAIN_HAND, pos,
-                Protection.EDIT_BLOCK, null
+                protection, null
             )
         }
 
@@ -70,7 +72,7 @@ object ClaimProtection {
         return checkOfflineProtection(manager, world, pos, ownerUuid)
     }
 
-    private fun checkProtectionWithActor(world: World, pos: BlockPos, actor: net.minecraft.entity.Entity?): Boolean {
+    private fun checkProtectionWithActor(world: World, pos: BlockPos, actor: net.minecraft.entity.Entity?, protection: Protection): Boolean {
         val api = FTBChunksAPI.api()
         if (!api.isManagerLoaded) return false
         val manager = api.manager
@@ -78,7 +80,7 @@ object ClaimProtection {
         if (actor is ServerPlayerEntity) {
             return manager.shouldPreventInteraction(
                 actor, Hand.MAIN_HAND, pos,
-                Protection.EDIT_BLOCK, null
+                protection, null
             )
         }
 
