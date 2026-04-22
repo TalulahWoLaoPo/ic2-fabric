@@ -2,6 +2,7 @@ package ic2_120.content.item.armor
 
 import ic2_120.Ic2_120
 import ic2_120.content.block.ReinforcedGlassBlock
+import ic2_120.content.effect.ModStatusEffects
 import ic2_120.content.item.AdvancedCircuit
 import ic2_120.content.item.HazmatHelmet
 import ic2_120.content.item.IridiumPlate
@@ -47,8 +48,8 @@ import java.util.function.Consumer
  *
  * 1. **夜视**：694 EU/tick（10M EU / 8小时 = 576000 ticks）
  * 2. **水下呼吸**：消耗 air_cell → empty_cell
- * 3. **补充饱食度**：穿戴全套量子护甲时，饱食度不满自动从背包拿满锡罐食用，1000 EU/次
- * 4. **消除 debuff**：中毒/凋零，100 EU/次
+ * 3. **补充饱食度**：饱食度不满自动从背包拿满锡罐食用，1000 EU/次
+ * 4. **消除 debuff**：需全套量子护甲，中毒/凋零/辐射，100 EU/次
  *
  * **夜视快捷键**：Alt + N
  *
@@ -137,9 +138,8 @@ class QuantumHelmet : QuantumArmorItem(ModArmorMaterials.QUANTUM_ARMOR, ArmorIte
             }
         }
 
-        // 功能 3: 补充饱食度（需全套量子护甲，自动从背包拿满锡罐食用）
-        if (QuantumArmorItem.hasFullQuantumArmor(player) &&
-            player.hungerManager.foodLevel < 20 &&
+        // 功能 3: 补充饱食度（自动从背包拿满锡罐食用）
+        if (player.hungerManager.foodLevel < 20 &&
             energy >= FOOD_FILL_COST
         ) {
             val cooldown = nbt.getInt(FOOD_CHECK_COOLDOWN_KEY)
@@ -155,9 +155,9 @@ class QuantumHelmet : QuantumArmorItem(ModArmorMaterials.QUANTUM_ARMOR, ArmorIte
             }
         }
 
-        // 功能 4: 消除负面效果
-        if (energy >= CURE_EFFECT_COST) {
-            val harmfulEffects = listOf(StatusEffects.POISON, StatusEffects.WITHER)
+        // 功能 4: 消除负面效果（需全套量子护甲）
+        if (QuantumArmorItem.hasFullQuantumArmor(player) && energy >= CURE_EFFECT_COST) {
+            val harmfulEffects = listOf(StatusEffects.POISON, StatusEffects.WITHER, ModStatusEffects.RADIATION)
             for (effect in harmfulEffects) {
                 if (player.hasStatusEffect(effect)) {
                     player.removeStatusEffect(effect)
@@ -225,7 +225,7 @@ class QuantumHelmet : QuantumArmorItem(ModArmorMaterials.QUANTUM_ARMOR, ArmorIte
         } else "N/A"
 
         tooltip.add(Text.literal("夜视: ${if (nvEnabled) "§aON" else "§cOFF"} §8[${remainingMinutes}分钟]").formatted(Formatting.GRAY))
-        tooltip.add(Text.literal("减伤: 15% | 水下呼吸 | 消除debuff").formatted(Formatting.GRAY))
-        tooltip.add(Text.literal("全套时: 饱食不满自动吃满锡罐").formatted(Formatting.GRAY))
+        tooltip.add(Text.literal("减伤: 15% | 水下呼吸 | 夜视 | 饱食不满自动吃满锡罐").formatted(Formatting.GRAY))
+        tooltip.add(Text.literal("全套时: 消除debuff").formatted(Formatting.GRAY))
     }
 }

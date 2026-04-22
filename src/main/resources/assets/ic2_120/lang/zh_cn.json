@@ -605,6 +605,8 @@
   "mining_laser.mode.trench_3x3.desc": "9发采矿模式，以3x3断面向前开挖；每发命中实体1颗心",
   "effect.ic2.solar_generating": "正在发电",
   "effect.ic2.solar_generating.description": "太阳能头盔正在输出 1 EU/t",
+  "effect.ic2.radiation": "辐射",
+  "death.attack.radiation": "%1$s 死于辐射",
   "block.ic2_120.liquid_heat_exchanger": "流体热交换机",
   "container.ic2_120.liquid_heat_exchanger": "流体热交换机",
   "gui.ic2_120.block_cutter.blade_too_weak": "锯片硬度不够或者没有锯片",

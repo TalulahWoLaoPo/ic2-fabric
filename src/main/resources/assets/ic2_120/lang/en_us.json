@@ -611,6 +611,8 @@
   "mining_laser.mode.trench_3x3.desc": "9 shots in a 3x3 face forward. Each bolt: 1 heart to living targets",
   "effect.ic2.solar_generating": "Solar Charging",
   "effect.ic2.solar_generating.description": "Solar helmet is generating 1 EU/t",
+  "effect.ic2.radiation": "Radiation",
+  "death.attack.radiation": "%1$s died from radiation",
   "block.ic2_120.liquid_heat_exchanger": "Liquid Heat Exchanger",
   "container.ic2_120.liquid_heat_exchanger": "Liquid Heat Exchanger",
   "gui.ic2_120.block_cutter.blade_too_weak": "Block Cutting Blade is too weak or missing",

@@ -15,6 +15,7 @@ import ic2_120.content.fluid.ModFluids
 import ic2_120.content.network.NetworkManager
 import ic2_120.content.network.BandwidthStatsService
 import ic2_120.content.effect.ModStatusEffects
+import ic2_120.content.effect.RadiationHandler
 import ic2_120.content.worldgen.ChestLootInjector
 import ic2_120.content.worldgen.OreGeneration
 import ic2_120.content.worldgen.RubberTreeGeneration
@@ -89,6 +90,7 @@ object Ic2_120 : ModInitializer {
         ModCraftingRecipes.register()
 
         ModStatusEffects.register()
+        RadiationHandler.register()
 
         // 流体需在 ClassScanner 之前注册（流体、方块、桶）
         ModFluids.register()

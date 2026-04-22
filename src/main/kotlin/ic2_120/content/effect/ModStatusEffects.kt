@@ -15,6 +15,12 @@ object ModStatusEffects {
         object : StatusEffect(StatusEffectCategory.BENEFICIAL, 0xF6D743) {}
     )
 
+    val RADIATION: StatusEffect = Registry.register(
+        Registries.STATUS_EFFECT,
+        Identifier("ic2", "radiation"),
+        RadiationStatusEffect()
+    )
+
     fun register() {
         // 触发对象初始化，保证效果已注册。
     }
