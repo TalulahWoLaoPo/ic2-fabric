@@ -69,7 +69,7 @@ object ClaimProtection {
         }
 
         // 玩家离线：手动检查领地归属
-        return checkOfflineProtection(manager, world, pos, ownerUuid)
+        return checkOfflineProtection(manager, world, pos, ownerUuid, protection)
     }
 
     private fun checkProtectionWithActor(world: World, pos: BlockPos, actor: net.minecraft.entity.Entity?, protection: Protection): Boolean {
@@ -87,17 +87,18 @@ object ClaimProtection {
         // 非玩家实体（如镭射弹），取 owner UUID 做离线检查
         val ownerUuid = (actor as? net.minecraft.entity.projectile.ProjectileEntity)?.owner
             ?.uuid
-        return checkOfflineProtection(manager, world, pos, ownerUuid)
+        return checkOfflineProtection(manager, world, pos, ownerUuid, protection)
     }
 
     /**
-     * 玩家离线时，通过 ChunkTeamData.isTeamMember / isAlly 判断。
+     * 玩家离线时，根据领地具体权限设置（PUBLIC/ALLIES/PRIVATE）判断。
      */
     private fun checkOfflineProtection(
         manager: dev.ftb.mods.ftbchunks.api.ClaimedChunkManager,
         world: World,
         pos: BlockPos,
-        ownerUuid: UUID?
+        ownerUuid: UUID?,
+        protection: Protection
     ): Boolean {
         val chunkDimPos = ChunkDimPos(world, pos)
         val claimedChunk = manager.getChunk(chunkDimPos) ?: return false // 未被领取，允许
@@ -105,7 +106,21 @@ object ClaimProtection {
         if (ownerUuid == null) return true // 被领取但无 owner 信息，阻止
 
         val teamData = claimedChunk.teamData
-        // 机器放置者是领地队伍成员或盟友 → 允许
-        return !teamData.isTeamMember(ownerUuid) && !teamData.isAlly(ownerUuid)
+        val property = when (protection) {
+            Protection.INTERACT_BLOCK, Protection.RIGHT_CLICK_ITEM ->
+                dev.ftb.mods.ftbchunks.api.FTBChunksProperties.BLOCK_INTERACT_MODE
+            Protection.INTERACT_ENTITY ->
+                dev.ftb.mods.ftbchunks.api.FTBChunksProperties.ENTITY_INTERACT_MODE
+            Protection.ATTACK_NONLIVING_ENTITY ->
+                dev.ftb.mods.ftbchunks.api.FTBChunksProperties.NONLIVING_ENTITY_ATTACK_MODE
+            else ->
+                dev.ftb.mods.ftbchunks.api.FTBChunksProperties.BLOCK_EDIT_MODE
+        }
+        val mode = teamData.team.getProperty(property)
+
+        if (mode == dev.ftb.mods.ftbteams.api.property.PrivacyMode.PUBLIC) return false
+        if (mode == dev.ftb.mods.ftbteams.api.property.PrivacyMode.ALLIES) return !teamData.isAlly(ownerUuid)
+        // PRIVATE: 仅 owner
+        return !teamData.team.getRankForPlayer(ownerUuid).isOwner
     }
 }
