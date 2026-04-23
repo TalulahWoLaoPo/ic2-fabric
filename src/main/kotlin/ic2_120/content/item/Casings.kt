@@ -2,15 +2,15 @@ package ic2_120.content.item
 
 import ic2_120.Ic2_120
 import ic2_120.registry.CreativeTab
+import ic2_120.content.recipes.crafting.DamageToolShapelessRecipeDatagen
+import ic2_120.registry.annotation.ModItem
 import ic2_120.registry.id
 import ic2_120.registry.instance
 import ic2_120.registry.item
 import ic2_120.registry.type
-import ic2_120.registry.annotation.ModItem
 import net.minecraft.item.Item
-import net.minecraft.item.Items
+import net.minecraft.recipe.Ingredient
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
-import net.minecraft.data.server.recipe.ShapelessRecipeJsonBuilder
 import net.minecraft.data.server.recipe.RecipeJsonProvider
 import net.minecraft.recipe.book.RecipeCategory
 import net.minecraft.util.Identifier
@@ -27,11 +27,16 @@ class BronzeCasing : Item(FabricItemSettings()) {
     companion object {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, BronzeCasing::class.instance(), 2)
-                .input(ForgeHammer::class.instance())
-                .input(BronzePlate::class.instance())
-                .criterion(hasItem(BronzePlate::class.instance()), conditionsFromItem(BronzePlate::class.instance()))
-                .offerTo(exporter, BronzeCasing::class.id())
+            DamageToolShapelessRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = BronzeCasing::class.id(),
+                result = BronzeCasing::class.instance(),
+                resultCount = 2,
+                ingredients = listOf(
+                    DamageToolShapelessRecipeDatagen.toolIngredient(ForgeHammer::class.instance()),
+                    Ingredient.ofItems(BronzePlate::class.instance())
+                )
+            )
         }
     }
 }
@@ -42,11 +47,16 @@ class CopperCasing : Item(FabricItemSettings()) {
     companion object {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, CopperCasing::class.instance(), 2)
-                .input(ForgeHammer::class.instance())
-                .input(CopperPlate::class.instance())
-                .criterion(hasItem(CopperPlate::class.instance()), conditionsFromItem(CopperPlate::class.instance()))
-                .offerTo(exporter, CopperCasing::class.id())
+            DamageToolShapelessRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = CopperCasing::class.id(),
+                result = CopperCasing::class.instance(),
+                resultCount = 2,
+                ingredients = listOf(
+                    DamageToolShapelessRecipeDatagen.toolIngredient(ForgeHammer::class.instance()),
+                    Ingredient.ofItems(CopperPlate::class.instance())
+                )
+            )
         }
     }
 }
@@ -57,11 +67,16 @@ class GoldCasing : Item(FabricItemSettings()) {
     companion object {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, GoldCasing::class.instance(), 2)
-                .input(ForgeHammer::class.instance())
-                .input(GoldPlate::class.instance())
-                .criterion(hasItem(GoldPlate::class.instance()), conditionsFromItem(GoldPlate::class.instance()))
-                .offerTo(exporter, GoldCasing::class.id())
+            DamageToolShapelessRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = GoldCasing::class.id(),
+                result = GoldCasing::class.instance(),
+                resultCount = 2,
+                ingredients = listOf(
+                    DamageToolShapelessRecipeDatagen.toolIngredient(ForgeHammer::class.instance()),
+                    Ingredient.ofItems(GoldPlate::class.instance())
+                )
+            )
         }
     }
 }
@@ -72,11 +87,16 @@ class IronCasing : Item(FabricItemSettings()) {
     companion object {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, IronCasing::class.instance(), 2)
-                .input(ForgeHammer::class.instance())
-                .input(IronPlate::class.instance())
-                .criterion(hasItem(IronPlate::class.instance()), conditionsFromItem(IronPlate::class.instance()))
-                .offerTo(exporter, IronCasing::class.id())
+            DamageToolShapelessRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = IronCasing::class.id(),
+                result = IronCasing::class.instance(),
+                resultCount = 2,
+                ingredients = listOf(
+                    DamageToolShapelessRecipeDatagen.toolIngredient(ForgeHammer::class.instance()),
+                    Ingredient.ofItems(IronPlate::class.instance())
+                )
+            )
         }
     }
 }
@@ -87,11 +107,16 @@ class LeadCasing : Item(FabricItemSettings()) {
     companion object {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, LeadCasing::class.instance(), 2)
-                .input(ForgeHammer::class.instance())
-                .input(LeadPlate::class.instance())
-                .criterion(hasItem(LeadPlate::class.instance()), conditionsFromItem(LeadPlate::class.instance()))
-                .offerTo(exporter, LeadCasing::class.id())
+            DamageToolShapelessRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = LeadCasing::class.id(),
+                result = LeadCasing::class.instance(),
+                resultCount = 2,
+                ingredients = listOf(
+                    DamageToolShapelessRecipeDatagen.toolIngredient(ForgeHammer::class.instance()),
+                    Ingredient.ofItems(LeadPlate::class.instance())
+                )
+            )
         }
     }
 }
@@ -102,11 +127,16 @@ class SteelCasing : Item(FabricItemSettings()) {
     companion object {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, SteelCasing::class.instance(), 2)
-                .input(ForgeHammer::class.instance())
-                .input(SteelPlate::class.instance())
-                .criterion(hasItem(SteelPlate::class.instance()), conditionsFromItem(SteelPlate::class.instance()))
-                .offerTo(exporter, SteelCasing::class.id())
+            DamageToolShapelessRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = SteelCasing::class.id(),
+                result = SteelCasing::class.instance(),
+                resultCount = 2,
+                ingredients = listOf(
+                    DamageToolShapelessRecipeDatagen.toolIngredient(ForgeHammer::class.instance()),
+                    Ingredient.ofItems(SteelPlate::class.instance())
+                )
+            )
         }
     }
 }
@@ -117,11 +147,16 @@ class TinCasing : Item(FabricItemSettings()) {
     companion object {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, TinCasing::class.instance(), 2)
-                .input(ForgeHammer::class.instance())
-                .input(TinPlate::class.instance())
-                .criterion(hasItem(TinPlate::class.instance()), conditionsFromItem(TinPlate::class.instance()))
-                .offerTo(exporter, TinCasing::class.id())
+            DamageToolShapelessRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = TinCasing::class.id(),
+                result = TinCasing::class.instance(),
+                resultCount = 2,
+                ingredients = listOf(
+                    DamageToolShapelessRecipeDatagen.toolIngredient(ForgeHammer::class.instance()),
+                    Ingredient.ofItems(TinPlate::class.instance())
+                )
+            )
         }
     }
 }

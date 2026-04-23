@@ -100,15 +100,6 @@ class ForgeHammer : Item(FabricItemSettings().maxDamage(80)) {
                 .offerTo(exporter, ForgeHammer::class.id())
         }
     }
-
-    override fun getRecipeRemainder(stack: ItemStack): ItemStack {
-        val result = stack.copy()
-        if (result.damage < result.maxDamage - 1) {
-            result.damage += 1
-            return result
-        }
-        return ItemStack.EMPTY
-    }
 }
 
 /** 板材切割剪刀 - 将板材切割成导线 */
@@ -135,15 +126,6 @@ class Cutter : Item(FabricItemSettings().maxDamage(60)) {
                 .criterion(hasItem(SteelIngot::class.instance()), conditionsFromItem(SteelIngot::class.instance()))
                 .offerTo(exporter, Cutter::class.recipeId("steel"))
         }
-    }
-
-    override fun getRecipeRemainder(stack: ItemStack): ItemStack {
-        val result = stack.copy()
-        if (result.damage < result.maxDamage - 1) {
-            result.damage += 1
-            return result
-        }
-        return ItemStack.EMPTY
     }
 }
 
@@ -444,15 +426,6 @@ class Treetap : Item(FabricItemSettings().maxDamage(10)) {
                 .offerTo(exporter, Treetap::class.id())
         }
     }
-
-    override fun getRecipeRemainder(stack: ItemStack): ItemStack {
-        val result = stack.copy()
-        if (result.damage < result.maxDamage - 1) {
-            result.damage += 1
-            return result
-        }
-        return ItemStack.EMPTY
-    }
 }
 
 /** 扳手 - 拆卸机器、旋转方块 */
@@ -470,15 +443,6 @@ class Wrench : Item(FabricItemSettings().maxDamage(120)) {
                 .criterion(hasItem(BronzeIngot::class.instance()), conditionsFromItem(BronzeIngot::class.instance()))
                 .offerTo(exporter, Wrench::class.id())
         }
-    }
-
-    override fun getRecipeRemainder(stack: ItemStack): ItemStack {
-        val result = stack.copy()
-        if (result.damage < result.maxDamage - 1) {
-            result.damage += 1
-            return result
-        }
-        return ItemStack.EMPTY
     }
 }
 

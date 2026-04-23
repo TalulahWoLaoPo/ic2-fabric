@@ -1,5 +1,5 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "ic2_120:damage_tool_shapeless",
   "category": "misc",
   "ingredients": [
     {

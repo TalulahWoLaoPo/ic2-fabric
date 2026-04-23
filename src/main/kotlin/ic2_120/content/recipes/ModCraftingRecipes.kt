@@ -7,6 +7,8 @@ import ic2_120.content.recipes.crafting.ConsumeTreetapShapedRecipe
 import ic2_120.content.recipes.crafting.ConsumeTreetapShapedRecipeSerializer
 import ic2_120.content.recipes.crafting.ConsumeWrenchShapedRecipe
 import ic2_120.content.recipes.crafting.ConsumeWrenchShapedRecipeSerializer
+import ic2_120.content.recipes.crafting.DamageToolShapelessRecipe
+import ic2_120.content.recipes.crafting.DamageToolShapelessRecipeSerializer
 import ic2_120.content.recipes.crafting.EmptyFluidCellToEmptyCellRecipe
 import ic2_120.content.recipes.crafting.EmptyFluidCellToEmptyCellRecipeSerializer
 import net.minecraft.recipe.RecipeSerializer
@@ -33,6 +35,12 @@ object ModCraftingRecipes {
 
     val CONSUME_WRENCH_SHAPED_SERIALIZER: RecipeSerializer<ConsumeWrenchShapedRecipe> = ConsumeWrenchShapedRecipeSerializer
 
+    val DAMAGE_TOOL_SHAPELESS_TYPE: RecipeType<DamageToolShapelessRecipe> = object : RecipeType<DamageToolShapelessRecipe> {
+        override fun toString(): String = "${Ic2_120.MOD_ID}:damage_tool_shapeless"
+    }
+
+    val DAMAGE_TOOL_SHAPELESS_SERIALIZER: RecipeSerializer<DamageToolShapelessRecipe> = DamageToolShapelessRecipeSerializer
+
     val EMPTY_FLUID_CELL_TO_EMPTY_CELL_TYPE: RecipeType<EmptyFluidCellToEmptyCellRecipe> =
         object : RecipeType<EmptyFluidCellToEmptyCellRecipe> {
             override fun toString(): String = "${Ic2_120.MOD_ID}:empty_fluid_cell_to_empty_cell"
@@ -48,6 +56,8 @@ object ModCraftingRecipes {
         Registry.register(Registries.RECIPE_SERIALIZER, Ic2_120.id("consume_treetap_shaped"), CONSUME_TREETAP_SHAPED_SERIALIZER)
         Registry.register(Registries.RECIPE_TYPE, Ic2_120.id("consume_wrench_shaped"), CONSUME_WRENCH_SHAPED_TYPE)
         Registry.register(Registries.RECIPE_SERIALIZER, Ic2_120.id("consume_wrench_shaped"), CONSUME_WRENCH_SHAPED_SERIALIZER)
+        Registry.register(Registries.RECIPE_TYPE, Ic2_120.id("damage_tool_shapeless"), DAMAGE_TOOL_SHAPELESS_TYPE)
+        Registry.register(Registries.RECIPE_SERIALIZER, Ic2_120.id("damage_tool_shapeless"), DAMAGE_TOOL_SHAPELESS_SERIALIZER)
         Registry.register(
             Registries.RECIPE_TYPE,
             Ic2_120.id("empty_fluid_cell_to_empty_cell"),

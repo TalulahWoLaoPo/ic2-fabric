@@ -4,7 +4,7 @@ import ic2_120.content.item.energy.ITiered
 import ic2_120.registry.CreativeTab
 import ic2_120.registry.type
 import ic2_120.registry.annotation.ModBlock
-import ic2_120.registry.type
+import ic2_120.content.recipes.crafting.DamageToolShapelessRecipeDatagen
 import net.minecraft.block.AbstractBlock
 import net.minecraft.block.Blocks
 import net.minecraft.item.Item
@@ -39,11 +39,16 @@ class TinCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : Base
     companion object {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, TinCableBlock::class.item(), 3)
-                .input(Cutter::class.instance())
-                .input(Ingredient.fromTag(ModTags.Compat.Items.PLATES_TIN))
-                .criterion(hasItem(TinPlate::class.instance()), conditionsFromItem(TinPlate::class.instance()))
-                .offerTo(exporter, TinCableBlock::class.id())
+            DamageToolShapelessRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = TinCableBlock::class.id(),
+                result = TinCableBlock::class.item(),
+                resultCount = 3,
+                ingredients = listOf(
+                    DamageToolShapelessRecipeDatagen.toolIngredient(Cutter::class.instance()),
+                    Ingredient.fromTag(ModTags.Compat.Items.PLATES_TIN)
+                )
+            )
         }
     }
 }
@@ -61,11 +66,16 @@ class CopperCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : B
     companion object {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, CopperCableBlock::class.item(), 2)
-                .input(Cutter::class.instance())
-                .input(Ingredient.fromTag(ModTags.Compat.Items.PLATES_COPPER))
-                .criterion(hasItem(CopperPlate::class.instance()), conditionsFromItem(CopperPlate::class.instance()))
-                .offerTo(exporter, CopperCableBlock::class.id())
+            DamageToolShapelessRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = CopperCableBlock::class.id(),
+                result = CopperCableBlock::class.item(),
+                resultCount = 2,
+                ingredients = listOf(
+                    DamageToolShapelessRecipeDatagen.toolIngredient(Cutter::class.instance()),
+                    Ingredient.fromTag(ModTags.Compat.Items.PLATES_COPPER)
+                )
+            )
         }
     }
 }
@@ -86,11 +96,16 @@ class GoldCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : Bas
     companion object {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, GoldCableBlock::class.item(), 4)
-                .input(Cutter::class.instance())
-                .input(Ingredient.fromTag(ModTags.Compat.Items.PLATES_GOLD))
-                .criterion(hasItem(GoldPlate::class.instance()), conditionsFromItem(GoldPlate::class.instance()))
-                .offerTo(exporter, GoldCableBlock::class.id())
+            DamageToolShapelessRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = GoldCableBlock::class.id(),
+                result = GoldCableBlock::class.item(),
+                resultCount = 4,
+                ingredients = listOf(
+                    DamageToolShapelessRecipeDatagen.toolIngredient(Cutter::class.instance()),
+                    Ingredient.fromTag(ModTags.Compat.Items.PLATES_GOLD)
+                )
+            )
         }
     }
 }
@@ -111,11 +126,16 @@ class IronCableBlock(settings: AbstractBlock.Settings = defaultSettings()) : Bas
     companion object {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<net.minecraft.data.server.recipe.RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, IronCableBlock::class.item(), 2)
-                .input(Cutter::class.instance())
-                .input(Ingredient.fromTag(ModTags.Compat.Items.PLATES_IRON))
-                .criterion(hasItem(IronPlate::class.instance()), conditionsFromItem(IronPlate::class.instance()))
-                .offerTo(exporter, IronCableBlock::class.id())
+            DamageToolShapelessRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = IronCableBlock::class.id(),
+                result = IronCableBlock::class.item(),
+                resultCount = 2,
+                ingredients = listOf(
+                    DamageToolShapelessRecipeDatagen.toolIngredient(Cutter::class.instance()),
+                    Ingredient.fromTag(ModTags.Compat.Items.PLATES_IRON)
+                )
+            )
         }
     }
 }

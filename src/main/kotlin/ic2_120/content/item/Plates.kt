@@ -3,6 +3,7 @@ package ic2_120.content.item
 import ic2_120.Ic2_120
 import ic2_120.registry.CreativeTab
 import ic2_120.content.recipes.ModTags
+import ic2_120.content.recipes.crafting.DamageToolShapelessRecipeDatagen
 import ic2_120.registry.annotation.ModItem
 import ic2_120.registry.id
 import ic2_120.registry.instance
@@ -12,8 +13,6 @@ import net.fabricmc.fabric.api.item.v1.FabricItemSettings
 import net.minecraft.item.Item
 import net.minecraft.item.Items
 import net.minecraft.recipe.Ingredient
-import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
-import net.minecraft.data.server.recipe.ShapelessRecipeJsonBuilder
 import net.minecraft.data.server.recipe.RecipeJsonProvider
 import net.minecraft.recipe.book.RecipeCategory
 import net.minecraft.util.Identifier
@@ -29,11 +28,16 @@ class BronzePlate : Item(FabricItemSettings()) {
     companion object {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, BronzePlate::class.instance(), 1)
-                .input(ForgeHammer::class.instance())
-                .input(Ingredient.fromTag(ModTags.Compat.Items.INGOTS_BRONZE))
-                .criterion(hasItem(BronzeIngot::class.instance()), conditionsFromItem(BronzeIngot::class.instance()))
-                .offerTo(exporter, BronzePlate::class.id())
+            DamageToolShapelessRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = BronzePlate::class.id(),
+                result = BronzePlate::class.instance(),
+                resultCount = 1,
+                ingredients = listOf(
+                    DamageToolShapelessRecipeDatagen.toolIngredient(ForgeHammer::class.instance()),
+                    Ingredient.fromTag(ModTags.Compat.Items.INGOTS_BRONZE)
+                )
+            )
         }
     }
 }
@@ -43,11 +47,16 @@ class CopperPlate : Item(FabricItemSettings()) {
     companion object {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, CopperPlate::class.instance(), 1)
-                .input(Ingredient.fromTag(ModTags.Compat.Items.INGOTS_COPPER))
-                .input(ForgeHammer::class.instance())
-                .criterion(hasItem(Items.COPPER_INGOT), conditionsFromItem(Items.COPPER_INGOT))
-                .offerTo(exporter, CopperPlate::class.id())
+            DamageToolShapelessRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = CopperPlate::class.id(),
+                result = CopperPlate::class.instance(),
+                resultCount = 1,
+                ingredients = listOf(
+                    Ingredient.fromTag(ModTags.Compat.Items.INGOTS_COPPER),
+                    DamageToolShapelessRecipeDatagen.toolIngredient(ForgeHammer::class.instance())
+                )
+            )
         }
     }
 }
@@ -57,11 +66,16 @@ class GoldPlate : Item(FabricItemSettings()) {
     companion object {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, GoldPlate::class.instance(), 1)
-                .input(Ingredient.fromTag(ModTags.Compat.Items.INGOTS_GOLD))
-                .input(ForgeHammer::class.instance())
-                .criterion(hasItem(Items.GOLD_INGOT), conditionsFromItem(Items.GOLD_INGOT))
-                .offerTo(exporter, GoldPlate::class.id())
+            DamageToolShapelessRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = GoldPlate::class.id(),
+                result = GoldPlate::class.instance(),
+                resultCount = 1,
+                ingredients = listOf(
+                    Ingredient.fromTag(ModTags.Compat.Items.INGOTS_GOLD),
+                    DamageToolShapelessRecipeDatagen.toolIngredient(ForgeHammer::class.instance())
+                )
+            )
         }
     }
 }
@@ -71,11 +85,16 @@ class IronPlate : Item(FabricItemSettings()) {
     companion object {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, IronPlate::class.instance(), 1)
-                .input(ForgeHammer::class.instance())
-                .input(Ingredient.fromTag(ModTags.Compat.Items.INGOTS_IRON))
-                .criterion(hasItem(Items.IRON_INGOT), conditionsFromItem(Items.IRON_INGOT))
-                .offerTo(exporter, IronPlate::class.id())
+            DamageToolShapelessRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = IronPlate::class.id(),
+                result = IronPlate::class.instance(),
+                resultCount = 1,
+                ingredients = listOf(
+                    DamageToolShapelessRecipeDatagen.toolIngredient(ForgeHammer::class.instance()),
+                    Ingredient.fromTag(ModTags.Compat.Items.INGOTS_IRON)
+                )
+            )
         }
     }
 }
@@ -85,11 +104,16 @@ class LapisPlate : Item(FabricItemSettings()) {
     companion object {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, LapisPlate::class.instance(), 1)
-                .input(ForgeHammer::class.instance())
-                .input(Ingredient.fromTag(ModTags.Compat.Items.GEMS_LAPIS))
-                .criterion(hasItem(Items.LAPIS_LAZULI), conditionsFromItem(Items.LAPIS_LAZULI))
-                .offerTo(exporter, LapisPlate::class.id())
+            DamageToolShapelessRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = LapisPlate::class.id(),
+                result = LapisPlate::class.instance(),
+                resultCount = 1,
+                ingredients = listOf(
+                    DamageToolShapelessRecipeDatagen.toolIngredient(ForgeHammer::class.instance()),
+                    Ingredient.fromTag(ModTags.Compat.Items.GEMS_LAPIS)
+                )
+            )
         }
     }
 }
@@ -99,11 +123,16 @@ class LeadPlate : Item(FabricItemSettings()) {
     companion object {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, LeadPlate::class.instance(), 1)
-                .input(ForgeHammer::class.instance())
-                .input(Ingredient.fromTag(ModTags.Compat.Items.INGOTS_LEAD))
-                .criterion(hasItem(LeadIngot::class.instance()), conditionsFromItem(LeadIngot::class.instance()))
-                .offerTo(exporter, LeadPlate::class.id())
+            DamageToolShapelessRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = LeadPlate::class.id(),
+                result = LeadPlate::class.instance(),
+                resultCount = 1,
+                ingredients = listOf(
+                    DamageToolShapelessRecipeDatagen.toolIngredient(ForgeHammer::class.instance()),
+                    Ingredient.fromTag(ModTags.Compat.Items.INGOTS_LEAD)
+                )
+            )
         }
     }
 }
@@ -116,11 +145,16 @@ class SteelPlate : Item(FabricItemSettings()) {
     companion object {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, SteelPlate::class.instance(), 1)
-                .input(ForgeHammer::class.instance())
-                .input(Ingredient.fromTag(ModTags.Compat.Items.INGOTS_STEEL))
-                .criterion(hasItem(SteelIngot::class.instance()), conditionsFromItem(SteelIngot::class.instance()))
-                .offerTo(exporter, SteelPlate::class.id())
+            DamageToolShapelessRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = SteelPlate::class.id(),
+                result = SteelPlate::class.instance(),
+                resultCount = 1,
+                ingredients = listOf(
+                    DamageToolShapelessRecipeDatagen.toolIngredient(ForgeHammer::class.instance()),
+                    Ingredient.fromTag(ModTags.Compat.Items.INGOTS_STEEL)
+                )
+            )
         }
     }
 }
@@ -130,11 +164,16 @@ class TinPlate : Item(FabricItemSettings()) {
     companion object {
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, TinPlate::class.instance(), 1)
-                .input(ForgeHammer::class.instance())
-                .input(Ingredient.fromTag(ModTags.Compat.Items.INGOTS_TIN))
-                .criterion(hasItem(TinIngot::class.instance()), conditionsFromItem(TinIngot::class.instance()))
-                .offerTo(exporter, TinPlate::class.id())
+            DamageToolShapelessRecipeDatagen.offer(
+                exporter = exporter,
+                recipeId = TinPlate::class.id(),
+                result = TinPlate::class.instance(),
+                resultCount = 1,
+                ingredients = listOf(
+                    DamageToolShapelessRecipeDatagen.toolIngredient(ForgeHammer::class.instance()),
+                    Ingredient.fromTag(ModTags.Compat.Items.INGOTS_TIN)
+                )
+            )
         }
     }
 }
