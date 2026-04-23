@@ -477,8 +477,7 @@ class BronzeBoots : ArmorItem(BRONZE_ARMOR, ArmorItem.Type.BOOTS, FabricItemSett
 /**
  * IC2 橡胶靴，提供基础防触电保护并带有缓降落功能。
  * 参考原版 IC2 耐久：64
- *
- * TODO: 实现每行走 5 格发电 1EU 的功能
+ * 行走时可为背包中的可充电物品充电，数值由配置控制。
  */
 @ModItem(name = "rubber_boots", tab = CreativeTab.IC2_MATERIALS, group = "hazmat_armor")
 class RubberBoots : ArmorItem(RUBBER_ARMOR, ArmorItem.Type.BOOTS, FabricItemSettings().maxCount(1)) {
@@ -486,7 +485,6 @@ class RubberBoots : ArmorItem(RUBBER_ARMOR, ArmorItem.Type.BOOTS, FabricItemSett
         private const val WALK_ACC_KEY = "Ic2RubberBootsWalkAcc"
         private const val LAST_X_KEY = "Ic2RubberBootsLastX"
         private const val LAST_Z_KEY = "Ic2RubberBootsLastZ"
-        private const val DISTANCE_PER_EU = 5.0
 
         @RecipeProvider
         fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
@@ -503,12 +501,6 @@ class RubberBoots : ArmorItem(RUBBER_ARMOR, ArmorItem.Type.BOOTS, FabricItemSett
         }
     }
 
-    /**
-     * 每 tick 触发的物品回调。
-     * 仅在服务端、且靴子实际穿在脚部时统计水平移动距离：
-     * - 每行走 5 格尝试发 1 EU
-     * - 发出的 EU 会优先充入玩家背包中的可充电物品
-     */
     override fun inventoryTick(stack: ItemStack, world: World, entity: net.minecraft.entity.Entity, slot: Int, selected: Boolean) {
         super.inventoryTick(stack, world, entity, slot, selected)
         if (world.isClient) return
@@ -535,23 +527,28 @@ class RubberBoots : ArmorItem(RUBBER_ARMOR, ArmorItem.Type.BOOTS, FabricItemSett
         val segment = kotlin.math.sqrt(dx * dx + dz * dz)
         if (segment <= 0.0 || segment > 2.0) return
 
+        val distance = Ic2Config.getRubberBootsDistance()
+        val eu = Ic2Config.getRubberBootsEu()
+
         var acc = nbt.getDouble(WALK_ACC_KEY) + segment
-        val toGenerate = kotlin.math.floor(acc / DISTANCE_PER_EU).toLong()
-        if (toGenerate <= 0L) {
+        val charges = kotlin.math.floor(acc / distance).toLong()
+        if (charges <= 0L) {
             nbt.putDouble(WALK_ACC_KEY, acc)
             return
         }
 
-        var remaining = toGenerate
+        val toCharge = charges * eu
+        var remaining = toCharge
         remaining -= chargePlayerInventory(player, remaining)
-        acc -= (toGenerate - remaining) * DISTANCE_PER_EU
+        val actualCharged = (toCharge - remaining) / eu
+        acc -= actualCharged * distance
         nbt.putDouble(WALK_ACC_KEY, acc.coerceAtLeast(0.0))
     }
 
-    /**
-     * 将指定 EU 充入玩家物品栏，返回实际充入量。
-     * 支持：电池（IBatteryItem）与电动工具（IElectricTool）。
-     */
+    override fun appendTooltip(stack: ItemStack, world: World?, tooltip: MutableList<Text>, context: TooltipContext) {
+        tooltip.add(Text.literal("§7行走时为背包内可充电物品充电"))
+        super.appendTooltip(stack, world, tooltip, context)
+    }
 }
 
 // ========== 防化服 (Hazmat Suit) ==========

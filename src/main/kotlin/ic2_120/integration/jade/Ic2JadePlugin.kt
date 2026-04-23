@@ -282,6 +282,7 @@ object CropJadeProvider : IBlockComponentProvider, IServerDataProvider<BlockAcce
         if (!state.contains(CropBlock.CROP_TYPE) || !state.contains(CropBlock.AGE)) return
         val estimate = be.estimateGrowth(world, accessor.position, state)
         val (nutrients, water, weedEx) = be.storageSnapshot()
+        val requirements = be.getGrowthRequirements(world, accessor.position, state, estimate.cropType)
 
         data.putInt("age", estimate.age)
         data.putInt("maxAge", estimate.maxAge)
@@ -293,6 +294,13 @@ object CropJadeProvider : IBlockComponentProvider, IServerDataProvider<BlockAcce
         data.putInt("weedEx", weedEx)
         if (estimate.remainingSeconds != null) {
             data.putDouble("remainingSeconds", estimate.remainingSeconds)
+        }
+        if (requirements.isNotEmpty()) {
+            val serialized = requirements.map { req ->
+                val argsStr = req.args.joinToString(",")
+                "${req.key}|$argsStr"
+            }.joinToString(";")
+            data.putString("requirements", serialized)
         }
     }
 
@@ -372,6 +380,20 @@ object CropJadeProvider : IBlockComponentProvider, IServerDataProvider<BlockAcce
 
         if (!canGrowNow) {
             tooltip.add(Text.translatable("ic2_120.jade.crop_cannot_grow").formatted(Formatting.RED))
+            if (accessor.serverData.contains("requirements")) {
+                val serialized = accessor.serverData.getString("requirements")
+                val entries = serialized.split(";")
+                for (entry in entries) {
+                    val parts = entry.split("|", limit = 2)
+                    val key = parts[0]
+                    val args: Array<Any> = if (parts.size > 1 && parts[1].isNotEmpty()) {
+                        parts[1].split(",").map { it.toIntOrNull() ?: it.toDoubleOrNull() ?: it as Any }.toTypedArray()
+                    } else {
+                        emptyArray()
+                    }
+                    tooltip.add(Text.literal("  ⚠ ").append(Text.translatable("ic2_120.jade.crop_req.$key", *args)).formatted(Formatting.GRAY))
+                }
+            }
             return
         }
 

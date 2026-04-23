@@ -543,6 +543,72 @@ class CropBlockEntity(
         return true
     }
 
+    data class RequirementIssue(val key: String, val args: Array<Any> = emptyArray())
+
+    fun getGrowthRequirements(world: World, pos: BlockPos, state: BlockState, cropType: CropType): List<RequirementIssue> {
+        val age = state.get(CropBlock.AGE)
+        val max = CropSystem.maxAge(cropType)
+        val light = world.getLightLevel(pos.up())
+        val issues = mutableListOf<RequirementIssue>()
+
+        if (age >= max) return listOf(RequirementIssue("mature"))
+
+        when (cropType) {
+            CropType.WHEAT, CropType.CARROTS, CropType.BEETROOTS, CropType.PUMPKIN, CropType.MELON,
+            CropType.REED, CropType.STICKY_REED, CropType.FLAX, CropType.HOPS, CropType.COFFEE,
+            CropType.OAK_SAPLING, CropType.SPRUCE_SAPLING, CropType.BIRCH_SAPLING, CropType.JUNGLE_SAPLING,
+            CropType.ACACIA_SAPLING, CropType.DARK_OAK_SAPLING -> {
+                if (light < 9) issues.add(RequirementIssue("light_low_9", arrayOf(light)))
+            }
+            CropType.POTATO -> {
+                if (age >= 4) issues.add(RequirementIssue("potato_max_age"))
+                if (light < 9) issues.add(RequirementIssue("light_low_9", arrayOf(light)))
+            }
+            CropType.DANDELION, CropType.POPPY, CropType.BLACKTHORN, CropType.TULIP, CropType.CYAZINT -> {
+                if (light < 12) issues.add(RequirementIssue("light_low_12", arrayOf(light)))
+            }
+            CropType.COCOA -> {
+                if (storageNutrients < 3) issues.add(RequirementIssue("nutrients_low_3", arrayOf(storageNutrients)))
+            }
+            CropType.RED_WHEAT -> {
+                val redstonePower = world.getReceivedRedstonePower(pos)
+                if (redstonePower !in 5..10) issues.add(RequirementIssue("redstone_out_of_range", arrayOf(redstonePower)))
+            }
+            CropType.VENOMILIA -> {
+                if (age <= 3 && light < 12) issues.add(RequirementIssue("light_low_12", arrayOf(light)))
+            }
+            CropType.FERRU -> {
+                if (age == max - 1 && !hasMetalRoot(world, pos, METAL_IRON)) issues.add(RequirementIssue("missing_iron_root"))
+            }
+            CropType.CYPRIUM -> {
+                if (age == max - 1 && !hasMetalRoot(world, pos, METAL_COPPER)) issues.add(RequirementIssue("missing_copper_root"))
+            }
+            CropType.STAGNIUM -> {
+                if (age == max - 1 && !hasMetalRoot(world, pos, METAL_TIN)) issues.add(RequirementIssue("missing_tin_root"))
+            }
+            CropType.PLUMBISCUS -> {
+                if (age == max - 1 && !hasMetalRoot(world, pos, METAL_LEAD)) issues.add(RequirementIssue("missing_lead_root"))
+            }
+            CropType.AURELIA -> {
+                if (age == max - 1 && !hasMetalRoot(world, pos, METAL_GOLD)) issues.add(RequirementIssue("missing_gold_root"))
+            }
+            CropType.SHINING -> {
+                if (age == max - 1 && !hasMetalRoot(world, pos, METAL_SILVER)) issues.add(RequirementIssue("missing_silver_root"))
+            }
+            CropType.EATING_PLANT -> {
+                if (age < 2) {
+                    if (light <= 10) issues.add(RequirementIssue("light_low_gt_10", arrayOf(light)))
+                } else {
+                    val below = world.getBlockState(pos.down()).block
+                    if (below != Blocks.GRASS_BLOCK) issues.add(RequirementIssue("need_grass_below"))
+                    if (light <= 10) issues.add(RequirementIssue("light_low_gt_10", arrayOf(light)))
+                }
+            }
+            else -> Unit
+        }
+        return issues
+    }
+
     private fun canGrowAt(world: World, pos: BlockPos, state: BlockState, cropType: CropType): Boolean {
         val age = state.get(CropBlock.AGE)
         val max = CropSystem.maxAge(cropType)
@@ -557,7 +623,10 @@ class CropBlockEntity(
             CropType.POTATO -> age < 4 && light >= 9
             CropType.DANDELION, CropType.POPPY, CropType.BLACKTHORN, CropType.TULIP, CropType.CYAZINT -> light >= 12
             CropType.COCOA -> storageNutrients >= 3
-            CropType.RED_WHEAT -> light in 5..10
+            CropType.RED_WHEAT -> {
+                val redstonePower = world.getReceivedRedstonePower(pos)
+                redstonePower in 5..10
+            }
             CropType.VENOMILIA -> (age <= 3 && light >= 12) || age == 4
             CropType.FERRU -> age < max - 1 || (age == max - 1 && hasMetalRoot(world, pos, METAL_IRON))
             CropType.CYPRIUM -> age < max - 1 || (age == max - 1 && hasMetalRoot(world, pos, METAL_COPPER))

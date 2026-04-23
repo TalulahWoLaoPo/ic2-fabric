@@ -86,7 +86,9 @@ data class ArmorConfig(
     @field:ConfigComment("量子胸甲配置。")
     val quantumChestplate: QuantumChestplateConfig = QuantumChestplateConfig(),
     @field:ConfigComment("夜视配置。")
-    val nightVision: NightVisionConfig = NightVisionConfig()
+    val nightVision: NightVisionConfig = NightVisionConfig(),
+    @field:ConfigComment("橡胶靴配置。")
+    val rubberBoots: RubberBootsConfig = RubberBootsConfig()
 )
 
 data class JetpackConfig(
@@ -129,6 +131,15 @@ data class NightVisionConfig(
     /** 纳米头盔夜视时长（秒）。耗电量自动通过 满电容量 / 时长 计算。 */
     @field:ConfigComment("纳米头盔夜视时长（秒），耗电量自动计算。", "3571")
     val nanoHelmetDurationSeconds: Int = 3571
+)
+
+data class RubberBootsConfig(
+    /** 行走多少格触发一次充电。 */
+    @field:ConfigComment("橡胶靴行走多少格触发一次充电。", "1")
+    val distance: Double = 1.0,
+    /** 每次充电的 EU 数。 */
+    @field:ConfigComment("橡胶靴每次充电的 EU 数。", "20")
+    val eu: Long = 20L
 )
 
 /**
@@ -494,6 +505,20 @@ object Ic2Config {
     fun getNanoHelmetNightVisionEuPerTick(): Long {
         val cfg = current.armor.nightVision
         return cfg.nanoHelmetMaxEnergy / (cfg.nanoHelmetDurationSeconds * 20L)
+    }
+
+    /**
+     * 橡胶靴行走多少格触发一次充电。
+     */
+    fun getRubberBootsDistance(): Double {
+        return current.armor.rubberBoots.distance.coerceAtLeast(1.0)
+    }
+
+    /**
+     * 橡胶靴每次充电的 EU 数。
+     */
+    fun getRubberBootsEu(): Long {
+        return current.armor.rubberBoots.eu.coerceAtLeast(1L)
     }
 
     private fun saveCurrentConfig() {
