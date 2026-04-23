@@ -18,34 +18,23 @@ fun chargePlayerInventory(player: PlayerEntity, eu: Long): Long {
     fun chargeStack(target: ItemStack) {
         if (remaining <= 0L || target.isEmpty) return
         if (handled.any { it === target }) return
+        if (target.count > 1) return
+
         handled += target
 
-        val chargeTarget = when {
-            target.count <= 1 -> target
-            else -> {
-                val emptySlot = player.inventory.emptySlot
-                if (emptySlot < 0) return
-                val single = target.copy()
-                single.count = 1
-                target.decrement(1)
-                player.inventory.setStack(emptySlot, single)
-                single
-            }
-        }
-
-        when (val item = chargeTarget.item) {
+        when (val item = target.item) {
             is IBatteryItem -> {
-                val accepted = item.charge(chargeTarget, remaining)
+                val accepted = item.charge(target, remaining)
                 charged += accepted
                 remaining -= accepted
             }
 
             is IElectricTool -> {
-                val current = item.getEnergy(chargeTarget)
+                val current = item.getEnergy(target)
                 val canAccept = (item.maxCapacity - current).coerceAtLeast(0L)
                 if (canAccept <= 0L) return
                 val accepted = minOf(remaining, canAccept)
-                item.setEnergy(chargeTarget, current + accepted)
+                item.setEnergy(target, current + accepted)
                 charged += accepted
                 remaining -= accepted
             }
